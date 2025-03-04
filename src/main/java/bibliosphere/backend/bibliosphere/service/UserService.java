@@ -14,4 +14,10 @@ public class UserService {
     public User loadUserByEmail (String email) {
         return userRepository.findById(email).orElse(null);
     }
+    public boolean exist(String email) {
+        return userRepository.findById(email).isPresent();
+    }
+    public void registerUser(User user) {
+        userRepository.save(user);
+    }
 }
