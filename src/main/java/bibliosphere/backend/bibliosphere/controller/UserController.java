@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,5 +22,15 @@ public class UserController {
         }
         userService.registerUser(user);
         return ResponseEntity.ok("User registered successfully");
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestParam("email") String email, @RequestParam("password") String password) {
+        String token = userService.login(email, password);
+        if (token != null) {
+            return ResponseEntity.ok(token);
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
 }

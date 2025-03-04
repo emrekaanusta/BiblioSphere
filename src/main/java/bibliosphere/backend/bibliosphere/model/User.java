@@ -2,6 +2,8 @@ package bibliosphere.backend.bibliosphere.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+
 import java.util.List;
 
 @Data
@@ -9,8 +11,9 @@ import java.util.List;
 @AllArgsConstructor
 
 public class User {
-    private String password;
+    @Id
     private String email;
+    private String password;
     private String name;
     private String surname;
     private String phone;
