@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RestController
 public class UserController {
     @Autowired
@@ -17,13 +20,16 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> createUser(@RequestBody User user) {
+
         if (userService.exist(user.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+        }
+        if (!userService.passwordCheck(user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password must be longer than 6 characters and contain at least one special character");
         }
         userService.registerUser(user);
         return ResponseEntity.ok("User registered successfully");
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestParam("email") String email, @RequestParam("password") String password) {
@@ -33,4 +39,6 @@ public class UserController {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
+
+
 }
