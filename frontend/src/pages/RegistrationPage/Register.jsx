@@ -5,7 +5,8 @@ import Navbar from '../NavigationBar/Navbar';
 
 const Register = () => {
     const [formData, setFormData] = useState({
-        username: '',
+        name: '',
+        surname: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -36,15 +37,30 @@ const Register = () => {
                         <h3>create account</h3>
 
                         <div className="input-group">
-                            <label>username</label>
+                            <label>name</label>
                             <input
                                 type="text"
-                                name="username"
+                                name="name"
                                 className="register-input"
-                                placeholder="enter your username"
-                                value={formData.username}
+                                placeholder="enter your name"
+                                value={formData.name}
                                 onChange={handleChange}
                                 required
+                                autoCapitalize="none"
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <label>surname</label>
+                            <input
+                                type="text"
+                                name="surname"
+                                className="register-input"
+                                placeholder="enter your surname"
+                                value={formData.surname}
+                                onChange={handleChange}
+                                required
+                                autoCapitalize="none"
                             />
                         </div>
 
@@ -58,6 +74,7 @@ const Register = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
+                                autoCapitalize="none"
                             />
                         </div>
 
@@ -71,6 +88,7 @@ const Register = () => {
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
+                                autoCapitalize="none"
                             />
                         </div>
 
@@ -84,6 +102,7 @@ const Register = () => {
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                                 required
+                                autoCapitalize="none"
                             />
                         </div>
 

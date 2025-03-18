@@ -10,6 +10,23 @@ const Login = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     alert(`Logging in with Email: ${email}, Password: ${password}`);
+
+  const requestOptions = {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    params: JSON.stringify({ email, password })
+  };
+
+  fetch('http://localhost:8080/login', requestOptions)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        alert('Login successful!');
+      })
+      .catch(error => {
+        console.error('Login failed:', error);
+        alert('Login failed!');
+      });
   };
 
   return (
@@ -24,8 +41,10 @@ const Login = () => {
               <input
                 type="email"
                 value={email}
+                placeholder="enter your email"
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoCapitalize="none"
               />
             </div>
             <div className="input-group">
@@ -33,8 +52,10 @@ const Login = () => {
               <input
                 type="password"
                 value={password}
+                placeholder="enter your password"
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoCapitalize="none"
               />
             </div>
             <button type="submit" className="login-btn">Login</button>
