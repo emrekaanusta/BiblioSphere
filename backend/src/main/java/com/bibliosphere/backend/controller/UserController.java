@@ -1,0 +1,39 @@
+package com.bibliosphere.backend.controller;
+
+import com.bibliosphere.backend.model.User;
+import com.bibliosphere.backend.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+
+@RestController
+public class UserController {
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/register")
+    public ResponseEntity<String> createUser(@RequestBody User user) {
+
+        if (userService.exist(user.getEmail())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
+        }
+        if (!userService.passwordCheck(user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password must be longer than 6 characters and contain at least one special character");
+        }
+        userService.registerUser(user);
+        return ResponseEntity.ok("User registered successfully");
+    }
+
+    @GetMapping("/login")
+    public ResponseEntity<String> login(@RequestParam("email") String email, @RequestParam("password") String password) {
+        String token = userService.login(email, password);
+        if (token != null) {
+            return ResponseEntity.ok(token);
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+    }
+
+
+}

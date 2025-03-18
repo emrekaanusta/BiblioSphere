@@ -1,0 +1,48 @@
+/* Navbar genel düzen */
+.navbar {
+    background-color: #99e4ff;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    font-size: 18px;
+    width: 100%;
+    max-width: 100vw; /* Sayfanın genişliğini aşmasını engeller */
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 60px;
+    z-index: 1000;
+    box-sizing: border-box; /* Padding'in genişliği etkilememesi için */
+  }
+  
+  
+  .navbar-logo {
+    height: 40px;  /* Logoyu küçült */
+    width: auto;
+    border-radius: 5px; /* Hafif yuvarlatılmış kenarlar */
+  }
+  
+  /* Linkler */
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+  }
+  
+  .nav-links li {
+    display: inline;
+  }
+  
+  .nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-links a:hover {
+    color: #cce7ff;
+  }
+  
