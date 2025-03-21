@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Login.css"; // Login için CSS
 import Navbar from "../NavigationBar/Navbar";
-import {Link} from "react-router-dom"; // Navbar'ı ekledik
+import {Link } from "react-router-dom"; // Navbar'ı ekledik
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -9,26 +9,35 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    alert(`Logging in with Email: ${email}, Password: ${password}`);
 
-  const requestOptions = {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-    params: JSON.stringify({ email, password })
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    };
+
+    fetch('http://localhost:8080/login', requestOptions)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Invalid credentials');
+          }
+          return response.text();
+        })
+        .then((token) => {
+          if (token && token.length > 0) {
+            global.token = token;
+            console.log("Success", "Login successful!");
+            //TODO:Loginden sonra hangi sayfaya yönlenecek ?
+          } else {
+            console.log("Error", "Invalid credentials");
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
   };
-
-  fetch('http://localhost:8080/login', requestOptions)
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        alert('Login successful!');
-      })
-      .catch(error => {
-        console.error('Login failed:', error);
-        alert('Login failed!');
-      });
-  };
-
   return (
     <div className="page-container">
       <Navbar /> {/* Navbar sayfanın en üstüne eklendi */}

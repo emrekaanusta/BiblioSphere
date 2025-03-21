@@ -25,7 +25,26 @@ const Register = () => {
             alert("Passwords don't match!");
             return;
         }
-        console.log('Registration data:', formData);
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                password: formData.password,
+            }),
+        };
+
+        fetch("http://localhost:8080/register", requestOptions)
+            .then((response) => response.text())
+            .then((result) => {
+                console.log(result);
+                //TODO:login sayfasına yönlendirme
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     return (
@@ -114,6 +133,7 @@ const Register = () => {
             </div>
         </div>
     );
+
 };
 
 export default Register;
