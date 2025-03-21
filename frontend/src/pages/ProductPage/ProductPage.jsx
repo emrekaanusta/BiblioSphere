@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './productpage.css';
 import { useCart } from '../../contexts/CartContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 import ShoppingCart from '../../components/ShoppingCart';
 
 const ProductPage = () => {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const { addToCart } = useCart();
+    const { addToFavorites, removeFromFavorites, isBookFavorite } = useFavorites();
     const [books] = useState([
         { id: 1, title: 'Fight Club', author: 'Chuck Palahniuk', type: 'Fiction', price: 19.99, image: '/images/book1.jpg' },
         { id: 2, title: 'Snuff', author: 'Chuck Palahniuk', type: 'Dram', price: 29.99, image: '/images/book2.jpg' },
@@ -43,6 +45,14 @@ const ProductPage = () => {
         addToCart(book);
         // Optional: Show a confirmation message or open the cart
         setIsCartOpen(true);
+    };
+
+    const handleToggleFavorite = (book) => {
+        if (isBookFavorite(book.id)) {
+            removeFromFavorites(book.id);
+        } else {
+            addToFavorites(book);
+        }
     };
 
     return (
@@ -118,7 +128,15 @@ const ProductPage = () => {
                 <div className="book-list">
                     {filteredBooks.map((book) => (
                         <div className="book-item" key={book.id}>
-                            <img src={book.image} alt={book.title} className="book-image" />
+                            <div className="book-image-container">
+                                <img src={book.image} alt={book.title} className="book-image" />
+                                <button
+                                    className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
+                                    onClick={() => handleToggleFavorite(book)}
+                                >
+                                    <i className="fas fa-heart"></i>
+                                </button>
+                            </div>
                             <h3>{book.title}</h3>
                             <p>Author: {book.author}</p>
                             <p>Type: {book.type}</p>
