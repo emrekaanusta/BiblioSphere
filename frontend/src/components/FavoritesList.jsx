@@ -1,5 +1,6 @@
 import React from 'react';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { useNavigate } from 'react-router-dom';
 import './FavoritesList.css';
 
 const FavoritesList = () => {
@@ -9,6 +10,12 @@ const FavoritesList = () => {
         isFavoritesOpen, 
         toggleFavorites 
     } = useFavorites();
+    const navigate = useNavigate();
+
+    const handleViewAllFavorites = () => {
+        toggleFavorites(); // Close the slider
+        navigate('/favorites'); // Navigate to favorites page
+    };
 
     return (
         <>
@@ -42,6 +49,15 @@ const FavoritesList = () => {
                         </div>
                     )}
                 </div>
+
+                {favorites.length > 0 && (
+                    <div className="favorites-footer">
+                        <button onClick={handleViewAllFavorites} className="view-all-btn">
+                            <i className="fas fa-heart"></i>
+                            View All Favorites
+                        </button>
+                    </div>
+                )}
             </div>
         </>
     );

@@ -7,6 +7,7 @@ import Register from "../RegistrationPage/Register";
 import { CartProvider } from "../../contexts/CartContext";
 import { FavoritesProvider } from "../../contexts/FavoritesContext";
 import Checkout from '../CheckoutPage/Checkout';
+import FavoritesPage from '../FavoritesPage/FavoritesPage';
 import Header from '../../components/Header';
 import ShoppingCart from '../../components/ShoppingCart';
 import FavoritesList from '../../components/FavoritesList';
@@ -28,6 +29,7 @@ function App() {
                                 <Route path="/register" element={<Register />} />
                                 <Route path="/products" element={<ProductPage />} />
                                 <Route path="/checkout" element={<Checkout />} />
+                                <Route path="/favorites" element={<FavoritesPage />} />
                             </Routes>
                         </main>
                     </Router>
