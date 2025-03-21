@@ -1,98 +1,111 @@
 import React from 'react';
 import { useCart } from '../contexts/CartContext';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import './ShoppingCart.css';
 
-const ShoppingCart = ({ isOpen, onClose }) => {
+const ShoppingCart = () => {
     const { 
-        cartItems, 
+        cart, 
         removeFromCart, 
         updateQuantity, 
+        isCartOpen, 
+        toggleCart,
         getCartTotal,
-        getSubtotal,
-        calculateShipping,
         shippingMethod,
-        setShippingMethod,
-        shippingRates
+        setShippingMethod
     } = useCart();
+    const navigate = useNavigate();
 
-    if (!isOpen) return null;
+    const subtotal = getCartTotal();
+    const shippingCost = shippingMethod === 'express' ? 15 : shippingMethod === 'standard' ? 5 : 0;
+    const total = subtotal + shippingCost;
 
-    const subtotal = getSubtotal();
-    const shipping = calculateShipping();
-    const total = getCartTotal();
+    const handleCheckout = () => {
+        toggleCart();
+        navigate('/checkout');
+    };
 
     return (
-        <div className="shopping-cart-container">
-            <div className="shopping-cart">
+        <>
+            <div className={`cart-overlay ${isCartOpen ? 'open' : ''}`} onClick={toggleCart}></div>
+            <div className={`shopping-cart ${isCartOpen ? 'open' : ''}`}>
                 <div className="cart-header">
-                    <h3>Shopping Cart</h3>
-                    <button onClick={onClose} className="close-btn">
-                        <i className="fas fa-times"></i>
-                    </button>
+                    <h2>Shopping Cart</h2>
+                    <button onClick={toggleCart} className="close-btn">&times;</button>
                 </div>
+                
                 <div className="cart-items">
-                    {cartItems.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '20px' }}>
+                    {cart && cart.length > 0 ? cart.map((item) => (
+                        <div key={item.id} className="cart-item">
+                            <img src={item.image} alt={item.title} className="cart-item-image" />
+                            <div className="cart-item-details">
+                                <h3>{item.title}</h3>
+                                <p>Price: ${item.price}</p>
+                                <div className="quantity-controls">
+                                    <button onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}>-</button>
+                                    <span>{item.quantity}</span>
+                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                                </div>
+                                <button onClick={() => removeFromCart(item.id)} className="remove-btn">Remove</button>
+                            </div>
+                        </div>
+                    )) : (
+                        <div className="empty-cart">
                             <p>Your cart is empty</p>
                         </div>
-                    ) : (
-                        cartItems.map((item) => (
-                            <div key={item.id} className="cart-item">
-                                <img src={item.image} alt={item.title} />
-                                <div className="item-details">
-                                    <h4>{item.title}</h4>
-                                    <p className="price">${item.price.toFixed(2)}</p>
-                                    <div className="quantity">
-                                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
-                                        <span>{item.quantity}</span>
-                                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
-                                    </div>
-                                </div>
-                                <button 
-                                    className="remove-btn"
-                                    onClick={() => removeFromCart(item.id)}
-                                >
-                                    <i className="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        ))
                     )}
                 </div>
-                {cartItems.length > 0 && (
+
+                {cart && cart.length > 0 && (
                     <div className="cart-footer">
                         <div className="shipping-options">
-                            <h4>Shipping Method</h4>
-                            <select 
-                                value={shippingMethod} 
-                                onChange={(e) => setShippingMethod(e.target.value)}
-                                className="shipping-select"
-                            >
-                                <option value="standard">Standard Shipping (2-5 days)</option>
-                                <option value="express">Express Shipping (1-2 days)</option>
-                                <option value="overnight">Overnight Shipping</option>
-                            </select>
+                            <h3>Shipping Method</h3>
+                            <div className="shipping-option">
+                                <input
+                                    type="radio"
+                                    id="standard"
+                                    name="shipping"
+                                    value="standard"
+                                    checked={shippingMethod === 'standard'}
+                                    onChange={(e) => setShippingMethod(e.target.value)}
+                                />
+                                <label htmlFor="standard">Standard Shipping ($5.00)</label>
+                            </div>
+                            <div className="shipping-option">
+                                <input
+                                    type="radio"
+                                    id="express"
+                                    name="shipping"
+                                    value="express"
+                                    checked={shippingMethod === 'express'}
+                                    onChange={(e) => setShippingMethod(e.target.value)}
+                                />
+                                <label htmlFor="express">Express Shipping ($15.00)</label>
+                            </div>
                         </div>
+
                         <div className="price-summary">
-                            <div className="subtotal">
+                            <div className="summary-row">
                                 <span>Subtotal:</span>
                                 <span>${subtotal.toFixed(2)}</span>
                             </div>
-                            <div className="shipping">
+                            <div className="summary-row">
                                 <span>Shipping:</span>
-                                <span>${shipping.toFixed(2)}</span>
+                                <span>${shippingCost.toFixed(2)}</span>
                             </div>
-                            <div className="total">
+                            <div className="summary-row total">
                                 <span>Total:</span>
                                 <span>${total.toFixed(2)}</span>
                             </div>
                         </div>
-                        <Link to="/checkout" className="btn checkout-btn" onClick={onClose}>
+
+                        <button onClick={handleCheckout} className="checkout-btn">
                             Proceed to Checkout
-                        </Link>
+                        </button>
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 
