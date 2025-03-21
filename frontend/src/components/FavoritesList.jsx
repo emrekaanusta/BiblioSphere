@@ -1,38 +1,40 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { useNavigate } from 'react-router-dom';
 import './FavoritesList.css';
 
 const FavoritesList = () => {
-    const { 
-        favorites, 
-        removeFromFavorites, 
-        isFavoritesOpen, 
-        toggleFavorites 
-    } = useFavorites();
+    const { favorites, isFavoritesOpen, removeFromFavorites, setIsFavoritesOpen } = useFavorites();
     const navigate = useNavigate();
 
     const handleViewAllFavorites = () => {
-        toggleFavorites(); // Close the slider
-        navigate('/favorites'); // Navigate to favorites page
+        navigate('/favorites');
     };
+
+    if (!isFavoritesOpen) return null;
 
     return (
         <>
-            <div className={`favorites-overlay ${isFavoritesOpen ? 'open' : ''}`} onClick={toggleFavorites}></div>
-            <div className={`favorites-panel ${isFavoritesOpen ? 'open' : ''}`}>
+            <div className="favorites-backdrop" onClick={() => setIsFavoritesOpen(false)} />
+            <div className="favorites-list">
                 <div className="favorites-header">
-                    <h2>My Favorites</h2>
-                    <button onClick={toggleFavorites} className="close-btn">&times;</button>
+                    <h2>Favorite Books</h2>
+                    <button className="close-btn" onClick={() => setIsFavoritesOpen(false)}>
+                        <i className="fas fa-times"></i>
+                    </button>
                 </div>
-                
+
                 <div className="favorites-items">
                     {favorites.length > 0 ? (
                         favorites.map((book) => (
                             <div key={book.id} className="favorite-item">
-                                <img src={book.image} alt={book.title} className="favorite-item-image" />
+                                <Link to={`/book/${book.id}`} className="book-image-link">
+                                    <img src={book.image} alt={book.title} className="favorite-item-image" />
+                                </Link>
                                 <div className="favorite-item-details">
-                                    <h3>{book.title}</h3>
+                                    <Link to={`/book/${book.id}`} className="book-title">
+                                        <h3>{book.title}</h3>
+                                    </Link>
                                     <p>${book.price}</p>
                                     <button 
                                         onClick={() => removeFromFavorites(book.id)} 

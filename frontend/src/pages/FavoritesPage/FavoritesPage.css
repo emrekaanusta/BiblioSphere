@@ -108,6 +108,25 @@
     background: #cc0000;
 }
 
+.book-image-link {
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.book-image-link:hover {
+    transform: scale(1.05);
+}
+
+.book-title {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+.book-title:hover {
+    color: #27ae60;
+}
+
 @media (max-width: 768px) {
     .favorites-page {
         padding: 1rem;
