@@ -762,6 +762,51 @@ section{
     text-align: center;
 }
 
+/* New Shipping Options Styles */
+.shipping-options {
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.shipping-options h4 {
+    font-size: 1.6rem;
+    color: var(--black);
+    margin-bottom: 10px;
+}
+
+.shipping-select {
+    width: 100%;
+    padding: 8px;
+    font-size: 1.4rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    color: var(--black);
+}
+
+.price-summary {
+    padding: 15px 0;
+}
+
+.price-summary > div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.price-summary .total {
+    font-size: 1.8rem;
+    font-weight: bold;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.subtotal, .shipping {
+    color: var(--light-color);
+}
+
 /* Favorites Styles */
 .favorites-container {
     position: fixed;

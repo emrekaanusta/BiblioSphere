@@ -4,12 +4,22 @@ import './homepage.css';
 import ShoppingCart from '../../components/ShoppingCart';
 import Favorites from '../../components/Favorites';
 import ProfileDropdown from '../../components/ProfileDropdown';
+import { useCart } from '../../contexts/CartContext';
 
 const Homepage = () => {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef(null);
+    const { addToCart } = useCart();
+
+    const featuredBooks = [
+        { id: 1, title: 'Fight Club', author: 'Chuck Palahniuk', price: 15.99, image: '/images/book1.jpg' },
+        { id: 2, title: 'Snuff', author: 'Chuck Palahniuk', price: 12.99, image: '/images/book2.jpg' },
+        { id: 3, title: 'Invisible Monsters', author: 'Chuck Palahniuk', price: 14.99, image: '/images/book3.jpg' },
+        { id: 4, title: 'Choke', author: 'Chuck Palahniuk', price: 13.99, image: '/images/book4.jpg' },
+        { id: 5, title: 'Survivor', author: 'Chuck Palahniuk', price: 16.99, image: '/images/book5.jpg' },
+    ];
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -43,14 +53,19 @@ const Homepage = () => {
         setIsFavoritesOpen(false);
     };
 
+    const handleAddToCart = (book) => {
+        addToCart(book);
+        setIsCartOpen(true); // Show cart after adding item
+    };
+
     return (
         <>
             {/* Header Section */}
             <header className="header">
                 <section className="header-1">
-                    <a href="#" className="logo">
+                    <Link to="/" className="logo">
                         <i className="fas fa-book"></i>BiblioSphere
-                    </a>
+                    </Link>
                     <form action="" className="search-form">
                         <input type="search" placeholder="search here..." id="search-box" />
                         <label htmlFor="search-box" className="fas fa-search"></label>
@@ -59,14 +74,8 @@ const Homepage = () => {
                         <div onClick={toggleFavorites} className="fas fa-heart"></div>
                         <div onClick={toggleCart} className="fas fa-shopping-cart"></div>
                         <div ref={profileRef} style={{ position: 'relative' }}>
-                            <div 
-                                onClick={toggleProfile} 
-                                className="fas fa-user"
-                            ></div>
-                            <ProfileDropdown 
-                                isOpen={isProfileOpen} 
-                                onClose={() => setIsProfileOpen(false)} 
-                            />
+                            <div onClick={toggleProfile} className="fas fa-user"></div>
+                            <ProfileDropdown isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
                         </div>
                     </div>
                 </section>
@@ -184,53 +193,34 @@ const Homepage = () => {
                 <h1 className="heading"><span>Featured Books</span></h1>
                 <div className="swiper featured-slider">
                     <div className="swiper-wrapper">
-                        {/* Book Card 1 */}
-                        <div className="swiper-slide">
-                            <div className="book-card">
-                                <div className="image">
-                                    <img src="/images/book1.jpg" alt="Featured Book 1" />
-                                </div>
-                                <div className="content">
-                                    <h3>Book Title 1</h3>
-                                    <div className="price">
-                                        $15.99 <span>$20.99</span>
+                        {featuredBooks.map((book) => (
+                            <div key={book.id} className="swiper-slide">
+                                <div className="book-card">
+                                    <div className="image">
+                                        <img src={book.image} alt={book.title} />
                                     </div>
-                                    <div className="stars">
-                                        <i className="fas fa-star"></i>
-                                        <i className="fas fa-star"></i>
-                                        <i className="fas fa-star"></i>
-                                        <i className="fas fa-star"></i>
-                                        <i className="fas fa-star-half-alt"></i>
+                                    <div className="content">
+                                        <h3>{book.title}</h3>
+                                        <div className="price">
+                                            ${book.price.toFixed(2)}
+                                        </div>
+                                        <div className="stars">
+                                            <i className="fas fa-star"></i>
+                                            <i className="fas fa-star"></i>
+                                            <i className="fas fa-star"></i>
+                                            <i className="fas fa-star"></i>
+                                            <i className="fas fa-star-half-alt"></i>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleAddToCart(book)} 
+                                            className="btn"
+                                        >
+                                            Add to Cart
+                                        </button>
                                     </div>
-                                    <a href="#" className="btn">Add to Cart</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Book Card 2 */}
-                        <div className="swiper-slide">
-                            <div className="book-card">
-                                <div className="image">
-                                    <img src="/images/book2.jpg" alt="Featured Book 2" />
-                                </div>
-                                <div className="content">
-                                    <h3>Book Title 2</h3>
-                                    <div className="price">
-                                        $12.99 <span>$18.99</span>
-                                    </div>
-                                    <div className="stars">
-                                        <i className="fas fa-star"></i>
-                                        <i className="fas fa-star"></i>
-                                        <i className="fas fa-star"></i>
-                                        <i className="fas fa-star-half-alt"></i>
-                                        <i className="far fa-star"></i>
-                                    </div>
-                                    <a href="#" className="btn">Add to Cart</a>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Additional featured books */}
+                        ))}
                     </div>
                     <div className="swiper-button-next"></div>
                     <div className="swiper-button-prev"></div>

@@ -1,7 +1,25 @@
 import React from 'react';
+import { useCart } from '../contexts/CartContext';
+import { Link } from 'react-router-dom';
 
 const ShoppingCart = ({ isOpen, onClose }) => {
+    const { 
+        cartItems, 
+        removeFromCart, 
+        updateQuantity, 
+        getCartTotal,
+        getSubtotal,
+        calculateShipping,
+        shippingMethod,
+        setShippingMethod,
+        shippingRates
+    } = useCart();
+
     if (!isOpen) return null;
+
+    const subtotal = getSubtotal();
+    const shipping = calculateShipping();
+    const total = getCartTotal();
 
     return (
         <div className="shopping-cart-container">
@@ -13,30 +31,66 @@ const ShoppingCart = ({ isOpen, onClose }) => {
                     </button>
                 </div>
                 <div className="cart-items">
-                    {/* Sample items - you can modify these */}
-                    <div className="cart-item">
-                        <img src="/images/book1.jpg" alt="Book 1" />
-                        <div className="item-details">
-                            <h4>Book Title 1</h4>
-                            <p className="price">$15.99</p>
-                            <div className="quantity">
-                                <button>-</button>
-                                <span>1</span>
-                                <button>+</button>
+                    {cartItems.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '20px' }}>
+                            <p>Your cart is empty</p>
+                        </div>
+                    ) : (
+                        cartItems.map((item) => (
+                            <div key={item.id} className="cart-item">
+                                <img src={item.image} alt={item.title} />
+                                <div className="item-details">
+                                    <h4>{item.title}</h4>
+                                    <p className="price">${item.price.toFixed(2)}</p>
+                                    <div className="quantity">
+                                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                                        <span>{item.quantity}</span>
+                                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                                    </div>
+                                </div>
+                                <button 
+                                    className="remove-btn"
+                                    onClick={() => removeFromCart(item.id)}
+                                >
+                                    <i className="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
+                {cartItems.length > 0 && (
+                    <div className="cart-footer">
+                        <div className="shipping-options">
+                            <h4>Shipping Method</h4>
+                            <select 
+                                value={shippingMethod} 
+                                onChange={(e) => setShippingMethod(e.target.value)}
+                                className="shipping-select"
+                            >
+                                <option value="standard">Standard Shipping (2-5 days)</option>
+                                <option value="express">Express Shipping (1-2 days)</option>
+                                <option value="overnight">Overnight Shipping</option>
+                            </select>
+                        </div>
+                        <div className="price-summary">
+                            <div className="subtotal">
+                                <span>Subtotal:</span>
+                                <span>${subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="shipping">
+                                <span>Shipping:</span>
+                                <span>${shipping.toFixed(2)}</span>
+                            </div>
+                            <div className="total">
+                                <span>Total:</span>
+                                <span>${total.toFixed(2)}</span>
                             </div>
                         </div>
-                        <button className="remove-btn">
-                            <i className="fas fa-trash"></i>
-                        </button>
+                        <Link to="/checkout" className="btn checkout-btn" onClick={onClose}>
+                            Proceed to Checkout
+                        </Link>
                     </div>
-                </div>
-                <div className="cart-footer">
-                    <div className="total">
-                        <span>Total:</span>
-                        <span>$15.99</span>
-                    </div>
-                    <button className="btn checkout-btn">Checkout</button>
-                </div>
+                )}
             </div>
         </div>
     );

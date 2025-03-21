@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './productpage.css';
+import { useCart } from '../../contexts/CartContext';
+import ShoppingCart from '../../components/ShoppingCart';
 
 const ProductPage = () => {
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const { addToCart } = useCart();
     const [books] = useState([
         { id: 1, title: 'Fight Club', author: 'Chuck Palahniuk', type: 'Fiction', price: 19.99, image: '/images/book1.jpg' },
         { id: 2, title: 'Snuff', author: 'Chuck Palahniuk', type: 'Dram', price: 29.99, image: '/images/book2.jpg' },
         { id: 3, title: 'Invisible Monsters', author: 'Chuck Palahniuk', type: 'Fiction', price: 15.99, image: '/images/book3.jpg' },
         { id: 4, title: 'Choke', author: 'Chuck Palahniuk', type: 'Mystery', price: 24.99, image: '/images/book4.jpg' },
     ]);
-
 
     // States for filtering, sorting, and search.
     const [selectedType, setSelectedType] = useState('');
@@ -36,6 +39,12 @@ const ProductPage = () => {
     // Get unique types for the type filter.
     const types = [...new Set(books.map((book) => book.type))];
 
+    const handleAddToCart = (book) => {
+        addToCart(book);
+        // Optional: Show a confirmation message or open the cart
+        setIsCartOpen(true);
+    };
+
     return (
         <>
             {/* Header Section (same as Homepage) */}
@@ -50,8 +59,11 @@ const ProductPage = () => {
                     </form>
                     <div className="icons">
                         <div id="search-btn" className="fas fa-search"></div>
-                        <a href="#" className="fas fa-heart"></a>
-                        <a href="#" className="fas fa-shopping-cart"></a>
+                        <Link to="/favorites" className="fas fa-heart"></Link>
+                        <div 
+                            className="fas fa-shopping-cart"
+                            onClick={() => setIsCartOpen(true)}
+                        ></div>
                         <div id="login-btn" className="fas fa-user"></div>
                     </div>
                 </section>
@@ -111,11 +123,18 @@ const ProductPage = () => {
                             <p>Author: {book.author}</p>
                             <p>Type: {book.type}</p>
                             <p className="price">Price: ${book.price.toFixed(2)}</p>
-                            <a href="#" className="btn">Add to Cart</a>
+                            <button 
+                                className="btn"
+                                onClick={() => handleAddToCart(book)}
+                            >
+                                Add to Cart
+                            </button>
                         </div>
                     ))}
                 </div>
             </div>
+
+            <ShoppingCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         </>
     );
 };
