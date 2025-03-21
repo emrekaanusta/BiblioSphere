@@ -129,7 +129,9 @@ const ProductPage = () => {
                     {filteredBooks.map((book) => (
                         <div className="book-item" key={book.id}>
                             <div className="book-image-container">
-                                <img src={book.image} alt={book.title} className="book-image" />
+                                <Link to={`/book/${book.id}`}>
+                                    <img src={book.image} alt={book.title} className="book-image" />
+                                </Link>
                                 <button
                                     className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
                                     onClick={() => handleToggleFavorite(book)}
@@ -137,7 +139,9 @@ const ProductPage = () => {
                                     <i className="fas fa-heart"></i>
                                 </button>
                             </div>
-                            <h3>{book.title}</h3>
+                            <Link to={`/book/${book.id}`} className="book-title">
+                                <h3>{book.title}</h3>
+                            </Link>
                             <p>Author: {book.author}</p>
                             <p>Type: {book.type}</p>
                             <p className="price">Price: ${book.price.toFixed(2)}</p>
