@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFavorites } from '../contexts/FavoritesContext';
 import './FavoritesList.css';
@@ -7,7 +7,25 @@ const FavoritesList = () => {
     const { favorites, isFavoritesOpen, removeFromFavorites, setIsFavoritesOpen } = useFavorites();
     const navigate = useNavigate();
 
+    // Close favorites list when pressing Escape key
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                setIsFavoritesOpen(false);
+            }
+        };
+
+        if (isFavoritesOpen) {
+            window.addEventListener('keydown', handleEscape);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleEscape);
+        };
+    }, [isFavoritesOpen, setIsFavoritesOpen]);
+
     const handleViewAllFavorites = () => {
+        setIsFavoritesOpen(false);
         navigate('/favorites');
     };
 
@@ -28,11 +46,19 @@ const FavoritesList = () => {
                     {favorites.length > 0 ? (
                         favorites.map((book) => (
                             <div key={book.id} className="favorite-item">
-                                <Link to={`/book/${book.id}`} className="book-image-link">
+                                <Link 
+                                    to={`/book/${book.id}`} 
+                                    className="book-image-link"
+                                    onClick={() => setIsFavoritesOpen(false)}
+                                >
                                     <img src={book.image} alt={book.title} className="favorite-item-image" />
                                 </Link>
                                 <div className="favorite-item-details">
-                                    <Link to={`/book/${book.id}`} className="book-title">
+                                    <Link 
+                                        to={`/book/${book.id}`} 
+                                        className="book-title"
+                                        onClick={() => setIsFavoritesOpen(false)}
+                                    >
                                         <h3>{book.title}</h3>
                                     </Link>
                                     <p>${book.price}</p>
@@ -40,6 +66,7 @@ const FavoritesList = () => {
                                         onClick={() => removeFromFavorites(book.id)} 
                                         className="remove-btn"
                                     >
+                                        <i className="fas fa-trash-alt"></i>
                                         Remove
                                     </button>
                                 </div>
