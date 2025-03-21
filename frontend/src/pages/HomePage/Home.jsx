@@ -5,6 +5,7 @@ import ShoppingCart from '../../components/ShoppingCart';
 import Favorites from '../../components/Favorites';
 import ProfileDropdown from '../../components/ProfileDropdown';
 import { useCart } from '../../contexts/CartContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
 const Homepage = () => {
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -12,6 +13,7 @@ const Homepage = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef(null);
     const { addToCart } = useCart();
+    const { addToFavorites, removeFromFavorites, isBookFavorite } = useFavorites();
 
     const featuredBooks = [
         { id: 1, title: 'Fight Club', author: 'Chuck Palahniuk', price: 15.99, image: '/images/book1.jpg' },
@@ -56,6 +58,14 @@ const Homepage = () => {
     const handleAddToCart = (book) => {
         addToCart(book);
         setIsCartOpen(true); // Show cart after adding item
+    };
+
+    const handleToggleFavorite = (book) => {
+        if (isBookFavorite(book.id)) {
+            removeFromFavorites(book.id);
+        } else {
+            addToFavorites(book);
+        }
     };
 
     return (
@@ -198,6 +208,15 @@ const Homepage = () => {
                                 <div className="book-card">
                                     <div className="image">
                                         <img src={book.image} alt={book.title} />
+                                        <button 
+                                            className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleToggleFavorite(book);
+                                            }}
+                                        >
+                                            <i className="fas fa-heart"></i>
+                                        </button>
                                     </div>
                                     <div className="content">
                                         <h3>{book.title}</h3>
