@@ -151,30 +151,6 @@
   font-size: 1.2rem;
 }
 
-.book-image-link {
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.book-image-link:hover {
-  transform: scale(1.05);
-}
-
-.book-title {
-  text-decoration: none;
-  color: inherit;
-  transition: color 0.3s ease;
-}
-
-.book-title:hover {
-  color: #27ae60;
-}
-
-.book-title h3 {
-  margin: 0;
-  font-size: 1rem;
-}
-
 @media (max-width: 480px) {
   .favorites-panel {
     width: 100%;

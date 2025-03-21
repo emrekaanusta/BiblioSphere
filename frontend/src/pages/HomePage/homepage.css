@@ -988,17 +988,3 @@ section{
 .favorite-btn.active:hover {
     color: #ff6666;
 }
-
-.book-title {
-    text-decoration: none;
-    color: inherit;
-    transition: color 0.3s ease;
-}
-
-.book-title:hover {
-    color: #27ae60;
-}
-
-.book-title h3 {
-    margin: 0.5rem 0;
-}
