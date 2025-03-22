@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
@@ -8,19 +8,20 @@ const Header = () => {
   const { toggleCart, cart } = useCart();
   const { toggleFavorites, favorites } = useFavorites();
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
-  const cartItemCount = cart ? cart.reduce((total, item) => total + item.quantity, 0) : 0;
-  const favoritesCount = favorites ? favorites.length : 0;
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Token in Header:", token); // <-- debug
+    setIsLoggedIn(!!token);
+  }, []);
 
-  const handleCartClick = (e) => {
-    e.preventDefault();
-    toggleCart();
-  };
-
-  const handleFavoritesClick = (e) => {
-    e.preventDefault();
-    toggleFavorites();
+  const handleSignOut = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setShowAuthDropdown(false);
+    navigate('/'); // Redirect as needed after sign-out
   };
 
   const handleAuthClick = () => {
@@ -32,8 +33,21 @@ const Header = () => {
     navigate(path);
   };
 
+  const handleCartClick = (e) => {
+    e.preventDefault();
+    toggleCart();
+  };
+
+  const handleFavoritesClick = (e) => {
+    e.preventDefault();
+    toggleFavorites();
+  };
+
+  const cartItemCount = cart ? cart.reduce((total, item) => total + item.quantity, 0) : 0;
+  const favoritesCount = favorites ? favorites.length : 0;
+
   // Close dropdown when clicking outside
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.auth-container')) {
         setShowAuthDropdown(false);
@@ -65,14 +79,23 @@ const Header = () => {
             </button>
             {showAuthDropdown && (
               <div className="auth-dropdown">
-                <button onClick={() => handleAuthOption('/login')}>
-                  <i className="fas fa-sign-in-alt"></i>
-                  Login
-                </button>
-                <button onClick={() => handleAuthOption('/register')}>
-                  <i className="fas fa-user-plus"></i>
-                  Register
-                </button>
+                {isLoggedIn ? (
+                  <button onClick={handleSignOut}>
+                    <i className="fas fa-sign-out-alt"></i>
+                    Sign Out
+                  </button>
+                ) : (
+                  <>
+                    <button onClick={() => handleAuthOption('/login')}>
+                      <i className="fas fa-sign-in-alt"></i>
+                      Login
+                    </button>
+                    <button onClick={() => handleAuthOption('/register')}>
+                      <i className="fas fa-user-plus"></i>
+                      Register
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -90,4 +113,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

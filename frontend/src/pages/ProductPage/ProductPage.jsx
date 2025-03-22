@@ -57,32 +57,7 @@ const ProductPage = () => {
 
     return (
         <>
-            {/* Header Section (same as Homepage) */}
-            <header className="header">
-                <section className="header-1">
-                    <Link to="/" className="logo">
-                        <i className="fas fa-book"></i> BiblioSphere
-                    </Link>
-                    <form action="" className="search-form">
-                        <input type="search" placeholder="search here..." id="search-box" />
-                        <label htmlFor="search-box" className="fas fa-search"></label>
-                    </form>
-                    <div className="icons">
-                        <div id="search-btn" className="fas fa-search"></div>
-                        <Link to="/favorites" className="fas fa-heart"></Link>
-                        <div 
-                            className="fas fa-shopping-cart"
-                            onClick={() => setIsCartOpen(true)}
-                        ></div>
-                        <div id="login-btn" className="fas fa-user"></div>
-                    </div>
-                </section>
-                <div className="header-2">
-                    <nav className="navbar">
-                        <Link to="/">home</Link>
-                    </nav>
-                </div>
-            </header>
+           
 
             {/* Product Page Content */}
             <div className="product-page">

@@ -42,4 +42,25 @@ public class UserController {
 
 
 
+
+
+
+
+    @PostMapping("/wishlist/add")
+    public ResponseEntity<String> addToWishlist(@RequestBody Map<String, Long> payload) {
+        Long productId = payload.get("productId");
+        // Get current user (e.g., via a custom method that extracts user info from token)
+        User currentUser = userService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
+        }
+        userService.addProductToWishlist(currentUser, productId);
+        return ResponseEntity.ok("Product added to wishlist.");
+    }
+
+
+
+
+
+
 }
