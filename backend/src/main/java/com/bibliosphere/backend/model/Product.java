@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,4 +23,6 @@ public class Product {
     private int pages;
     private String language;
     private String publisher;
+    private float rating;
+    private List<String> review;
 }
