@@ -205,7 +205,9 @@ const Homepage = () => {
               <div key={book.id} className="swiper-slide">
                 <div className="book-card">
                   <div className="image">
-                    <img src={book.image} alt={book.title} />
+                    <Link to={`/book/${book.id}`}>
+                      <img src={book.image} alt={book.title} />
+                    </Link>
                     <button 
                       className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
                       onClick={(e) => {
@@ -217,7 +219,9 @@ const Homepage = () => {
                     </button>
                   </div>
                   <div className="content">
-                    <h3>{book.title}</h3>
+                    <Link to={`/book/${book.id}`} className="book-title">
+                      <h3>{book.title}</h3>
+                    </Link>
                     <div className="price">${book.price.toFixed(2)}</div>
                     <div className="stars">
                       <i className="fas fa-star"></i>
