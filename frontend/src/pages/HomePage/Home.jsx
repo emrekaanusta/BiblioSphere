@@ -196,6 +196,37 @@ const Homepage = () => {
         </div>
       </section>
 
+      {/* Categories Section */}
+      <section className="categories" id="categories">
+        <h1 className="heading"><span>Book Categories</span></h1>
+        <div className="categories-container">
+          <Link to="/category/fiction" className="category-btn">
+            <i className="fas fa-book"></i>
+            <span>Fiction</span>
+          </Link>
+          <Link to="/category/drama" className="category-btn">
+            <i className="fas fa-theater-masks"></i>
+            <span>Drama</span>
+          </Link>
+          <Link to="/category/mystery" className="category-btn">
+            <i className="fas fa-search"></i>
+            <span>Mystery</span>
+          </Link>
+          <Link to="/category/romance" className="category-btn">
+            <i className="fas fa-heart"></i>
+            <span>Romance</span>
+          </Link>
+          <Link to="/category/science-fiction" className="category-btn">
+            <i className="fas fa-rocket"></i>
+            <span>Science Fiction</span>
+          </Link>
+          <Link to="/category/fantasy" className="category-btn">
+            <i className="fas fa-dragon"></i>
+            <span>Fantasy</span>
+          </Link>
+        </div>
+      </section>
+
       {/* Featured Section */}
       <section className="featured" id="featured">
         <h1 className="heading"><span>Featured Books</span></h1>
