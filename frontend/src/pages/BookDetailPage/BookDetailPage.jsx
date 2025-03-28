@@ -1,11 +1,12 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import './BookDetailPage.css';
 
 const BookDetailPage = () => {
     const { bookId } = useParams();
+    const navigate = useNavigate();
     const { addToCart } = useCart();
     const { addToFavorites, removeFromFavorites, isBookFavorite } = useFavorites();
 
@@ -100,6 +101,9 @@ const BookDetailPage = () => {
             </header>
 
             <div className="book-detail-container">
+                <button className="back-button" onClick={() => navigate(-1)}>
+                    <i className="fas fa-arrow-left"></i>
+                </button>
                 <div className="book-image-section">
                     <img src={book.image} alt={book.title} className="book-cover" />
                     <div className="book-actions">
