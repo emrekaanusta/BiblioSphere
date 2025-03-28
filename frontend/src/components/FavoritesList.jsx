@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './FavoritesList.css';
 
 const FavoritesList = () => {
@@ -30,9 +30,13 @@ const FavoritesList = () => {
                     {favorites.length > 0 ? (
                         favorites.map((book) => (
                             <div key={book.id} className="favorite-item">
-                                <img src={book.image} alt={book.title} className="favorite-item-image" />
+                                <Link to={`/book/${book.id}`}>
+                                    <img src={book.image} alt={book.title} className="favorite-item-image" />
+                                </Link>
                                 <div className="favorite-item-details">
-                                    <h3>{book.title}</h3>
+                                    <Link to={`/book/${book.id}`} className="book-title">
+                                        <h3>{book.title}</h3>
+                                    </Link>
                                     <p>${book.price}</p>
                                     <button 
                                         onClick={() => removeFromFavorites(book.id)} 
