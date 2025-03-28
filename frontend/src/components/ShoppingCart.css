@@ -140,6 +140,27 @@
   color: #666;
 }
 
+.free-shipping-message {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  text-align: center;
+  border: 1px solid #a5d6a7;
+}
+
+.free-shipping-notice {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .price-summary {
   margin: 1rem 0;
 }

@@ -17,7 +17,8 @@ const ShoppingCart = () => {
     const navigate = useNavigate();
 
     const subtotal = getCartTotal();
-    const shippingCost = shippingMethod === 'express' ? 15 : shippingMethod === 'standard' ? 5 : 0;
+    const isFreeShipping = subtotal >= 100;
+    const shippingCost = isFreeShipping ? 0 : (shippingMethod === 'express' ? 15 : shippingMethod === 'standard' ? 5 : 0);
     const total = subtotal + shippingCost;
 
     const handleCheckout = () => {
@@ -60,28 +61,39 @@ const ShoppingCart = () => {
                     <div className="cart-footer">
                         <div className="shipping-options">
                             <h3>Shipping Method</h3>
-                            <div className="shipping-option">
-                                <input
-                                    type="radio"
-                                    id="standard"
-                                    name="shipping"
-                                    value="standard"
-                                    checked={shippingMethod === 'standard'}
-                                    onChange={(e) => setShippingMethod(e.target.value)}
-                                />
-                                <label htmlFor="standard">Standard Shipping ($5.00)</label>
-                            </div>
-                            <div className="shipping-option">
-                                <input
-                                    type="radio"
-                                    id="express"
-                                    name="shipping"
-                                    value="express"
-                                    checked={shippingMethod === 'express'}
-                                    onChange={(e) => setShippingMethod(e.target.value)}
-                                />
-                                <label htmlFor="express">Express Shipping ($15.00)</label>
-                            </div>
+                            {isFreeShipping ? (
+                                <div className="free-shipping-message">
+                                    Congratulations! You've qualified for FREE shipping!
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="shipping-option">
+                                        <input
+                                            type="radio"
+                                            id="standard"
+                                            name="shipping"
+                                            value="standard"
+                                            checked={shippingMethod === 'standard'}
+                                            onChange={(e) => setShippingMethod(e.target.value)}
+                                        />
+                                        <label htmlFor="standard">Standard Shipping ($5.00)</label>
+                                    </div>
+                                    <div className="shipping-option">
+                                        <input
+                                            type="radio"
+                                            id="express"
+                                            name="shipping"
+                                            value="express"
+                                            checked={shippingMethod === 'express'}
+                                            onChange={(e) => setShippingMethod(e.target.value)}
+                                        />
+                                        <label htmlFor="express">Express Shipping ($15.00)</label>
+                                    </div>
+                                    <div className="free-shipping-notice">
+                                        Add ${(100 - subtotal).toFixed(2)} more to get FREE shipping!
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         <div className="price-summary">
@@ -91,7 +103,7 @@ const ShoppingCart = () => {
                             </div>
                             <div className="summary-row">
                                 <span>Shipping:</span>
-                                <span>${shippingCost.toFixed(2)}</span>
+                                <span>{isFreeShipping ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span>
                             </div>
                             <div className="summary-row total">
                                 <span>Total:</span>
