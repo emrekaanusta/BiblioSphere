@@ -18,23 +18,92 @@ const Checkout = () => {
     cvv: ''
   });
 
+  const [errors, setErrors] = useState({});
+
+  const validateCardNumber = (number) => {
+    // Remove spaces and non-numeric characters
+    const cleanNumber = number.replace(/\s/g, '').replace(/\D/g, '');
+    return cleanNumber.length === 16;
+  };
+
+  const validateCVV = (cvv) => {
+    return /^\d{3}$/.test(cvv);
+  };
+
+  const validateZipCode = (zip) => {
+    return /^\d{5}(-\d{4})?$/.test(zip);
+  };
+
+  const validateExpiryDate = (date) => {
+    return /^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(date);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let formattedValue = value;
+
+    // Format card number with spaces
+    if (name === 'cardNumber') {
+      formattedValue = value.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim();
+    }
+
+    // Format expiry date
+    if (name === 'expiryDate') {
+      formattedValue = value.replace(/\D/g, '');
+      if (formattedValue.length >= 2) {
+        formattedValue = formattedValue.slice(0, 2) + '/' + formattedValue.slice(2);
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: formattedValue
     }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!validateCardNumber(formData.cardNumber)) {
+      newErrors.cardNumber = 'Please enter a valid 16-digit card number';
+    }
+
+    if (!validateCVV(formData.cvv)) {
+      newErrors.cvv = 'Please enter a valid 3-digit CVV';
+    }
+
+    if (!validateZipCode(formData.zipCode)) {
+      newErrors.zipCode = 'Please enter a valid 5-digit ZIP code';
+    }
+
+    if (!validateExpiryDate(formData.expiryDate)) {
+      newErrors.expiryDate = 'Please enter a valid expiry date (MM/YY)';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically process the payment and create the order
-    alert('Order placed successfully!');
-    navigate('/');
+    if (validateForm()) {
+      // Here you would typically process the payment and create the order
+      alert('Order placed successfully!');
+      navigate('/');
+    }
   };
 
   const subtotal = getCartTotal();
-  const shippingCost = shippingMethod === 'express' ? 15 : shippingMethod === 'standard' ? 5 : 0;
+  const isFreeShipping = subtotal >= 100;
+  const shippingCost = isFreeShipping ? 0 : (shippingMethod === 'express' ? 15 : shippingMethod === 'standard' ? 5 : 0);
   const total = subtotal + shippingCost;
 
   return (
@@ -66,8 +135,13 @@ const Checkout = () => {
             </div>
             <div className="summary-row">
               <span>Shipping:</span>
-              <span>${shippingCost.toFixed(2)}</span>
+              <span>{isFreeShipping ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span>
             </div>
+            {!isFreeShipping && (
+              <div className="free-shipping-notice">
+                Add ${(100 - subtotal).toFixed(2)} more to get FREE shipping!
+              </div>
+            )}
             <div className="summary-row total">
               <span>Total:</span>
               <span>${total.toFixed(2)}</span>
@@ -121,71 +195,94 @@ const Checkout = () => {
                 onChange={handleInputChange}
                 required
               />
-              <input
-                type="text"
-                name="zipCode"
-                placeholder="ZIP Code"
-                value={formData.zipCode}
-                onChange={handleInputChange}
-                required
-              />
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="zipCode"
+                  placeholder="ZIP Code"
+                  value={formData.zipCode}
+                  onChange={handleInputChange}
+                  required
+                />
+                {errors.zipCode && <span className="error-message">{errors.zipCode}</span>}
+              </div>
             </div>
           </div>
 
           <div className="form-section">
             <h2>Payment Information</h2>
-            <input
-              type="text"
-              name="cardNumber"
-              placeholder="Card Number"
-              value={formData.cardNumber}
-              onChange={handleInputChange}
-              required
-            />
+            <div className="input-group">
+              <input
+                type="text"
+                name="cardNumber"
+                placeholder="Card Number"
+                value={formData.cardNumber}
+                onChange={handleInputChange}
+                maxLength="19"
+                required
+              />
+              {errors.cardNumber && <span className="error-message">{errors.cardNumber}</span>}
+            </div>
             <div className="form-row">
-              <input
-                type="text"
-                name="expiryDate"
-                placeholder="MM/YY"
-                value={formData.expiryDate}
-                onChange={handleInputChange}
-                required
-              />
-              <input
-                type="text"
-                name="cvv"
-                placeholder="CVV"
-                value={formData.cvv}
-                onChange={handleInputChange}
-                required
-              />
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="expiryDate"
+                  placeholder="MM/YY"
+                  value={formData.expiryDate}
+                  onChange={handleInputChange}
+                  maxLength="5"
+                  required
+                />
+                {errors.expiryDate && <span className="error-message">{errors.expiryDate}</span>}
+              </div>
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="cvv"
+                  placeholder="CVV"
+                  value={formData.cvv}
+                  onChange={handleInputChange}
+                  maxLength="3"
+                  required
+                />
+                {errors.cvv && <span className="error-message">{errors.cvv}</span>}
+              </div>
             </div>
           </div>
 
           <div className="shipping-options">
             <h2>Shipping Method</h2>
-            <div className="shipping-option">
-              <input
-                type="radio"
-                id="standard"
-                name="shipping"
-                value="standard"
-                checked={shippingMethod === 'standard'}
-                onChange={(e) => setShippingMethod(e.target.value)}
-              />
-              <label htmlFor="standard">Standard Shipping ($5.00) - 5-7 business days</label>
-            </div>
-            <div className="shipping-option">
-              <input
-                type="radio"
-                id="express"
-                name="shipping"
-                value="express"
-                checked={shippingMethod === 'express'}
-                onChange={(e) => setShippingMethod(e.target.value)}
-              />
-              <label htmlFor="express">Express Shipping ($15.00) - 1-2 business days</label>
-            </div>
+            {isFreeShipping ? (
+              <div className="free-shipping-message">
+                Congratulations! You've qualified for FREE shipping!
+              </div>
+            ) : (
+              <>
+                <div className="shipping-option">
+                  <input
+                    type="radio"
+                    id="standard"
+                    name="shipping"
+                    value="standard"
+                    checked={shippingMethod === 'standard'}
+                    onChange={(e) => setShippingMethod(e.target.value)}
+                  />
+                  <label htmlFor="standard">Standard Shipping ($5.00) - 5-7 business days</label>
+                </div>
+                <div className="shipping-option">
+                  <input
+                    type="radio"
+                    id="express"
+                    name="shipping"
+                    value="express"
+                    checked={shippingMethod === 'express'}
+                    onChange={(e) => setShippingMethod(e.target.value)}
+                  />
+                  <label htmlFor="express">Express Shipping ($15.00) - 1-2 business days</label>
+                </div>
+              </>
+            )}
           </div>
 
           <button type="submit" className="place-order-btn">Place Order</button>

@@ -196,6 +196,37 @@ const Homepage = () => {
         </div>
       </section>
 
+      {/* Categories Section */}
+      <section className="categories" id="categories">
+        <h1 className="heading"><span>Book Categories</span></h1>
+        <div className="categories-container">
+          <Link to="/category/fiction" className="category-btn">
+            <i className="fas fa-book"></i>
+            <span>Fiction</span>
+          </Link>
+          <Link to="/category/drama" className="category-btn">
+            <i className="fas fa-theater-masks"></i>
+            <span>Drama</span>
+          </Link>
+          <Link to="/category/mystery" className="category-btn">
+            <i className="fas fa-search"></i>
+            <span>Mystery</span>
+          </Link>
+          <Link to="/category/romance" className="category-btn">
+            <i className="fas fa-heart"></i>
+            <span>Romance</span>
+          </Link>
+          <Link to="/category/science-fiction" className="category-btn">
+            <i className="fas fa-rocket"></i>
+            <span>Science Fiction</span>
+          </Link>
+          <Link to="/category/fantasy" className="category-btn">
+            <i className="fas fa-dragon"></i>
+            <span>Fantasy</span>
+          </Link>
+        </div>
+      </section>
+
       {/* Featured Section */}
       <section className="featured" id="featured">
         <h1 className="heading"><span>Featured Books</span></h1>
@@ -205,7 +236,9 @@ const Homepage = () => {
               <div key={book.id} className="swiper-slide">
                 <div className="book-card">
                   <div className="image">
-                    <img src={book.image} alt={book.title} />
+                    <Link to={`/book/${book.id}`}>
+                      <img src={book.image} alt={book.title} />
+                    </Link>
                     <button 
                       className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
                       onClick={(e) => {
@@ -217,7 +250,9 @@ const Homepage = () => {
                     </button>
                   </div>
                   <div className="content">
-                    <h3>{book.title}</h3>
+                    <Link to={`/book/${book.id}`} className="book-title">
+                      <h3>{book.title}</h3>
+                    </Link>
                     <div className="price">${book.price.toFixed(2)}</div>
                     <div className="stars">
                       <i className="fas fa-star"></i>

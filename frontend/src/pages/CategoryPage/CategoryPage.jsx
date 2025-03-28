@@ -1,17 +1,15 @@
 import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
-import './BookDetailPage.css';
+import './CategoryPage.css';
 
-const BookDetailPage = () => {
-    const { bookId } = useParams();
-    const navigate = useNavigate();
+const CategoryPage = () => {
+    const { category } = useParams();
     const { addToCart } = useCart();
     const { addToFavorites, removeFromFavorites, isBookFavorite } = useFavorites();
 
     // This would typically come from an API or context
-    // For now, we'll use the same data structure as in ProductPage
     const books = [
         {
             id: 1,
@@ -71,13 +69,13 @@ const BookDetailPage = () => {
         }
     ];
 
-    const book = books.find(b => b.id === parseInt(bookId)) || books[0];
+    const categoryBooks = books.filter(book => book.type.toLowerCase() === category.toLowerCase());
 
-    const handleAddToCart = () => {
+    const handleAddToCart = (book) => {
         addToCart(book);
     };
 
-    const handleToggleFavorite = () => {
+    const handleToggleFavorite = (book) => {
         if (isBookFavorite(book.id)) {
             removeFromFavorites(book.id);
         } else {
@@ -86,7 +84,7 @@ const BookDetailPage = () => {
     };
 
     return (
-        <div className="book-detail-page">
+        <div className="category-page">
             <header className="header">
                 <section className="header-1">
                     <Link to="/" className="logo">
@@ -100,73 +98,47 @@ const BookDetailPage = () => {
                 </section>
             </header>
 
-            <div className="book-detail-container">
-                <button className="back-button" onClick={() => navigate(-1)}>
-                    <i className="fas fa-arrow-left"></i>
-                </button>
-                <div className="book-image-section">
-                    <img src={book.image} alt={book.title} className="book-cover" />
-                    <div className="book-actions">
-                        <button 
-                            className="add-to-cart-btn"
-                            onClick={handleAddToCart}
-                        >
-                            Add to Cart - ${book.price}
-                        </button>
-                        <button
-                            className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
-                            onClick={handleToggleFavorite}
-                        >
-                            <i className="fas fa-heart"></i>
-                        </button>
-                    </div>
+            <div className="category-container">
+                <div className="category-header">
+                    <Link to="/" className="back-button">
+                        <i className="fas fa-arrow-left"></i> Back to Home
+                    </Link>
+                    <h1>{category} Books</h1>
                 </div>
 
-                <div className="book-info-section">
-                    <h1>{book.title}</h1>
-                    <h2>by {book.author}</h2>
-                    <div className="book-meta">
-                        <span><i className="fas fa-bookmark"></i> {book.type}</span>
-                        <span><i className="fas fa-calendar"></i> {book.publishYear}</span>
-                        <span><i className="fas fa-language"></i> {book.language}</span>
-                    </div>
-                    
-                    <div className="book-description">
-                        <h3>About this book</h3>
-                        <p>{book.description}</p>
-                    </div>
-
-                    <div className="book-details">
-                        <h3>Product Details</h3>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td>ISBN:</td>
-                                    <td>{book.isbn}</td>
-                                </tr>
-                                <tr>
-                                    <td>Publisher:</td>
-                                    <td>{book.publisher}</td>
-                                </tr>
-                                <tr>
-                                    <td>Publication Year:</td>
-                                    <td>{book.publishYear}</td>
-                                </tr>
-                                <tr>
-                                    <td>Pages:</td>
-                                    <td>{book.pages}</td>
-                                </tr>
-                                <tr>
-                                    <td>Language:</td>
-                                    <td>{book.language}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div className="category-books">
+                    {categoryBooks.map(book => (
+                        <div key={book.id} className="book-card">
+                            <div className="book-image-container">
+                                <Link to={`/book/${book.id}`}>
+                                    <img src={book.image} alt={book.title} className="book-image" />
+                                </Link>
+                                <button
+                                    className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
+                                    onClick={() => handleToggleFavorite(book)}
+                                >
+                                    <i className="fas fa-heart"></i>
+                                </button>
+                            </div>
+                            <div className="book-info">
+                                <Link to={`/book/${book.id}`} className="book-title">
+                                    <h3>{book.title}</h3>
+                                </Link>
+                                <p className="author">by {book.author}</p>
+                                <p className="price">${book.price.toFixed(2)}</p>
+                                <button 
+                                    onClick={() => handleAddToCart(book)}
+                                    className="add-to-cart-btn"
+                                >
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
     );
 };
 
-export default BookDetailPage; 
+export default CategoryPage; 

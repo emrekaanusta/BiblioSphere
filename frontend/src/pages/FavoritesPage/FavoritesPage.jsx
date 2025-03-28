@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import './FavoritesPage.css';
@@ -23,9 +24,13 @@ const FavoritesPage = () => {
                 <div className="favorites-grid">
                     {favorites.map((book) => (
                         <div key={book.id} className="favorite-book-card">
-                            <img src={book.image} alt={book.title} className="book-image" />
+                            <Link to={`/book/${book.id}`}>
+                                <img src={book.image} alt={book.title} className="book-image" />
+                            </Link>
                             <div className="book-info">
-                                <h3>{book.title}</h3>
+                                <Link to={`/book/${book.id}`} className="book-title">
+                                    <h3>{book.title}</h3>
+                                </Link>
                                 <p className="book-price">${book.price}</p>
                                 <div className="book-actions">
                                     <button 
