@@ -6,22 +6,26 @@ import './Header.css';
 
 const Header = () => {
   const { toggleCart, cart } = useCart();
-  const { toggleFavorites, favorites } = useFavorites();
+  // Destructure favorites + clearFavorites from your context
+  const { toggleFavorites, favorites, clearFavorites } = useFavorites();
+
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("Token in Header:", token); // <-- debug
+    console.log("Token in Header:", token);
     setIsLoggedIn(!!token);
   }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
+    // Call the context method to clear favorites
+    clearFavorites();
     setShowAuthDropdown(false);
-    navigate('/'); // Redirect as needed after sign-out
+    navigate('/');
   };
 
   const handleAuthClick = () => {
@@ -46,14 +50,12 @@ const Header = () => {
   const cartItemCount = cart ? cart.reduce((total, item) => total + item.quantity, 0) : 0;
   const favoritesCount = favorites ? favorites.length : 0;
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.auth-container')) {
         setShowAuthDropdown(false);
       }
     };
-
     document.addEventListener('click', handleClickOutside);
     return () => {
       document.removeEventListener('click', handleClickOutside);

@@ -25,5 +25,5 @@ public class User {
     private String credit_card;
     private List<String> shopping_cart;
     private List<String> orders;
-    private List<String> whishlist;
+    private List<String> wishlist;
 }

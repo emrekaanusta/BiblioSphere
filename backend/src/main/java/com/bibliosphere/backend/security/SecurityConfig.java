@@ -21,19 +21,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Explicitly disable CSRF
+                // Enable CORS (despite deprecation warnings)
+                .cors().and()
+                // Disable CSRF for stateless JWT-based auth
+                .csrf(csrf -> csrf.disable())
+                // No HTTP sessions; everything is stateless
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/register", "/login").permitAll()
+                // Endpoint authorization rules
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/register", "/login", "/favorites/**").permitAll()
                         .anyRequest().authenticated()
                 );
+
+
+
+        // Insert JWT filter before default UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

@@ -18,9 +18,10 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public User loadUserByEmail (String email) {
+    public User loadUserByEmail(String email) {
         return userRepository.findById(email).orElse(null);
     }
+
     public boolean exist(String email) {
         return userRepository.findById(email).isPresent();
     }
@@ -61,18 +62,38 @@ public class UserService {
     }
 
     public boolean passwordCheck(String password) {
-
         char[] specialChars = {'!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '=', '+'};
-
         if (password.length() < 6) {
             return false;
         }
-
-        for(char c : specialChars) {
-            if(password.contains(String.valueOf(c))) {
+        for (char c : specialChars) {
+            if (password.contains(String.valueOf(c))) {
                 return true;
             }
         }
         return false;
+    }
+
+    // Use token to get the user (dummy implementation: token equals email)
+    public User getUserFromToken(String token) {
+        return userRepository.findById(token).orElse(null);
+    }
+
+    public User addToWishlist(User user, String productId) {
+        if (user.getWishlist() == null) {
+            // Initialize if null
+            user.setWishlist(new java.util.ArrayList<>());
+        }
+        if (!user.getWishlist().contains(productId)) {
+            user.getWishlist().add(productId);
+        }
+        return userRepository.save(user);
+    }
+
+    public User removeFromWishlist(User user, String productId) {
+        if (user.getWishlist() != null) {
+            user.getWishlist().remove(productId);
+        }
+        return userRepository.save(user);
     }
 }
