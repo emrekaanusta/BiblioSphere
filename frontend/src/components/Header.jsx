@@ -8,6 +8,7 @@ const Header = () => {
   const { toggleCart, cart } = useCart();
   const { toggleFavorites, favorites } = useFavorites();
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
+  const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
@@ -43,14 +44,22 @@ const Header = () => {
     toggleFavorites();
   };
 
+  const handleCategoryClick = (category) => {
+    setShowCategoriesDropdown(false);
+    navigate(`/category/${category.toLowerCase()}`);
+  };
+
   const cartItemCount = cart ? cart.reduce((total, item) => total + item.quantity, 0) : 0;
   const favoritesCount = favorites ? favorites.length : 0;
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.auth-container')) {
         setShowAuthDropdown(false);
+      }
+      if (!event.target.closest('.categories-container')) {
+        setShowCategoriesDropdown(false);
       }
     };
 
@@ -59,6 +68,15 @@ const Header = () => {
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
+
+  const categories = [
+    { name: 'Fiction', icon: 'fas fa-book' },
+    { name: 'Drama', icon: 'fas fa-theater-masks' },
+    { name: 'Mystery', icon: 'fas fa-search' },
+    { name: 'Romance', icon: 'fas fa-heart' },
+    { name: 'Science Fiction', icon: 'fas fa-rocket' },
+    { name: 'Fantasy', icon: 'fas fa-dragon' }
+  ];
 
   return (
     <header className="header">
@@ -70,6 +88,28 @@ const Header = () => {
         <nav className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/products">Books</Link>
+          <div className="categories-container">
+            <button 
+              className="nav-link categories-button"
+              onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
+            >
+              Categories
+            </button>
+            {showCategoriesDropdown && (
+              <div className="categories-dropdown">
+                {categories.map((category) => (
+                  <button
+                    key={category.name}
+                    className="category-item"
+                    onClick={() => handleCategoryClick(category.name)}
+                  >
+                    <i className={category.icon}></i>
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
 
         <div className="header-actions">
