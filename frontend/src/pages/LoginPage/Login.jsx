@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import "./Login.css"; // Login için CSS
 import Navbar from "../NavigationBar/Navbar";
-import {Link } from "react-router-dom"; // Navbar'ı ekledik
+import { useNavigate, Link } from "react-router-dom";
+
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -18,25 +20,26 @@ const Login = () => {
       body: JSON.stringify({ email, password })
     };
 
-    fetch('http://localhost:8080/login', requestOptions)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Invalid credentials');
-          }
-          return response.text();
-        })
-        .then((token) => {
-          if (token && token.length > 0) {
-            global.token = token;
-            console.log("Success", "Login successful!");
-            //TODO:Loginden sonra hangi sayfaya yönlenecek ?
-          } else {
-            console.log("Error", "Invalid credentials");
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+    fetch("http://localhost:8080/login", requestOptions)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Invalid credentials");
+        }
+        return response.text();  // You expect the token as text
+      })
+      .then((token) => {
+        if (token && token.length > 0) {
+          localStorage.setItem("token", token);
+          console.log("Success", "Login successful!");
+          navigate("/");
+          window.location.reload();
+        } else {
+          console.log("Error", "Invalid credentials");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
   return (
     <div className="page-container">
