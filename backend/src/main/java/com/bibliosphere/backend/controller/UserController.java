@@ -41,7 +41,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/wishlist/add")
+    /*@PostMapping("/wishlist/add")
     public ResponseEntity<String> addToWishlist(@RequestBody Map<String, Long> payload) {
         Long productId = payload.get("productId");
         // Get current user (e.g., via a custom method that extracts user info from token)
@@ -51,11 +51,5 @@ public class UserController {
         }
         userService.addProductToWishlist(currentUser, productId);
         return ResponseEntity.ok("Product added to wishlist.");
-    }
-
-
-
-
-
-
+    }*/
 }
