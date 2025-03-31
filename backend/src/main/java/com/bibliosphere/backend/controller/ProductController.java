@@ -21,6 +21,11 @@ public class ProductController {
     @Autowired
     private ProductRepository productRepository;
 
+    @GetMapping(path ="/api/products")
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
     @PostMapping(path ="/api/products/add",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Product> createProduct(
             @RequestParam("file") MultipartFile file,
@@ -52,10 +57,4 @@ public class ProductController {
 
         return ResponseEntity.ok(productRepository.save(product));
     }
-
-    @GetMapping(path ="/api/products")
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
-
 }
