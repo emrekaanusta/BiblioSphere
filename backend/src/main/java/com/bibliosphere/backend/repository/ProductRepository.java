@@ -1,5 +1,4 @@
 package com.bibliosphere.backend.repository;
-
 import com.bibliosphere.backend.model.Product;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

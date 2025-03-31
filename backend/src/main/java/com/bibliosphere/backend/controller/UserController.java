@@ -41,11 +41,6 @@ public class UserController {
     }
 
 
-
-
-
-
-
     @PostMapping("/wishlist/add")
     public ResponseEntity<String> addToWishlist(@RequestBody Map<String, Long> payload) {
         Long productId = payload.get("productId");
