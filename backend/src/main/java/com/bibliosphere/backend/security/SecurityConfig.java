@@ -20,30 +20,34 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-                // Enable CORS (despite deprecation warnings)
-                .cors().and()
-                // Disable CSRF for stateless JWT-based auth
+                /* ---------- CORS (new style) ---------- */
+                .cors(cors -> {})                    // use defaults; no deprecated .and()
+
+                /* ---------- CSRF ---------- */
                 .csrf(csrf -> csrf.disable())
-                // No HTTP sessions; everything is stateless
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Endpoint authorization rules
+
+                /* ---------- Session policy ---------- */
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                /* ---------- Authorisation rules ---------- */
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/register", "/login", "/favorites/**").permitAll()
+                        .requestMatchers("/api/orders/**").authenticated()
                         .anyRequest().authenticated()
-                );
+                )
 
-
-
-        // Insert JWT filter before default UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                /* ---------- Add JWT filter ---------- */
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-            throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
     }
 }
