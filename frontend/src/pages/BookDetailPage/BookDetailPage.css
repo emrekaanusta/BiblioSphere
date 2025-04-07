@@ -1,0 +1,170 @@
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: translateX(-2px);
+}
+
+.book-detail-page {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.book-detail-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 3rem;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.book-image-section {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+.book-cover {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.book-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.add-to-cart-btn, .favorite-btn {
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.add-to-cart-btn {
+    background-color: #27ae60;
+    color: white;
+}
+
+.add-to-cart-btn:hover {
+    background-color: #219a52;
+}
+
+.favorite-btn {
+    background-color: #f8f9fa;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.favorite-btn:hover {
+    background-color: #e9ecef;
+}
+
+.favorite-btn.active {
+    color: #e74c3c;
+}
+
+.book-info-section h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.book-info-section h2 {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.book-meta {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    color: #666;
+}
+
+.book-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.book-description {
+    margin-bottom: 2rem;
+}
+
+.book-description h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.book-description p {
+    line-height: 1.6;
+    color: #444;
+}
+
+.book-details {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.book-details h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.book-details table {
+    width: 100%;
+}
+
+.book-details td {
+    padding: 0.5rem 0;
+}
+
+.book-details td:first-child {
+    font-weight: 600;
+    color: #666;
+    width: 40%;
+}
+
+@media (max-width: 768px) {
+    .book-detail-container {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .book-image-section {
+        position: static;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+} 

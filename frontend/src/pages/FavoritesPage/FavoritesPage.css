@@ -1,0 +1,135 @@
+.favorites-page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.favorites-page h1 {
+    color: #333;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.empty-favorites-message {
+    text-align: center;
+    padding: 3rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    color: #666;
+}
+
+.empty-favorites-message i {
+    font-size: 3rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.empty-favorites-message p {
+    font-size: 1.2rem;
+}
+
+.favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.favorite-book-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.favorite-book-card:hover {
+    transform: translateY(-5px);
+}
+
+.book-image {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.book-image:hover {
+    transform: scale(1.05);
+}
+
+.book-info {
+    padding: 1rem;
+}
+
+.book-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.book-price {
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.book-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.add-to-cart-btn,
+.remove-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.add-to-cart-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.add-to-cart-btn:hover {
+    background: #45a049;
+}
+
+.remove-btn {
+    background: #ff4444;
+    color: white;
+}
+
+.remove-btn:hover {
+    background: #cc0000;
+}
+
+.book-title {
+    text-decoration: none;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.book-title:hover {
+    color: #4CAF50;
+}
+
+@media (max-width: 768px) {
+    .favorites-page {
+        padding: 1rem;
+    }
+
+    .favorites-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+} 
