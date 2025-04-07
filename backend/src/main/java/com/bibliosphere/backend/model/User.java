@@ -3,15 +3,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "users")
-
 
 public class User {
     @Id
@@ -23,7 +20,7 @@ public class User {
     private String role;
     private String home_address;
     private String credit_card;
-    private List<String> shopping_cart;
-    private List<String> orders;
-    private List<String> wishlist;
+    private List<Product> shopping_cart;
+    private List<Product> orders;
+    private List<Product> whishlist;
 }
