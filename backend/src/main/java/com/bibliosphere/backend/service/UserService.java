@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -33,13 +35,10 @@ public class UserService {
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
+                if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
             return hexString.toString();
-
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -74,15 +73,15 @@ public class UserService {
         return false;
     }
 
-    // Use token to get the user (dummy implementation: token equals email)
+    // For demo: token is the user email (not secure).
     public User getUserFromToken(String token) {
         return userRepository.findById(token).orElse(null);
     }
 
+    // Add a product ID to the user's wishlist
     public User addToWishlist(User user, String productId) {
         if (user.getWishlist() == null) {
-            // Initialize if null
-            user.setWishlist(new java.util.ArrayList<>());
+            user.setWishlist(new ArrayList<>());  // create new empty list
         }
         if (!user.getWishlist().contains(productId)) {
             user.getWishlist().add(productId);
@@ -90,6 +89,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // Remove a product ID from the user's wishlist
     public User removeFromWishlist(User user, String productId) {
         if (user.getWishlist() != null) {
             user.getWishlist().remove(productId);
