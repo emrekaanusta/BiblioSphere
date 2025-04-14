@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "product") // Make sure this matches your actual collection name
+@Document(collection = "products") // Make sure this matches your actual collection name
 public class Product {
 
     @Id
@@ -19,6 +19,7 @@ public class Product {
     private String title;
     private String author;
     private String type;
+    private int stock;
     private float price;
     private String image;
     private String description;

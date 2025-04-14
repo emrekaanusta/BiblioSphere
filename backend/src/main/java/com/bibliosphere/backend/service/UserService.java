@@ -73,11 +73,6 @@ public class UserService {
         return false;
     }
 
-    // For demo: token is the user email (not secure).
-    public User getUserFromToken(String token) {
-        return userRepository.findById(token).orElse(null);
-    }
-
     // Add a product ID to the user's wishlist
     public User addToWishlist(User user, String productId) {
         if (user.getWishlist() == null) {
