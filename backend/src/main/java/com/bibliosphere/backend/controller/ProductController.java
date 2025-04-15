@@ -14,8 +14,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-// If your React dev server is on 3000:
-@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
 
     @Autowired
@@ -49,13 +47,14 @@ public class ProductController {
      * Example: POST http://localhost:8080/api/products
      * (multipart form data)
      */
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path="/add",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Product> createProduct(
             @RequestParam("file") MultipartFile file,
             @RequestParam("isbn") String isbn,
             @RequestParam("title") String title,
             @RequestParam("author") String author,
             @RequestParam("type") String type,
+            @RequestParam("stock")  int stock,
             @RequestParam("price") float price,
             @RequestParam("description") String description,
             @RequestParam("publisYear") String publisYear,
@@ -71,6 +70,7 @@ public class ProductController {
         product.setTitle(title);
         product.setAuthor(author);
         product.setType(type);
+        product.setStock(stock);
         product.setPrice(price);
         product.setDescription(description);
         product.setPublisYear(publisYear);
