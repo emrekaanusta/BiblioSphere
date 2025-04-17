@@ -29,7 +29,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> createUser(@RequestBody User user) {
-
+        System.out.println("DEBUG: Incoming user = " + user);
         if (userService.exist(user.getEmail())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }

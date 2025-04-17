@@ -29,11 +29,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
+
         String path = request.getRequestURI();
 
-        // 👇 Skip JWT validation for these public endpoints
         if (path.equals("/register") || path.equals("/login") || path.startsWith("/favorites")) {
-            chain.doFilter(request, response);
+            chain.doFilter(request, response); // 👈 Skip JWT check
             return;
         }
 

@@ -6,45 +6,59 @@ import Navbar from '../NavigationBar/Navbar';
 const Register = () => {
   const navigate = useNavigate();
 
-  // Store form data in state
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    agreed: false
   });
 
-  // Store messages in state
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [showAgreement, setShowAgreement] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    setErrorMessage('');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Reset messages before submission
     setErrorMessage('');
     setSuccessMessage('');
 
-    // Check for matching passwords on the client side
+    // Password match check
     if (formData.password !== formData.confirmPassword) {
       setErrorMessage("Passwords don't match!");
       return;
     }
 
-    // Prepare the data to match what your backend expects
+    // Email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+$/;
+
+    if (!emailRegex.test(formData.email)) {
+      setErrorMessage("Please enter a valid email address.");
+      return;
+    }
+
+    // User agreement check
+    if (!formData.agreed) {
+      setErrorMessage('You must accept the user agreement.');
+      return;
+    }
+
+    // Backend call
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        // If your backend expects these exact fields:
         name: formData.name,
         surname: formData.surname,
         email: formData.email,
@@ -54,16 +68,15 @@ const Register = () => {
 
     fetch('http://localhost:8080/register', requestOptions)
       .then(async (response) => {
-        const result = await response.text(); // get response as text
+        const result = await response.text();
         if (!response.ok) {
-          // The server responded with an error status
-          setErrorMessage(result); // e.g. "User already exists" or "Password must be longer..."
+          setErrorMessage(result);
           return;
         }
-        // Success!
-        setSuccessMessage(result); // e.g. "User registered successfully"
-        // Redirect to login page after a short delay or immediately
-        navigate('/login');
+        setSuccessMessage(result);
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
       })
       .catch((error) => {
         console.error(error);
@@ -77,88 +90,109 @@ const Register = () => {
       <div className="register-container">
         <div className="register-box">
           <form onSubmit={handleSubmit}>
-            <h3>create account</h3>
+            <h3>Create Account</h3>
 
-            {/* Show error or success messages here */}
-            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {errorMessage && <div className="error-box">{errorMessage}</div>}
             {successMessage && <div className="success-message">{successMessage}</div>}
 
             <div className="input-group">
-              <label>name</label>
+              <label>Name</label>
               <input
                 type="text"
                 name="name"
                 className="register-input"
-                placeholder="enter your name"
+                placeholder="Enter your name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                autoCapitalize="none"
               />
             </div>
 
             <div className="input-group">
-              <label>surname</label>
+              <label>Surname</label>
               <input
                 type="text"
                 name="surname"
                 className="register-input"
-                placeholder="enter your surname"
+                placeholder="Enter your surname"
                 value={formData.surname}
                 onChange={handleChange}
                 required
-                autoCapitalize="none"
               />
             </div>
 
             <div className="input-group">
-              <label>email</label>
+              <label>Email</label>
               <input
-                type="email"
+                type="text"
                 name="email"
-                className="box"
-                placeholder="enter your email"
+                className="register-input"
+                placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                autoCapitalize="none"
               />
             </div>
 
             <div className="input-group">
-              <label>password</label>
+              <label>Password</label>
               <input
                 type="password"
                 name="password"
-                className="box"
-                placeholder="enter your password"
+                className="register-input"
+                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                autoCapitalize="none"
               />
             </div>
 
             <div className="input-group">
-              <label>confirm password</label>
+              <label>Confirm Password</label>
               <input
                 type="password"
                 name="confirmPassword"
-                className="box"
-                placeholder="confirm your password"
+                className="register-input"
+                placeholder="Confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                autoCapitalize="none"
               />
             </div>
 
-            <input type="submit" value="register now" className="register-btn" />
+            <div className="checkboxContainer">
+              <input
+                type="checkbox"
+                name="agreed"
+                checked={formData.agreed}
+                onChange={handleChange}
+              />
+              <label
+                onClick={() => setShowAgreement(true)}
+                style={{ cursor: 'pointer', marginLeft: '10px', textDecoration: 'underline', color: 'blue' }}
+              >
+                I Accept The User Agreement
+              </label>
+            </div>
 
-            <p>already have an account? <Link to="/login">sign in</Link></p>
+            <input type="submit" value="Register Now" className="register-btn" />
+
+            <p>Already Have An Account? <Link to="/login">Sign In</Link></p>
           </form>
         </div>
       </div>
+
+      {showAgreement && (
+        <div className="agreementPopup">
+          <div className="agreementContent">
+            <h3>User Agreement</h3>
+            <p>This is a sample user agreement. By signing up, you agree to our terms and conditions.</p>
+            <button onClick={() => setShowAgreement(false)} className="closeAgreementBtn">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
