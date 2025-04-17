@@ -29,6 +29,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        // 👇 Skip JWT validation for these public endpoints
+        if (path.equals("/register") || path.equals("/login") || path.startsWith("/favorites")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 🔽 Continue with JWT logic if not on a public route
         final String authorizationHeader = request.getHeader("Authorization");
         String email = null;
         String jwt = null;
@@ -44,6 +53,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         } else {
             System.out.println("JWT Filter: Authorization header missing or does not start with 'Bearer '");
         }
+
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             User user = userService.loadUserByEmail(email);

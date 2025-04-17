@@ -6,13 +6,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")                      // All endpoints
-                .allowedOrigins("http://localhost:3000") // Your React dev server
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .exposedHeaders("Authorization")
-                .allowCredentials(true);
+                .allowedHeaders("Authorization", "Content-Type")   // 👈 list it here
+                .allowCredentials(true)
+                .maxAge(3600);   // cache the pre‑flight for 1 h
     }
 }

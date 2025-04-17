@@ -66,13 +66,21 @@ export const CartProvider = ({ children }) => {
         );
     };
 
+
+    const getShippingCost = () => {
+        const subtotal = getSubtotal();
+        if (subtotal >= 100) return 0;
+        return shippingMethod === "express" ? 15 : 5;
+      };
+      
+
     const getSubtotal = () => {
         return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
     };
 
     const getCartTotal = () => {
         const subtotal = getSubtotal();
-        return subtotal + (shippingRates[shippingMethod] || 0);
+        return subtotal;
     };
 
     const toggleCart = () => {
@@ -96,7 +104,8 @@ export const CartProvider = ({ children }) => {
         getSubtotal,
         shippingMethod,
         setShippingMethod,
-        shippingRates
+        shippingRates,
+        getShippingCost
     };
 
     return (
