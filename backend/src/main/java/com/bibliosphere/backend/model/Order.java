@@ -14,7 +14,7 @@ public class Order {
     @Id
     private String id;
     private String userEmail;          // who placed it
-    private List<OrderItem> items;     // books purchased
+    private List<Product> items;     // books purchased
     private ShippingInfo shippingInfo; // name & address
     private String shippingMethod;     // standard | express
     private double subtotal;

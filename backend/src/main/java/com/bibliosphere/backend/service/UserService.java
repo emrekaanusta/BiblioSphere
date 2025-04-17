@@ -20,6 +20,17 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    public User getCurrentUser(String email) {
+        User currentUser = new User();
+        if (email == null) {
+            currentUser = null;
+        }
+        else {
+            currentUser = userRepository.findById(email).orElse(null);
+        }
+        return currentUser;
+    }
+
     public User loadUserByEmail(String email) {
         return userRepository.findById(email).orElse(null);
     }

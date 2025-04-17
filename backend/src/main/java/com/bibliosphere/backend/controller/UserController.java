@@ -1,10 +1,13 @@
 package com.bibliosphere.backend.controller;
 
+import com.bibliosphere.backend.model.Product;
 import com.bibliosphere.backend.model.User;
 import com.bibliosphere.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -40,12 +43,17 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
 
+    @PostMapping("/wishlist/add")
+    public ResponseEntity<String> addToWishlist(@RequestBody String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            currentUser.setWishlist(currentUser.getWishlist().add())
+        } else {
 
-    /*@PostMapping("/wishlist/add")
-    public ResponseEntity<String> addToWishlist(@RequestBody Map<String, Long> payload) {
+        }
         Long productId = payload.get("productId");
-        // Get current user (e.g., via a custom method that extracts user info from token)
-        User currentUser = userService.getCurrentUser();
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
         }
