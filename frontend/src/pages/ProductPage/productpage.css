@@ -279,3 +279,25 @@
 .book-title h3 {
     margin: 0.5rem 0;
 }
+
+.book-item {
+    max-width: 250px;     
+    width: 100%;          /* but will shrink for smaller screens */
+    margin: 0 auto;       
+  }
+  
+  .book-list {
+    display: grid;
+    
+    grid-template-columns: repeat(auto-fill, minmax(250px, auto));
+    justify-content: center;  /* center the grid when there's extra space */
+    gap: 2rem;
+  }
+  
+  .book-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
