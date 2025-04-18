@@ -49,7 +49,8 @@ public class UserController {
         if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
             String email = auth.getName();
             User currentUser = userService.getCurrentUser(email);
-            currentUser.setWishlist(currentUser.getWishlist().add())
+            userService.addProductToWishlist(currentUser, isbn);
+            return ResponseEntity.ok("Product added to wishlist.");
         } else {
             return ResponseEntity.ok("Product added to wishlist.");
         }

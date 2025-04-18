@@ -1,6 +1,8 @@
 package com.bibliosphere.backend.service;
 
+import com.bibliosphere.backend.model.Product;
 import com.bibliosphere.backend.model.User;
+import com.bibliosphere.backend.repository.ProductRepository;
 import com.bibliosphere.backend.repository.UserRepository;
 import com.bibliosphere.backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ public class UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     public User getCurrentUser(String email) {
         User currentUser = new User();
         if (email == null) {
@@ -33,6 +38,13 @@ public class UserService {
 
     public User loadUserByEmail(String email) {
         return userRepository.findById(email).orElse(null);
+    }
+
+    public void addProductToWishlist(User user, String isbn) {
+        Product product = productRepository.findById(isbn).orElse(null);
+        if (product != null) {
+            user.getWishlist().add(product);
+        }
     }
 
     public boolean exist(String email) {
