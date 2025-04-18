@@ -1060,3 +1060,138 @@ section{
         font-size: 1rem;
     }
 }
+
+
+.featured-slider {
+    padding: 2rem 0;
+    position: relative;
+  }
+  
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: #333;
+    font-weight: bold;
+  }
+  
+
+  .swiper-container-wrapper {
+    position: relative;
+    padding: 2rem 1rem;
+  }
+  
+  .featured-slider .swiper-button-next,
+  .featured-slider .swiper-button-prev {
+    color: #333;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 1rem;
+    border-radius: 50%;
+    top: 40%;
+    transform: translateY(-50%);
+  }
+  
+  .featured-slider .swiper-button-next {
+    right: 10px;
+  }
+  
+  .featured-slider .swiper-button-prev {
+    left: 10px;
+  }
+  
+  .book-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .book-card img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+
+
+  .swiper-container-wrapper {
+    position: relative;
+    padding: 2rem 3rem;
+  }
+  
+  .featured-slider {
+    padding: 1rem 0;
+  }
+  
+  .featured-slider .swiper-button-prev,
+  .featured-slider .swiper-button-next {
+    position: absolute;
+    top: 40%;
+    z-index: 10;
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+  
+  .featured-slider .swiper-button-prev:hover,
+  .featured-slider .swiper-button-next:hover {
+    background: #f04e30;
+    color: white;
+    transform: scale(1.1);
+  }
+  
+  .featured-slider .swiper-button-prev {
+    left: -20px;
+  }
+  
+
+  /* Swiper slide spacing fix */
+.featured-slider .swiper-slide {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
+  }
+  
+  /* Ensure card has consistent size */
+  .book-card {
+    width: 100%;
+    max-width: 300px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease;
+  }
+  
+  .book-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Book image styling */
+  .book-card .image {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+  
+  .book-card .image img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  

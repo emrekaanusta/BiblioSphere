@@ -8,12 +8,27 @@ import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import axios from 'axios';
 
+import SwiperCore, { Navigation } from 'swiper';
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+
+SwiperCore.use([Navigation]);
+
 const Homepage = () => {
   const navigate = useNavigate();
   const profileRef = useRef(null);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [featuredBooks, setFeaturedBooks] = useState([]);
+
+  const { addToCart } = useCart();
+  const { addToFavorites, removeFromFavorites, isBookFavorite } = useFavorites();
+
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -31,7 +46,7 @@ const Homepage = () => {
         console.log('Books fetched from backend:', response.data);
         const dataWithIds = response.data.map((item) => ({
           ...item,
-          id: item.isbn || item._id, // Fallback to _id if isbn is not available
+          id: item.isbn || item._id,
         }));
         setFeaturedBooks(dataWithIds);
       })
@@ -39,19 +54,6 @@ const Homepage = () => {
         console.error('Error fetching featured books:', error);
       });
   }, []);
-
-  const handleSignOut = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-    navigate('/');
-  };
-
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-
-  const { addToCart } = useCart();
-  const { addToFavorites, removeFromFavorites, isBookFavorite } = useFavorites();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -61,28 +63,8 @@ const Homepage = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const toggleCart = () => {
-    setIsCartOpen(!isCartOpen);
-    setIsFavoritesOpen(false);
-    setIsProfileOpen(false);
-  };
-
-  const toggleFavorites = () => {
-    setIsFavoritesOpen(!isFavoritesOpen);
-    setIsCartOpen(false);
-    setIsProfileOpen(false);
-  };
-
-  const toggleProfile = () => {
-    setIsProfileOpen(!isProfileOpen);
-    setIsCartOpen(false);
-    setIsFavoritesOpen(false);
-  };
 
   const handleAddToCart = (book) => {
     addToCart(book);
@@ -106,7 +88,6 @@ const Homepage = () => {
 
       {!isLoggedIn && (
         <div className="login-form-container">
-          <div id="close-login-btn" className="fas fa-times"></div>
           <form action="">
             <h3>sign in</h3>
             <span>username</span>
@@ -137,8 +118,6 @@ const Homepage = () => {
                 <a href="#" className="swiper-slide"><img src="/images/book1.jpg" alt="Book 1" /></a>
                 <a href="#" className="swiper-slide"><img src="/images/book2.jpg" alt="Book 2" /></a>
                 <a href="#" className="swiper-slide"><img src="/images/book3.jpg" alt="Book 3" /></a>
-                <a href="#" className="swiper-slide"><img src="/images/book4.jpg" alt="Book 4" /></a>
-                <a href="#" className="swiper-slide"><img src="/images/book5.jpg" alt="Book 5" /></a>
               </div>
               <img src="/images/stand.png" className="stand" alt="Stand" />
             </div>
@@ -146,65 +125,56 @@ const Homepage = () => {
         </section>
       </div>
 
-      <section className="icons-container">
-        <div className="icons"><i className="fas fa-shipping-fast"></i><div className="content"><h3>free shipping</h3><p>order over $100</p></div></div>
-        <div className="icons"><i className="fas fa-lock"></i><div className="content"><h3>secure payment</h3><p>100% secure payment</p></div></div>
-        <div className="icons"><i className="fas fa-redo-alt"></i><div className="content"><h3>easy returns</h3><p>10 days returns</p></div></div>
-        <div className="icons"><i className="fas fa-headset"></i><div className="content"><h3>24/7 support</h3><p>call us anytime</p></div></div>
-      </section>
-
-      <section className="categories" id="categories">
-        <h1 className="heading"><span>Book Categories</span></h1>
-        <div className="categories-container">
-          <Link to="/category/fiction" className="category-btn"><i className="fas fa-book"></i><span>Fiction</span></Link>
-          <Link to="/category/drama" className="category-btn"><i className="fas fa-theater-masks"></i><span>Drama</span></Link>
-          <Link to="/category/mystery" className="category-btn"><i className="fas fa-search"></i><span>Mystery</span></Link>
-          <Link to="/category/romance" className="category-btn"><i className="fas fa-heart"></i><span>Romance</span></Link>
-          <Link to="/category/science-fiction" className="category-btn"><i className="fas fa-rocket"></i><span>Science Fiction</span></Link>
-          <Link to="/category/fantasy" className="category-btn"><i className="fas fa-dragon"></i><span>Fantasy</span></Link>
-        </div>
-      </section>
-
       <section className="featured" id="featured">
         <h1 className="heading"><span>Featured Books</span></h1>
-        <div className="swiper featured-slider">
-          <div className="swiper-wrapper">
-            {featuredBooks.map((book) => (
-              <div key={book.id} className="swiper-slide">
-                <div className="book-card">
-                  <div className="image">
-                    <Link to={`/book/${book.id}`}>
-                      <img src={book.image} alt={book.title} />
-                    </Link>
-                    <button
-                      className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleToggleFavorite(book);
-                      }}
-                    >
-                      <i className="fas fa-heart"></i>
-                    </button>
+        <Swiper
+          modules={[Navigation]}
+          spaceBetween={30}
+          slidesPerView={3}
+          navigation
+          loop
+          className="featured-slider"
+          breakpoints={{
+            0: { slidesPerView: 1 },
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+          }}
+        >
+          {featuredBooks.map((book) => (
+            <SwiperSlide key={book.id}>
+              <div className="book-card">
+                <div className="image">
+                  <Link to={`/book/${book.id}`}>
+                    <img src={book.image} alt={book.title} />
+                  </Link>
+                  <button
+                    className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleToggleFavorite(book);
+                    }}
+                  >
+                    <i className="fas fa-heart"></i>
+                  </button>
+                </div>
+                <div className="content">
+                  <Link to={`/book/${book.id}`} className="book-title">
+                    <h3>{book.title}</h3>
+                  </Link>
+                  <div className="price">${book.price?.toFixed(2)}</div>
+                  <div className="stars">
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star"></i>
+                    <i className="fas fa-star-half-alt"></i>
                   </div>
-                  <div className="content">
-                    <Link to={`/book/${book.id}`} className="book-title"><h3>{book.title}</h3></Link>
-                    <div className="price">${book.price?.toFixed(2)}</div>
-                    <div className="stars">
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star"></i>
-                      <i className="fas fa-star-half-alt"></i>
-                    </div>
-                    <button onClick={() => handleAddToCart(book)} className="btn">Add to Cart</button>
-                  </div>
+                  <button onClick={() => handleAddToCart(book)} className="btn">Add to Cart</button>
                 </div>
               </div>
-            ))}
-          </div>
-          <div className="swiper-button-next"></div>
-          <div className="swiper-button-prev"></div>
-        </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </section>
 
       <div className="newsletter-container">
@@ -230,30 +200,6 @@ const Homepage = () => {
           </div>
         </section>
       </div>
-
-      <section className="reviews" id="reviews">
-        <h1 className="heading"><span>Highest Rated Books</span></h1>
-        <div className="swiper reviews-slider">
-          <div className="swiper-wrapper">
-            <div className="swiper-slide box">
-              <div className="book-container">
-                <img src="/images/book2.jpg" alt="Book Cover" className="book-image" />
-                <div className="rating-overlay">
-                  <div className="stars">
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star-half-alt"></i>
-                  </div>
-                </div>
-              </div>
-              <h3>john deo</h3>
-              <p>One of the greatest books I have read so far.</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="footer">
         <div className="box-container">
