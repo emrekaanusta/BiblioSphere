@@ -34,7 +34,13 @@ public class SecurityConfig {
 
                 /* ---------- Authorisation rules ---------- */
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register", "/login", "/favorites/**").permitAll()
+                        .requestMatchers(
+                                "/register",
+                                "/login",
+                                "/favorites/**",
+                                "/api/products",
+                                "/api/products/**"
+                        ).permitAll()
                         .requestMatchers("/api/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
