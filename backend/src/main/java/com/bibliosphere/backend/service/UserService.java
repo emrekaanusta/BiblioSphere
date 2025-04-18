@@ -84,22 +84,48 @@ public class UserService {
         return false;
     }
 
-    // Add a product ID to the user's wishlist
-    public User addToWishlist(User user, String productId) {
-        if (user.getWishlist() == null) {
-            user.setWishlist(new ArrayList<>());  // create new empty list
+    public void removeProductFromWishlist(User user, String productId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product != null) {
+            user.getWishlist().remove(product);
         }
-        if (!user.getWishlist().contains(productId)) {
-            user.getWishlist().add(productId);
-        }
-        return userRepository.save(user);
     }
 
-    // Remove a product ID from the user's wishlist
-    public User removeFromWishlist(User user, String productId) {
-        if (user.getWishlist() != null) {
-            user.getWishlist().remove(productId);
+    // Kullanicinin sepete urun ekleme ve stok dusme func.
+    @Override
+    public void addProductToCart(User user, String productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (product.getStock() <= 0) {
+            throw new RuntimeException("Product is out of stock.");
         }
-        return userRepository.save(user);
+
+        product.setStock(product.getStock() - 1);
+        productRepository.save(product);
+
+        user.getShopping_cart().add(product);
+        userRepository.save(user);
     }
+
+    @Override
+    public void removeProductFromCart(User user, String productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Ürün sepette yoksa çıkarılamaz
+        boolean removed = user.getShopping_cart().removeIf(p -> p.getIsbn().equals(productId));
+        if (!removed) {
+            throw new RuntimeException("Product not found in cart.");
+        }
+
+        // Stok geri artırılır
+        product.setStock(product.getStock() + 1);
+        productRepository.save(product);
+
+        userRepository.save(user);
+    }
+
+
+
 }

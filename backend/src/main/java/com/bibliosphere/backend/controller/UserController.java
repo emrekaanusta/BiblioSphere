@@ -51,13 +51,53 @@ public class UserController {
             User currentUser = userService.getCurrentUser(email);
             currentUser.setWishlist(currentUser.getWishlist().add())
         } else {
-
+            return ResponseEntity.ok("Product added to wishlist.");
         }
-        Long productId = payload.get("productId");
+    }
+
+    @PostMapping("/wishlist/remove")
+    public ResponseEntity<String> removeFromWishlist(@RequestBody String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            userService.removeProductFromWishlist(currentUser, isbn);
+            return ResponseEntity.ok("Product added to wishlist.");
+        } else {
+            return ResponseEntity.ok("Product added to wishlist.");
+        }
+    }
+
+    //cart ekleme olayı
+    @PostMapping("/cart/add")
+    public ResponseEntity<String> addToCart(@RequestBody Map<String, String> payload) {
+        String productId = payload.get("productId");
+        User currentUser = userService.getCurrentUser();
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
         }
-        userService.addProductToWishlist(currentUser, productId);
-        return ResponseEntity.ok("Product added to wishlist.");
-    }*/
+        try {
+            userService.addProductToCart(currentUser, productId);
+            return ResponseEntity.ok("Product added to cart.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // cart'tan urun cikarma
+    @PostMapping("/cart/remove")
+    public ResponseEntity<String> removeFromCart(@RequestBody Map<String, String> payload) {
+        String productId = payload.get("productId");
+        User currentUser = userService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
+        }
+        try {
+            userService.removeProductFromCart(currentUser, productId);
+            return ResponseEntity.ok("Product removed from cart.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 }

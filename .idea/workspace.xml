@@ -4,15 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="270568ef-198c-4167-a81b-39047602cce4" name="Changes" comment="Backend birlestirme v2 /Hüseyin Eren Yıldız - Ege Tan">
+    <list default="true" id="270568ef-198c-4167-a81b-39047602cce4" name="Changes" comment="Backend birlestirme v3 /Hüseyin Eren Yıldız - Ege Tan">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/User.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/UserService.java" afterDir="false" />
     </list>
     <list id="41d876bd-27a5-4e80-a2cc-e563ca34757d" name="Changes by space" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/UserController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/UserService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,18 +87,15 @@
   <component name="LineStatusTrackerManager">
     <file path="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/UserService.java">
       <ranges>
-        <range start1="21" end1="21" start2="21" end2="32" changelist="270568ef-198c-4167-a81b-39047602cce4" />
-        <range start1="93" end1="93" start2="104" end2="149" changelist="41d876bd-27a5-4e80-a2cc-e563ca34757d" />
-      </ranges>
-    </file>
-    <file path="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/UserController.java">
-      <ranges>
         <range start1="2" end1="2" start2="2" end2="3" changelist="270568ef-198c-4167-a81b-39047602cce4" />
-        <range start1="7" end1="7" start2="8" end2="10" changelist="270568ef-198c-4167-a81b-39047602cce4" />
-        <range start1="42" end1="42" start2="45" end2="53" changelist="270568ef-198c-4167-a81b-39047602cce4" />
-        <range start1="43" end1="45" start2="54" end2="55" changelist="270568ef-198c-4167-a81b-39047602cce4" />
-        <range start1="46" end1="48" start2="56" end2="56" changelist="270568ef-198c-4167-a81b-39047602cce4" />
-        <range start1="53" end1="54" start2="61" end2="112" changelist="41d876bd-27a5-4e80-a2cc-e563ca34757d" />
+        <range start1="3" end1="3" start2="4" end2="5" changelist="270568ef-198c-4167-a81b-39047602cce4" />
+        <range start1="21" end1="21" start2="23" end2="26" changelist="270568ef-198c-4167-a81b-39047602cce4" />
+        <range start1="37" end1="37" start2="42" end2="49" changelist="270568ef-198c-4167-a81b-39047602cce4" />
+        <range start1="86" end1="90" start2="98" end2="102" changelist="270568ef-198c-4167-a81b-39047602cce4" />
+        <range start1="91" end1="95" start2="103" end2="103" changelist="270568ef-198c-4167-a81b-39047602cce4" />
+        <range start1="97" end1="101" start2="105" end2="113" changelist="270568ef-198c-4167-a81b-39047602cce4" />
+        <range start1="102" end1="103" start2="114" end2="120" changelist="41d876bd-27a5-4e80-a2cc-e563ca34757d" />
+        <range start1="104" end1="104" start2="121" end2="142" changelist="41d876bd-27a5-4e80-a2cc-e563ca34757d" />
       </ranges>
     </file>
   </component>
@@ -129,7 +123,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "Spring Boot.BackendApplication (2).executor": "Run",
     "Spring Boot.BackendApplication.executor": "Run",
-    "git-widget-placeholder": "beril",
+    "git-widget-placeholder": "eren",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/egetan/Desktop/BiblioSphere_Backend/backend/src/main/java/com/bibliosphere/backend/model",
@@ -187,7 +181,7 @@
       <workItem from="1744572403266" duration="376000" />
       <workItem from="1744620497249" duration="122000" />
       <workItem from="1744621270748" duration="896000" />
-      <workItem from="1744622768757" duration="25044000" />
+      <workItem from="1744622768757" duration="31529000" />
     </task>
     <task id="LOCAL-00001" summary="Product Class">
       <option name="closed" value="true" />
@@ -253,7 +247,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744733283685</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Backend birlestirme v3 /Hüseyin Eren Yıldız - Ege Tan">
+      <option name="closed" value="true" />
+      <created>1744928139309</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1744928139309</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -290,6 +292,7 @@
     <MESSAGE value="Commented /wishlist/add endpoint - Hüseyin Eren Yıldız - Ege Tan" />
     <MESSAGE value="Backend birlestirme v1 /Hüseyin Eren Yıldız - Ege Tan" />
     <MESSAGE value="Backend birlestirme v2 /Hüseyin Eren Yıldız - Ege Tan" />
-    <option name="LAST_COMMIT_MESSAGE" value="Backend birlestirme v2 /Hüseyin Eren Yıldız - Ege Tan" />
+    <MESSAGE value="Backend birlestirme v3 /Hüseyin Eren Yıldız - Ege Tan" />
+    <option name="LAST_COMMIT_MESSAGE" value="Backend birlestirme v3 /Hüseyin Eren Yıldız - Ege Tan" />
   </component>
 </project>
