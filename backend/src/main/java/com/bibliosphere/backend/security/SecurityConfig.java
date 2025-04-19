@@ -29,12 +29,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Let anyone access GET /api/products/** (public data)
-                        .requestMatchers("/api/products/**").permitAll()
-
                         // Let anyone access these endpoints
-                        .requestMatchers("/register", "/login").permitAll()
-
+                        .requestMatchers("/register", "/login" ,"/api/products/**",
+                        "/cart/**").permitAll()
                         // Everything else requires authentication
                         .anyRequest().authenticated()
                 );

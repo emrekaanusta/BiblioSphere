@@ -1,11 +1,11 @@
 package com.bibliosphere.backend.controller;
 
-import com.bibliosphere.backend.model.Product;
 import com.bibliosphere.backend.model.User;
 import com.bibliosphere.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -69,36 +69,45 @@ public class UserController {
         }
     }
 
-    //cart ekleme olayı
     @PostMapping("/cart/add")
-    public ResponseEntity<String> addToCart(@RequestBody Map<String, String> payload) {
-        String productId = payload.get("productId");
-        User currentUser = userService.getCurrentUser();
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
-        }
-        try {
-            userService.addProductToCart(currentUser, productId);
-            return ResponseEntity.ok("Product added to cart.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public ResponseEntity<String> addToCart(@RequestParam String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            if (userService.addProductToCart(currentUser, isbn)){
+                return ResponseEntity.ok("Product is added to cart.");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is out of stock");
+        } else {
+            User user = new User();
+            if (userService.addProductToCart(user, isbn)){
+                user = null;
+                return ResponseEntity.ok("Product is added to cart.");
+            }
+            user = null;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is out of stock");
         }
     }
 
-    // cart'tan urun cikarma
     @PostMapping("/cart/remove")
-    public ResponseEntity<String> removeFromCart(@RequestBody Map<String, String> payload) {
-        String productId = payload.get("productId");
-        User currentUser = userService.getCurrentUser();
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
-        }
-        try {
-            userService.removeProductFromCart(currentUser, productId);
-            return ResponseEntity.ok("Product removed from cart.");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    public ResponseEntity<String> removeFromCart(@RequestParam String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            if (userService.removeProductFromCart(currentUser, isbn)){
+                return ResponseEntity.ok("Product is removed from cart.");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is not in your list or there is no such product");
+        } else {
+            User user = new User();
+            if (userService.removeProductFromCart(user, isbn)){
+                user = null;
+                return ResponseEntity.ok("Product is removed from cart.");
+            }
+            user = null;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is not in your list or there is no such product");
         }
     }
-
 }

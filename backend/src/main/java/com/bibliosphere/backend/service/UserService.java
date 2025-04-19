@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -38,13 +39,6 @@ public class UserService {
 
     public User loadUserByEmail(String email) {
         return userRepository.findById(email).orElse(null);
-    }
-
-    public void addProductToWishlist(User user, String isbn) {
-        Product product = productRepository.findById(isbn).orElse(null);
-        if (product != null) {
-            user.getWishlist().add(product);
-        }
     }
 
     public boolean exist(String email) {
@@ -96,48 +90,69 @@ public class UserService {
         return false;
     }
 
+    public void addProductToWishlist(User user, String isbn) {
+        Product product = productRepository.findById(isbn).orElse(null);
+        if (product != null) {
+            user.getWishlist().add(product);
+            userRepository.save(user);
+        }
+    }
+
     public void removeProductFromWishlist(User user, String productId) {
         Product product = productRepository.findById(productId).orElse(null);
         if (product != null) {
             user.getWishlist().remove(product);
+            userRepository.save(user);
         }
     }
 
-    // Kullanicinin sepete urun ekleme ve stok dusme func.
-    @Override
-    public void addProductToCart(User user, String productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        if (product.getStock() <= 0) {
-            throw new RuntimeException("Product is out of stock.");
+    public boolean addProductToCart(User user, String isbn) {
+        Product product = productRepository.findById(isbn).orElse(null);
+        if (product != null) {
+            if (product.getStock() == 0) {
+                return false;
+            }
+            product.setStock(product.getStock() - 1);
+            if (user.getEmail()==null){
+                productRepository.save(product);
+                return true;
+            }
+            user.getWishlist().add(product);
+            userRepository.save(user);
+            productRepository.save(product);
+            return true;
         }
-
-        product.setStock(product.getStock() - 1);
-        productRepository.save(product);
-
-        user.getShopping_cart().add(product);
-        userRepository.save(user);
+        return false;
     }
 
-    @Override
-    public void removeProductFromCart(User user, String productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+    public boolean removeProductFromCart(User user, String productId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product != null) {
+            if (user.getEmail() == null) {
+                product.setStock(product.getStock() + 1);
+                productRepository.save(product);
+                return true;
+            }
 
-        // Ürün sepette yoksa çıkarılamaz
-        boolean removed = user.getShopping_cart().removeIf(p -> p.getIsbn().equals(productId));
-        if (!removed) {
-            throw new RuntimeException("Product not found in cart.");
+            List<Product> cart = user.getShopping_cart();
+            Iterator<Product> iterator = cart.iterator();
+            boolean removed = false;
+            while (iterator.hasNext()) {
+                Product p = iterator.next();
+                if (p.getIsbn().equals(productId)) {
+                    iterator.remove();
+                    removed = true;
+                    break;
+                }
+            }
+            if (!removed) {
+                return false;
+            }
+            product.setStock(product.getStock() + 1);
+            productRepository.save(product);
+            userRepository.save(user);
+            return true;
         }
-
-        // Stok geri artırılır
-        product.setStock(product.getStock() + 1);
-        productRepository.save(product);
-
-        userRepository.save(user);
+        return false;
     }
-
-
-
 }
