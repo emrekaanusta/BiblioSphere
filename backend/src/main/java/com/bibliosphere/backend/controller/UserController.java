@@ -46,7 +46,7 @@ public class UserController {
     @PostMapping("/wishlist/add")
     public ResponseEntity<String> addToWishlist(@RequestBody String isbn) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
             String email = auth.getName();
             User currentUser = userService.getCurrentUser(email);
             userService.addProductToWishlist(currentUser, isbn);
@@ -59,7 +59,7 @@ public class UserController {
     @PostMapping("/wishlist/remove")
     public ResponseEntity<String> removeFromWishlist(@RequestBody String isbn) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
             String email = auth.getName();
             User currentUser = userService.getCurrentUser(email);
             userService.removeProductFromWishlist(currentUser, isbn);
@@ -93,7 +93,7 @@ public class UserController {
     @PostMapping("/cart/remove")
     public ResponseEntity<String> removeFromCart(@RequestParam String isbn) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities() != null && !auth.getAuthorities().isEmpty()) {
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
             String email = auth.getName();
             User currentUser = userService.getCurrentUser(email);
             if (userService.removeProductFromCart(currentUser, isbn)){
