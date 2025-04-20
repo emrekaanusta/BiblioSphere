@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -27,5 +28,5 @@ public class Product {
     private String language;
     private String publisher;
     private float rating;
-    private List<String> review;
+    private List<String> review = new ArrayList<>();
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "../LoginPage/Login";
+import Receipt from "../ReceiptPage/Receipt";
 import Home from "../HomePage/Home";
 import Orders from "../OrdersPage/OrdersPage";
 import ProductPage from "../ProductPage/ProductPage";
@@ -52,6 +53,7 @@ function App() {
                                 <Route path="/book/:bookId" element={<BookDetailPage />} />
                                 <Route path="/category/:category" element={<CategoryPage />} />
                                 <Route path="/orders" element={<Orders />} />
+                                <Route path="/receipt/:orderId" element={<Receipt />} />
 
                             </Routes>
                         </main>

@@ -1,0 +1,191 @@
+.receipt-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.receipt-box {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.receipt-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.receipt-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: 1.05rem;
+}
+
+.receipt-summary {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.shipping-info {
+  margin-top: 2rem;
+  font-size: 1rem;
+}
+.rating-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 1rem;
+}
+
+.star-rating {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.star {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #e5e7eb;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #facc15;
+}
+
+.rating-form textarea {
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  min-height: 60px;
+  resize: vertical;
+}
+
+.rating-form button {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.rating-form button:disabled {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
+}
+
+.rating-confirm {
+  margin-top: 0.5rem;
+  color: green;
+}
+.receipt-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.item-top-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+}
+
+.rating-section {
+  padding-top: 0.5rem;
+  border-top: 1px dashed #ccc;
+  padding-bottom: 1rem;
+}
+.rating-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.star-rating {
+  display: flex;
+  gap: 1rem;
+  font-size: 2rem; /* make stars larger */
+}
+
+.star {
+  cursor: pointer;
+  color: #e5e7eb;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #facc15;
+}
+
+.rating-form textarea {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  resize: vertical;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.rating-form button {
+  align-self: flex-start;
+  padding: 0.6rem 1.2rem;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.rating-form button:disabled {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
+}
+.receipt-book-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.receipt-book-image {
+  width: 100px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.receipt-book-image:hover {
+  transform: scale(1.03);
+}
+
+.receipt-book-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.receipt-book-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.receipt-book-price {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}

@@ -1,0 +1,59 @@
+package com.bibliosphere.backend.controller;
+
+import com.bibliosphere.backend.model.Rating;
+import com.bibliosphere.backend.model.Product;
+import com.bibliosphere.backend.repository.RatingRepository;
+import com.bibliosphere.backend.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication; // ✅ THIS ONE
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/ratings")
+public class RatingController {
+
+    @Autowired
+    private RatingRepository ratingRepo;
+
+    @Autowired
+    private ProductRepository productRepo;
+
+    @GetMapping("/check")
+    public boolean hasUserRated(@RequestParam String productId, Authentication auth) {
+        String userId = auth.getName(); // grabs from token
+        return ratingRepo.findByUserIdAndProductId(userId, productId).isPresent();
+    }
+    @PostMapping
+    public Rating submitRating(@RequestBody Rating rating, Authentication auth) {
+        String userId = auth.getName(); // ✅ pulls from token
+        rating.setUserId(userId);
+
+        Optional<Rating> existing = ratingRepo.findByUserIdAndProductId(userId, rating.getProductId());
+        if (existing.isPresent()) {
+            throw new RuntimeException("User has already rated this product");
+        }
+
+        rating.setSubmittedAt(LocalDateTime.now());
+        Rating savedRating = ratingRepo.save(rating);
+
+        List<Rating> allRatings = ratingRepo.findByProductId(rating.getProductId());
+        float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
+
+        productRepo.findById(rating.getProductId()).ifPresent(product -> {
+            product.setRating(avg);
+            if (rating.getComment() != null && !rating.getComment().isBlank()) {
+                if (product.getReview() == null) {
+                    product.setReview(new java.util.ArrayList<>());
+                }
+                product.getReview().add(rating.getComment());
+            }
+            productRepo.save(product);
+        });
+
+        return savedRating;
+    }
+}

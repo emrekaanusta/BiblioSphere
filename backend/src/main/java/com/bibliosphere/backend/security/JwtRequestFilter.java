@@ -28,12 +28,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-
-
         String path = request.getRequestURI();
+        System.out.println("JWT Filter: Incoming URI -> " + request.getRequestURI());
 
-        if (path.equals("/register") || path.equals("/login") || path.startsWith("/favorites")) {
-            chain.doFilter(request, response); // 👈 Skip JWT check
+
+
+        if (path.equals("/register") || path.equals("/login") ||
+                path.startsWith("/favorites") || path.startsWith("/test")) {
+            chain.doFilter(request, response);
             return;
         }
 

@@ -18,7 +18,6 @@ const Checkout = () => {
 
   const navigate = useNavigate();
 
-  /* --------------------------- local state --------------------------- */
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -33,13 +32,11 @@ const Checkout = () => {
   });
   const [errors, setErrors] = useState({});
 
-  /* ---------------------------- validators --------------------------- */
   const validateCardNumber = (n) => n.replace(/\D/g, "").length === 16;
   const validateCVV = (c) => /^\d{3}$/.test(c);
   const validateZip = (z) => /^\d{5}(-\d{4})?$/.test(z);
   const validateExpiry = (d) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(d);
 
-  /* --------------------------- handlers ------------------------------ */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     let v = value;
@@ -74,7 +71,13 @@ const Checkout = () => {
       const total = getCartTotal();
 
       const orderPayload = {
-        items: cart,
+        items: cart.map((item) => ({
+          productId: item.isbn, // or item.id, depending on your product shape
+          title: item.title,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image,
+        })),
         shippingMethod,
         shippingInfo: formData,
         subtotal,
@@ -83,7 +86,7 @@ const Checkout = () => {
       };
 
       const token = localStorage.getItem("token");
-      await fetch("http://localhost:8080/api/orders", {
+      const response = await fetch("http://localhost:8080/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -92,9 +95,11 @@ const Checkout = () => {
         body: JSON.stringify(orderPayload),
       });
 
+      const order = await response.json();
+
       clearCart();
 
-      setTimeout(() => navigate("/orders"), 3000);
+      navigate(`/receipt/${order.id}`);
     } catch (err) {
       console.error(err);
       alert("Something went wrong. Please try again.");
@@ -102,13 +107,11 @@ const Checkout = () => {
     }
   };
 
-  /* --------------------------- derived totals ------------------------ */
   const subtotal = getSubtotal();
   const shippingCost = getShippingCost();
-  const total = getCartTotal();
+  const total = subtotal + shippingCost;
   const isFreeShipping = shippingCost === 0;
 
-  /* ------------------------------ UI --------------------------------- */
   return (
     <div className="checkout-container">
       {isProcessing && (
@@ -118,7 +121,6 @@ const Checkout = () => {
       )}
 
       <div className="checkout-content">
-        {/* order summary */}
         <div className="order-summary">
           <h2>Order Summary</h2>
           <div className="cart-items">
@@ -162,9 +164,7 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* checkout form */}
         <form onSubmit={handleSubmit} className="checkout-form">
-          {/* Shipping Information */}
           <div className="form-section">
             <h2>Shipping Information</h2>
             <div className="form-row">
@@ -182,7 +182,6 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* Payment Information */}
           <div className="form-section">
             <h2>Payment Information</h2>
             <div className="input-group">
@@ -201,7 +200,6 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* Shipping Options */}
           <div className="shipping-options">
             <h2>Shipping Method</h2>
             {isFreeShipping ? (

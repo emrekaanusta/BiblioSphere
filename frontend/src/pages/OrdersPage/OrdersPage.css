@@ -93,4 +93,372 @@
   .btn-link:hover {
     text-decoration: none;
   }
+
   
+
+  .orders-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: #333;
+  }
+  
+  .order-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .order-card:hover {
+    transform: scale(1.01);
+  }
+  
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #111827;
+  }
+  
+  .order-body {
+    font-size: 0.95rem;
+  }
+  
+  .order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+  }
+  
+  .order-items-table th,
+  .order-items-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+  }
+  
+  .order-items-table th {
+    background-color: #f9fafb;
+    color: #374151;
+    font-weight: 600;
+  }
+  
+  .order-summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+    font-size: 0.95rem;
+    color: #374151;
+  }
+  
+  .order-summary-line.total {
+    font-weight: 700;
+    color: #111827;
+    margin-top: 0.5rem;
+  }
+  
+  .btn-link {
+    display: inline-block;
+    color: #2563eb;
+    text-decoration: underline;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  
+  .btn-link:hover {
+    color: #1e3a8a;
+  }
+  
+  .flex-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    text-align: center;
+  }
+  
+  .error-message {
+    color: red;
+    font-weight: 500;
+  }
+  .order-card:hover {
+    border-color: #d1d5db;
+  }
+  .view-receipt-btn {
+    background-color: #4f46e5;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .view-receipt-btn:hover {
+    background-color: #4338ca;
+  }
+  
+
+
+  .order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    table-layout: fixed;
+  }
+  
+  .order-items-table th,
+  .order-items-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    font-size: 1rem; /* Increased font size */
+  }
+  
+  .order-items-table th:nth-child(2),
+  .order-items-table td:nth-child(2),
+  .order-items-table th:nth-child(3),
+  .order-items-table td:nth-child(3) {
+    text-align: right;
+    width: 100px; /* Consistent width for Qty and Price */
+  }
+  .rating-form {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .rating-form select,
+  .rating-form textarea {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+  
+  .rating-form textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  
+  .rating-form button {
+    width: fit-content;
+    padding: 0.5rem 1rem;
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .rating-form button:hover {
+    background-color: #4338ca;
+  }
+  
+  .rating-confirm {
+    color: green;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  .order-meta {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  .order-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: white;
+  }
+  
+  .order-status.processed {
+    background-color: #f59e0b; /* amber-500 */
+  }
+  
+  .order-status.transfer {
+    background-color: #3b82f6; /* blue-500 */
+  }
+  
+  .order-status.delivered {
+    background-color: #10b981; /* green-500 */
+  }
+  .orders-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    font-size: 1.1rem; /* Global bump */
+  }
+  
+  h2 {
+    font-size: 2.2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: #333;
+  }
+  
+  .order-card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .order-card:hover {
+    transform: scale(1.01);
+  }
+  
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #111827;
+  }
+  
+  .order-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .order-status {
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    color: white;
+  }
+  
+  .order-status.processed {
+    background-color: #f59e0b;
+  }
+  
+  .order-status.transfer {
+    background-color: #3b82f6;
+  }
+  
+  .order-status.delivered {
+    background-color: #10b981;
+  }
+  
+  .order-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;
+    table-layout: fixed;
+  }
+  
+  .order-items-table th,
+  .order-items-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    font-size: 1.05rem;
+  }
+  
+  .order-items-table th:nth-child(2),
+  .order-items-table td:nth-child(2),
+  .order-items-table th:nth-child(3),
+  .order-items-table td:nth-child(3) {
+    text-align: right;
+    width: 100px;
+  }
+  
+  .order-summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 1.05rem;
+    color: #374151;
+  }
+  
+  .order-summary-line.total {
+    font-weight: 700;
+    color: #111827;
+    margin-top: 0.75rem;
+  }
+  
+  .view-receipt-btn {
+    background-color: #4f46e5;
+    color: white;
+    padding: 0.6rem 1.3rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .view-receipt-btn:hover {
+    background-color: #4338ca;
+  }
+  
+  .rating-form {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .rating-form select,
+  .rating-form textarea {
+    padding: 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+  
+  .rating-form textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+  
+  .rating-form button {
+    width: fit-content;
+    padding: 0.6rem 1.2rem;
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  
+  .rating-form button:hover {
+    background-color: #4338ca;
+  }
+  
+  .rating-confirm {
+    color: green;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+      

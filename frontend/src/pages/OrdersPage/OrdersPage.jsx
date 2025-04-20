@@ -1,28 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import "./OrdersPage.css"; // create minimal styles or reuse your utility classes
+import { Link, useNavigate } from "react-router-dom"; // add useNavigate
+import "./OrdersPage.css";
 
-/**
- * Orders.jsx – lists the signed‑in user's past orders.
- *
- * Expected back‑end contract (adjust if different):
- *   GET  /api/orders
- *   Headers:  Authorization: Bearer <jwt>
- *   Response: [
- *     {
- *       id: string,
- *       createdAt: string (ISO date),
- *       total: number,
- *       shippingMethod: string,
- *       items: [{ productId, title, quantity, price }]
- *     }, ...
- *   ]
- */
+import RatingForm from "../../components/RatingForm";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // add this
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -73,14 +59,17 @@ const Orders = () => {
   return (
     <div className="orders-container">
       <h2>Your Orders</h2>
-      {orders.map((order) => (
-        <div key={order.id} className="order-card">
-          <div className="order-header">
+      {orders.map((order, index) => (
+        <div key={order.id || index} className="order-card">
+        <div className="order-header">
+          <div>
             <span className="order-id">Order #{order.id}</span>
-            <span className="order-date">
-              {new Date(order.createdAt).toLocaleDateString()}
-            </span>
           </div>
+          <div className="order-meta">
+            <span className={`order-status ${order.status.toLowerCase()}`}>{order.status}</span>
+            <span className="order-date">{new Date(order.createdAt).toLocaleDateString()}</span>
+          </div>
+        </div>
 
           <div className="order-body">
             <table className="order-items-table">
@@ -92,13 +81,21 @@ const Orders = () => {
                 </tr>
               </thead>
               <tbody>
-                {order.items.map((it) => (
-                  <tr key={it.productId}>
-                    <td>{it.title}</td>
-                    <td>{it.quantity}</td>
-                    <td>${(it.price * it.quantity).toFixed(2)}</td>
-                  </tr>
-                ))}
+
+
+              {order.items.map((it) => (
+  <React.Fragment key={it.productId}>
+    <tr>
+      <td>{it.title}</td>
+      <td>{it.quantity}</td>
+      <td>${(it.price * it.quantity).toFixed(2)}</td>
+    </tr>
+
+  </React.Fragment>
+))}
+
+
+
               </tbody>
             </table>
 
@@ -110,6 +107,13 @@ const Orders = () => {
               <span>Total:</span>
               <span>${order.total.toFixed(2)}</span>
             </div>
+
+            <button
+              className="view-receipt-btn"
+              onClick={() => navigate(`/receipt/${order.id}`)}
+            >
+              View Receipt
+            </button>
           </div>
         </div>
       ))}
@@ -118,17 +122,3 @@ const Orders = () => {
 };
 
 export default Orders;
-
-/**
- * Quick CSS ideas (Orders.css):
- *
- * .orders-container { padding: 2rem; max-width: 800px; margin: 0 auto; }
- * .order-card { border: 1px solid #ddd; border-radius: 12px; margin-bottom: 2rem; padding: 1.5rem; }
- * .order-header { display: flex; justify-content: space-between; margin-bottom: 1rem; font-weight: 600; }
- * .order-items-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
- * .order-items-table th, .order-items-table td { padding: 0.5rem; border-bottom: 1px solid #eee; text-align: left; }
- * .order-summary-line { display: flex; justify-content: space-between; margin-top: 0.25rem; }
- * .total { font-weight: 700; }
- * .flex-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; }
- * .btn-link { color: #1d4ed8; margin-top: 1rem; }
- */

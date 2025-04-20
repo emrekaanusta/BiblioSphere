@@ -39,8 +39,11 @@ public class SecurityConfig {
                                 "/login",
                                 "/favorites/**",
                                 "/api/products",
-                                "/api/products/**"
+                                "/api/products/**",
+                                "/test-order",
+                                "/test-email"
                         ).permitAll()
+                        .requestMatchers("/api/ratings/**").authenticated()  // ✅ ADD THIS
                         .requestMatchers("/api/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
