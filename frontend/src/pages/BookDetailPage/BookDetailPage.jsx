@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import axios from 'axios';
+import BookRatingSection from '../../components/BookRatingSection';
+import StarRating from '../../components/StarRating';
 
 import './BookDetailPage.css';
 
@@ -45,6 +47,13 @@ const BookDetailPage = () => {
             removeFromFavorites(book.isbn);
         } else {
             addToFavorites(book);
+        }
+    };
+
+    const scrollToReviews = () => {
+        const reviewsSection = document.getElementById('reviews');
+        if (reviewsSection) {
+            reviewsSection.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
@@ -91,18 +100,26 @@ const BookDetailPage = () => {
                 </div>
 
                 <div className="book-info-section">
-                    <h1>{book.title}</h1>
-                    <h2>by {book.author}</h2>
+                    <div className="title-author">
+                        <h1>{book.title}</h1>
+                        <h2>By {book.author}</h2>
+                    </div>
+                    <div className="book-rating" onClick={scrollToReviews}>
+                        <StarRating rating={book.rating || 0} />
+                        <span className="rating-count">
+                            ({book.reviews?.length || 0} {book.reviews?.length === 1 ? 'review' : 'reviews'})
+                        </span>
+                    </div>
                     <div className="book-meta">
-            <span>
-              <i className="fas fa-bookmark"></i> {book.type}
-            </span>
                         <span>
-              <i className="fas fa-calendar"></i> {book.publisYear}
-            </span>
+                            <i className="fas fa-bookmark"></i> {book.type}
+                        </span>
                         <span>
-              <i className="fas fa-language"></i> {book.language}
-            </span>
+                            <i className="fas fa-calendar"></i> {book.publisYear}
+                        </span>
+                        <span>
+                            <i className="fas fa-language"></i> {book.language}
+                        </span>
                     </div>
 
                     <div className="book-description">
@@ -139,6 +156,7 @@ const BookDetailPage = () => {
                     </div>
                 </div>
             </div>
+            <BookRatingSection bookId={bookId} />
         </div>
     );
 };

@@ -4,6 +4,7 @@ import './homepage.css';
 import ShoppingCart from '../../components/ShoppingCart';
 import Favorites from '../../components/Favorites';
 import ProfileDropdown from '../../components/ProfileDropdown';
+import StarRating from '../../components/StarRating';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import axios from 'axios';
@@ -144,7 +145,7 @@ const Homepage = () => {
             <SwiperSlide key={book.id}>
               <div className="book-card">
                 <div className="image">
-                  <Link to={`/book/${book.id}`}>
+                  <Link to={`/books/${book.id}`}>
                     <img src={book.image} alt={book.title} />
                   </Link>
                   <button
@@ -158,17 +159,11 @@ const Homepage = () => {
                   </button>
                 </div>
                 <div className="content">
-                  <Link to={`/book/${book.id}`} className="book-title">
+                  <Link to={`/books/${book.id}`} className="book-title">
                     <h3>{book.title}</h3>
                   </Link>
                   <div className="price">${book.price?.toFixed(2)}</div>
-                  <div className="stars">
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star"></i>
-                    <i className="fas fa-star-half-alt"></i>
-                  </div>
+                  <StarRating rating={book.rating || 0} />
                   <button onClick={() => handleAddToCart(book)} className="btn">Add to Cart</button>
                 </div>
               </div>

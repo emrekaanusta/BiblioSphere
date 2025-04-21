@@ -43,14 +43,13 @@ function App() {
                                 <Route path="/products" element={<ProductPage />} />
 
                                 {/* Single book detail page (by ISBN or numeric ID) */}
-                                <Route path="/book/:bookId" element={<BookDetailPage />} />
+                                <Route path="/books/:bookId" element={<BookDetailPage />} />
 
                                 {/* Categories, checkout, favorites */}
                                 <Route path="/category/:category" element={<CategoryPage />} />
                                 <Route path="/checkout" element={<Checkout />} />
                                 <Route path="/favorites" element={<FavoritesPage />} />
 
-                                <Route path="/book/:bookId" element={<BookDetailPage />} />
                                 <Route path="/category/:category" element={<CategoryPage />} />
                                 <Route path="/orders" element={<Orders />} />
                                 <Route path="/receipt/:orderId" element={<Receipt />} />

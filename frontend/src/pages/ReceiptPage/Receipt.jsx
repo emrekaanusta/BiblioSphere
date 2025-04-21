@@ -121,7 +121,7 @@ const Receipt = () => {
             return (
               <li key={item.productId} className="receipt-item">
                 <div className="receipt-book-row">
-                  <Link to={`/book/${item.productId}`}>
+                  <Link to={`/books/${item.productId}`}>
                     <img
                       src={item.image || book?.image || "https://via.placeholder.com/100x150?text=No+Image"}
                       alt={item.title}

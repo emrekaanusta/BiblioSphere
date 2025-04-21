@@ -110,7 +110,7 @@ const CategoryPage = () => {
                     {categoryBooks.map(book => (
                         <div key={book.id} className="book-card">
                             <div className="book-image-container">
-                                <Link to={`/book/${book.id}`}>
+                                <Link to={`/books/${book.id}`}>
                                     <img src={book.image} alt={book.title} className="book-image" />
                                 </Link>
                                 <button
@@ -121,7 +121,7 @@ const CategoryPage = () => {
                                 </button>
                             </div>
                             <div className="book-info">
-                                <Link to={`/book/${book.id}`} className="book-title">
+                                <Link to={`/books/${book.id}`} className="book-title">
                                     <h3>{book.title}</h3>
                                 </Link>
                                 <p className="author">by {book.author}</p>

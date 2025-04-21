@@ -4,6 +4,7 @@ import './productpage.css';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import ShoppingCart from '../../components/ShoppingCart';
+import StarRating from '../../components/StarRating';
 import axios from 'axios';
 
 const ProductPage = () => {
@@ -90,7 +91,7 @@ const ProductPage = () => {
           {books.map((book) => (
             <div className="book-item" key={book.id}>
               <div className="book-image-container">
-                <Link to={`/book/${book.id}`}>
+                <Link to={`/books/${book.id}`}>
                   <img src={book.image} alt={book.title} className="book-image" />
                 </Link>
                 <button
@@ -100,13 +101,14 @@ const ProductPage = () => {
                   <i className="fas fa-heart"></i>
                 </button>
               </div>
-              <Link to={`/book/${book.id}`} className="book-title">
+              <Link to={`/books/${book.id}`} className="book-title">
                 <h3>{book.title}</h3>
               </Link>
               <p>Author: {book.author}</p>
               <p>Genre: {book.type}</p>
               <p>Year: {book.publisYear}</p>
               <p className="price">Price: ${book.price?.toFixed(2)}</p>
+              <StarRating rating={book.rating || 0} />
               <button className="btn" onClick={() => handleAddToCart(book)}>
                 Add to Cart
               </button>
