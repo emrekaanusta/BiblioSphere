@@ -56,4 +56,9 @@ public class RatingController {
 
         return savedRating;
     }
+
+    @GetMapping("/product/{productId}")
+    public List<Rating> getRatingsByProduct(@PathVariable String productId) {
+        return ratingRepo.findByProductId(productId);
+    }
 }

@@ -24,6 +24,67 @@ const formatDate = (dateString) => {
   });
 };
 
+const styles = {
+  container: {
+    padding: '20px',
+    maxWidth: '800px',
+    margin: '0 auto',
+  },
+  reviewsList: {
+    marginTop: '20px',
+  },
+  reviewItem: {
+    border: '1px solid #e0e0e0',
+    borderRadius: '8px',
+    padding: '15px',
+    marginBottom: '15px',
+    backgroundColor: '#fff',
+  },
+  reviewHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '10px',
+  },
+  reviewerInfo: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+  },
+  reviewerAvatar: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+  },
+  reviewerDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  reviewerName: {
+    fontWeight: 'bold',
+    marginBottom: '4px',
+  },
+  reviewDate: {
+    color: '#666',
+    fontSize: '0.9em',
+    marginBottom: '4px',
+  },
+  reviewerRating: {
+    marginTop: '4px',
+  },
+  reviewText: {
+    marginTop: '10px',
+    color: '#333',
+    lineHeight: '1.5',
+  },
+  noReviews: {
+    textAlign: 'center',
+    color: '#666',
+    fontStyle: 'italic',
+    marginTop: '20px',
+  },
+};
+
 const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -37,18 +98,58 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        // Always fetch reviews, no auth needed
-        const productRes = await fetch(`http://localhost:8080/api/products/${bookId}`);
-        if (productRes.ok) {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        // Fetch both product and ratings data
+        const [productRes, ratingsRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/products/${bookId}`),
+          fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
+            headers: headers
+          })
+        ]);
+
+        console.log('Product Response Status:', productRes.status);
+        console.log('Ratings Response Status:', ratingsRes.status);
+
+        if (productRes.ok && ratingsRes.ok) {
           const product = await productRes.json();
-          console.log('Product data:', product);
-          const reviewsData = product.reviews || product.review || product.ratings || [];
-          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+          const ratings = await ratingsRes.json();
+          
+          console.log('Raw Product Data:', JSON.stringify(product, null, 2));
+          console.log('Raw Ratings Data:', JSON.stringify(ratings, null, 2));
+
+          // Handle ratings data
+          let processedReviews = [];
+          if (Array.isArray(ratings)) {
+            processedReviews = ratings;
+          } else if (ratings && typeof ratings === 'object') {
+            processedReviews = [ratings];
+          }
+
+          console.log('Processed Reviews:', JSON.stringify(processedReviews, null, 2));
+          console.log('Review objects:', processedReviews.map(review => ({
+            id: review.id,
+            rating: review.rating,
+            comment: review.comment,
+            submittedAt: review.submittedAt,
+            userName: review.userName
+          })));
+          
+          setReviews(processedReviews);
           setAverageRating(product.rating || 0);
+        } else {
+          console.error('Failed to fetch data:', {
+            productStatus: productRes.status,
+            ratingsStatus: ratingsRes.status
+          });
+          // If we get a 403, set empty reviews but don't show an error
+          if (ratingsRes.status === 403) {
+            setReviews([]);
+          }
         }
 
         // Check if user can rate (logged in and has purchased)
-        const token = localStorage.getItem('token');
         if (token) {
           const canRateRes = await fetch(
             `http://localhost:8080/api/ratings/can-rate?productId=${bookId}`,
@@ -61,6 +162,8 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           if (canRateRes.ok) {
             const { canRate } = await canRateRes.json();
             setCanRate(canRate);
+          } else if (canRateRes.status === 403) {
+            setCanRate(false);
           }
 
           // Check if user has already rated
@@ -204,30 +307,36 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         </div>
       )}
 
-      <div className="reviews-list">
-        {reviews.length > 0 ? (
-          reviews.map((review, index) => (
-            <div key={index} className="review-item">
-              <div className="review-header">
-                <div className="reviewer-info">
-                  <img 
-                    src={`https://ui-avatars.com/api/?name=${review.userName || 'Anonymous'}&background=random`} 
-                    alt="User avatar" 
-                    className="reviewer-avatar"
-                  />
-                  <div className="reviewer-details">
-                    <span className="reviewer-name">{maskUsername(review.userName || 'Anonymous')}</span>
-                    <span className="review-date">{formatDate(review.date || new Date())}</span>
+      <div style={styles.container}>
+        <div style={styles.reviewsList}>
+          {reviews.length > 0 ? (
+            reviews.map((review, index) => (
+              <div key={index} style={styles.reviewItem}>
+                <div style={styles.reviewHeader}>
+                  <div style={styles.reviewerInfo}>
+                    <img 
+                      src={`https://ui-avatars.com/api/?name=${review.userName || 'Anonymous'}&background=random`} 
+                      alt="User avatar" 
+                      style={styles.reviewerAvatar}
+                    />
+                    <div style={styles.reviewerDetails}>
+                      <span style={styles.reviewerName}>{maskUsername(review.userName || 'Anonymous')}</span>
+                      <span style={styles.reviewDate}>{formatDate(review.submittedAt || new Date())}</span>
+                      <div style={styles.reviewerRating}>
+                        <StarRating rating={Number(review.rating) || 0} readOnly />
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <StarRating rating={review.rating || 0} />
+                <p style={styles.reviewText}>
+                  {typeof review.comment === 'string' ? review.comment : 'No comment provided'}
+                </p>
               </div>
-              <p className="review-text">{review.comment || review.text || review}</p>
-            </div>
-          ))
-        ) : (
-          <p className="no-reviews">No reviews yet. Be the first to review!</p>
-        )}
+            ))
+          ) : (
+            <p style={styles.noReviews}>No reviews yet. Be the first to review!</p>
+          )}
+        </div>
       </div>
     </div>
   );
