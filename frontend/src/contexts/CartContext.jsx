@@ -12,8 +12,10 @@ export const useCart = () => {
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(() => {
+        const token = localStorage.getItem('token');
         const savedCart = localStorage.getItem('cart');
-        return savedCart ? JSON.parse(savedCart) : [];
+        // Only restore cart if user is logged in
+        return token && savedCart ? JSON.parse(savedCart) : [];
     });
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [shippingMethod, setShippingMethod] = useState(() => {
@@ -88,8 +90,10 @@ export const CartProvider = ({ children }) => {
     };
 
     const clearCart = () => {
+        console.log('Clearing cart - current cart state:', cart);
         setCart([]);
         localStorage.removeItem('cart');
+        console.log('Cart cleared - new cart state:', []);
     };
 
     const value = {

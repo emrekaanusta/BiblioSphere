@@ -5,7 +5,7 @@ import { useFavorites } from "../contexts/FavoritesContext";
 import "./Header.css";
 
 const Header = () => {
-  const { toggleCart, cart } = useCart();
+  const { toggleCart, cart, clearCart } = useCart();
   const { toggleFavorites, favorites, clearFavorites } = useFavorites();
 
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
@@ -21,11 +21,17 @@ const Header = () => {
   }, []);
 
   const handleSignOut = () => {
+    console.log('Starting sign out process...');
     localStorage.removeItem("token");
     setIsLoggedIn(false);
+    console.log('Clearing favorites...');
     clearFavorites();                 // wipe client‑side data
+    console.log('Clearing cart...');
+    clearCart();                      // wipe cart on sign out
     setShowAuthDropdown(false);
+    console.log('Redirecting to home...');
     navigate("/");
+    console.log('Sign out process completed');
   };
 
   const handleAuthClick   = () => setShowAuthDropdown(!showAuthDropdown);
