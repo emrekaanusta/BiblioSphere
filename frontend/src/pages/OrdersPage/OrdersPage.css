@@ -461,4 +461,13 @@
     font-size: 1rem;
     margin-top: 0.5rem;
   }
-      
+  
+  .cancel-order-btn {
+    margin-left: 1rem;
+    background: #ff5959;
+    color: #fff;
+  }
+  .cancel-order-btn:hover {
+    background: #e03d3d;
+  }
+  

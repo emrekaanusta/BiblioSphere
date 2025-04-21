@@ -128,32 +128,39 @@ const BookDetailPage = () => {
                     </div>
 
                     <div className="book-details">
-                        <h3>Product Details</h3>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td>ISBN:</td>
-                                <td>{book.isbn}</td>
-                            </tr>
-                            <tr>
-                                <td>Publisher:</td>
-                                <td>{book.publisher}</td>
-                            </tr>
-                            <tr>
-                                <td>Publication Year:</td>
-                                <td>{book.publisYear}</td>
-                            </tr>
-                            <tr>
-                                <td>Pages:</td>
-                                <td>{book.pages}</td>
-                            </tr>
-                            <tr>
-                                <td>Language:</td>
-                                <td>{book.language}</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                    <h3>Product Details</h3>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>ISBN:</td>
+                            <td>{book.isbn}</td>
+                        </tr>
+                        <tr>
+                            <td>Publisher:</td>
+                            <td>{book.publisher}</td>
+                        </tr>
+                        <tr>
+                            <td>Publication Year:</td>
+                            <td>{book.publisYear}</td>
+                        </tr>
+                        <tr>
+                            <td>Pages:</td>
+                            <td>{book.pages}</td>
+                        </tr>
+                        <tr>
+                            <td>Language:</td>
+                            <td>{book.language}</td>
+                        </tr>
+
+                        {/* ⬇⬇ new row ⬇⬇ */}
+                        <tr>
+                            <td>Stock:</td>
+                            <td>{book.stock > 0 ? book.stock : 'Out of stock'}</td>
+                        </tr>
+                        </tbody>
+                    </table>
                     </div>
+
                 </div>
             </div>
             <BookRatingSection bookId={bookId} />

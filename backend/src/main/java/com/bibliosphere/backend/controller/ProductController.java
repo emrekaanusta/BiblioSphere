@@ -3,83 +3,84 @@ package com.bibliosphere.backend.controller;
 import com.bibliosphere.backend.config.CloudinaryUploadService;
 import com.bibliosphere.backend.model.Product;
 import com.bibliosphere.backend.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.bibliosphere.backend.service.ProductService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-// If your React dev server is on 3000:
 @CrossOrigin(origins = "http://localhost:3000")
+@RequiredArgsConstructor
 public class ProductController {
 
-    @Autowired
-    private CloudinaryUploadService imageService; // If using Cloudinary
+    private final CloudinaryUploadService imageService;
+    private final ProductRepository       repo;
+    private final ProductService          productService;
 
-    @Autowired
-    private ProductRepository productRepository;
-
-    /**
-     * GET all products
-     * URL: http://localhost:8080/api/products
-     */
+    /* ---------- GET ---------- */
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<Product> getAll() {
+        return repo.findAll();
     }
 
-    /**
-     * GET a product by ISBN
-     * Example: http://localhost:8080/api/products/1
-     */
     @GetMapping("/{isbn}")
-    public ResponseEntity<Product> getProductByIsbn(@PathVariable String isbn) {
-        return productRepository.findById(isbn)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Product> getByIsbn(@PathVariable String isbn) {
+        return repo.findById(isbn)
+                   .map(ResponseEntity::ok)
+                   .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * POST a new product with file upload
-     * Example: POST http://localhost:8080/api/products
-     * (multipart form data)
-     */
+    /* ---------- POST (create) ---------- */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Product> createProduct(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("isbn") String isbn,
-            @RequestParam("title") String title,
-            @RequestParam("author") String author,
-            @RequestParam("type") String type,
-            @RequestParam("price") float price,
+            @RequestParam("file")        MultipartFile file,
+            @RequestParam("isbn")        String isbn,
+            @RequestParam("title")       String title,
+            @RequestParam("author")      String author,
+            @RequestParam("type")        String type,
+            @RequestParam("price")       float  price,
+            @RequestParam("stock")       int    stock,
             @RequestParam("description") String description,
-            @RequestParam("publisYear") String publisYear,
-            @RequestParam("pages") int pages,
-            @RequestParam("language") String language,
-            @RequestParam("publisher") String publisher
+            @RequestParam("publisYear")  String publisYear,
+            @RequestParam("pages")       int    pages,
+            @RequestParam("language")    String language,
+            @RequestParam("publisher")   String publisher
     ) throws IOException {
 
         String imageUrl = imageService.uploadImage(file);
 
-        Product product = new Product();
-        product.setIsbn(isbn);
-        product.setTitle(title);
-        product.setAuthor(author);
-        product.setType(type);
-        product.setPrice(price);
-        product.setDescription(description);
-        product.setPublisYear(publisYear);
-        product.setPages(pages);
-        product.setLanguage(language);
-        product.setPublisher(publisher);
-        product.setImage(imageUrl);
+        // ⚠  order follows the field order in Product.java
+        Product p = new Product(
+                isbn, title, author, type, price,
+                imageUrl,                        
+                description, publisYear, pages,
+                stock,                           
+                language, publisher,
+                0f,                              
+                new ArrayList<>());             
 
-        Product savedProduct = productRepository.save(product);
-        return ResponseEntity.ok(savedProduct);
+        return ResponseEntity.ok(repo.save(p));
+    }
+
+    /* ---------- PATCH: decrement stock ---------- */
+    @PatchMapping("/{isbn}/decrement")
+    public ResponseEntity<Product> decrement(@PathVariable String isbn) {
+        Product updated = productService.decrementStock(isbn);
+        if (updated == null) return ResponseEntity.badRequest().build(); // already 0
+        return ResponseEntity.ok(updated);
+    }
+
+    /* ---------- PATCH: reset stock (dev only) ---------- */
+    @PatchMapping("/{isbn}/reset/{qty}")
+    public ResponseEntity<Product> reset(@PathVariable String isbn,
+                                         @PathVariable int qty) {
+        return ResponseEntity.ok(productService.resetStock(isbn, qty));
     }
 }

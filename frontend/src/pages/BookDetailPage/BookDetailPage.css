@@ -199,3 +199,15 @@
         margin: 0 auto;
     }
 } 
+.stock {
+    font-size: 1.4rem;
+    margin-bottom: .4rem;
+    color: var(--secondary-color);
+  }
+  
+  .btn:disabled,
+  .add-to-cart-btn:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+  }
+  
