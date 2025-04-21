@@ -25,4 +25,6 @@ public class Rating {
 
     private String orderId; // optional, helps trace source
     private LocalDateTime submittedAt;
+
+    private String sentiment;
 }
