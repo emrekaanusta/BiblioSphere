@@ -25,6 +25,7 @@ public class Product {
     private String description;
     private String publisYear;
     private int pages;
+    private int    stock;
     private String language;
     private String publisher;
     private float rating;

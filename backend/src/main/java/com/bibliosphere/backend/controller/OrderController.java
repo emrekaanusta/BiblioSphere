@@ -1,4 +1,5 @@
 package com.bibliosphere.backend.controller;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.bibliosphere.backend.model.Order;
 import com.bibliosphere.backend.service.OrderService;
@@ -12,39 +13,46 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
+@CrossOrigin(                       // 👈  allow React dev‑server
+        origins = "http://localhost:3000",
+        methods = {                 //    and include PATCH pre‑flight
+                RequestMethod.GET,
+                RequestMethod.POST,
+                RequestMethod.PATCH
+        })
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
 
-    // Place a new order
+    /* ---------- place order ---------- */
     @PostMapping
     public ResponseEntity<Order> placeOrder(@RequestBody Order order, Authentication auth) {
-        order.setUserEmail(auth.getName()); // associate order with the authenticated user
-        return ResponseEntity.status(201)
-                .body(orderService.createOrder(order));
+        order.setUserEmail(auth.getName());
+        return ResponseEntity.status(201).body(orderService.createOrder(order));
     }
 
-    // Get specific order by ID (only if it belongs to the authenticated user)
-    @GetMapping("/{orderId}")
-    public ResponseEntity<Order> getOrderById(@PathVariable String orderId, Authentication auth) {
-        Optional<Order> orderOpt = orderService.getOrderById(orderId);
-
-        if (orderOpt.isPresent()) {
-            Order order = orderOpt.get();
-
-            // ✅ Ensure only the user who placed the order can see it
-            if (!order.getUserEmail().equals(auth.getName())) {
-                return ResponseEntity.status(403).build(); // Forbidden
-            }
-
-            return ResponseEntity.ok(order);
-        } else {
-            return ResponseEntity.notFound().build();
+    /* ---------- cancel order ---------- */
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<Order> cancel(@PathVariable String orderId, Authentication auth) {
+        try {
+            Order cancelled = orderService.cancelOrder(orderId, auth.getName());
+            return ResponseEntity.ok(cancelled);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(400).body(null); // refine as needed
         }
     }
 
-    // Get all orders for the logged-in user
+    /* ---------- fetch one ---------- */
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Order> getOrderById(@PathVariable String orderId, Authentication auth) {
+        Optional<Order> opt = orderService.getOrderById(orderId);
+        if (opt.isPresent() && opt.get().getUserEmail().equals(auth.getName()))
+            return ResponseEntity.ok(opt.get());
+        return ResponseEntity.status(403).build();
+    }
+
+    /* ---------- list my orders ---------- */
     @GetMapping
     public List<Order> myOrders(Authentication auth) {
         return orderService.getOrdersForUser(auth.getName());
