@@ -15,6 +15,13 @@ const maskUsername = (name) => {
   return `${maskedFirstName} ${maskedLastName}`;
 };
 
+const getInitials = (name) => {
+  if (!name) return 'A';
+  const parts = name.split(' ');
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
@@ -285,7 +292,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
       <div className="rating-header">
         <h3>Ratings & Reviews</h3>
         <div className="average-rating">
-          <StarRating rating={averageRating} />
+          <StarRating rating={averageRating || 0} />
           <span className="rating-count">
             ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
           </span>
@@ -349,7 +356,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           <div style={styles.reviewHeader}>
             <div style={styles.reviewerInfo}>
               <img 
-                src={`https://ui-avatars.com/api/?name=You&background=random`} 
+                src={`https://ui-avatars.com/api/?name=${getInitials('You')}&background=random`} 
                 alt="Your avatar" 
                 style={styles.reviewerAvatar}
               />
@@ -387,12 +394,12 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
                 <div style={styles.reviewHeader}>
                   <div style={styles.reviewerInfo}>
                     <img 
-                      src={`https://ui-avatars.com/api/?name=${review.userName || 'Anonymous'}&background=random`} 
+                      src={`https://ui-avatars.com/api/?name=${getInitials(review.user?.name || review.userName || 'Anonymous')}&background=random`} 
                       alt="User avatar" 
                       style={styles.reviewerAvatar}
                     />
                     <div style={styles.reviewerDetails}>
-                      <span style={styles.reviewerName}>{maskUsername(review.userName || 'Anonymous')}</span>
+                      <span style={styles.reviewerName}>{maskUsername(review.user?.name || review.userName || 'Anonymous')}</span>
                       <span style={styles.reviewDate}>{formatDate(review.submittedAt || new Date())}</span>
                       <div style={styles.reviewerRating}>
                         <StarRating rating={Number(review.rating) || 0} readOnly />
