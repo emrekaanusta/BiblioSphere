@@ -54,6 +54,32 @@ const Orders = () => {
     }
   };
 
+  const getStatusClass = (status) => {
+    switch (status) {
+        case 'PROCESSED':
+            return 'status-pending';
+        case 'DELIVERED':
+            return 'status-completed';
+        case 'CANCELLED':
+            return 'status-cancelled';
+        default:
+            return 'status-pending';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+        case 'PROCESSED':
+            return 'Processing';
+        case 'DELIVERED':
+            return 'Delivered';
+        case 'CANCELLED':
+            return 'Cancelled';
+        default:
+            return 'Processing';
+    }
+  };
+
   /* ---------- render ---------- */
 
   if (loading)
@@ -92,9 +118,11 @@ const Orders = () => {
               <span className="order-id">Order #{order.id}</span>
             </div>
             <div className="order-meta">
-              <span className={`order-status ${order.status.toLowerCase()}`}>
-                {order.status}
-              </span>
+              <div className="order-status">
+                <span className={getStatusClass(order.status)}>
+                  {getStatusText(order.status)}
+                </span>
+              </div>
               <span className="order-date">
                 {new Date(order.createdAt).toLocaleDateString()}
               </span>
