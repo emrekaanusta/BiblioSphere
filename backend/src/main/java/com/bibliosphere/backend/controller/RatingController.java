@@ -2,10 +2,13 @@ package com.bibliosphere.backend.controller;
 
 import com.bibliosphere.backend.model.Rating;
 import com.bibliosphere.backend.model.Product;
+import com.bibliosphere.backend.model.Order;
+import com.bibliosphere.backend.model.OrderStatus;
 import com.bibliosphere.backend.repository.RatingRepository;
 import com.bibliosphere.backend.repository.ProductRepository;
+import com.bibliosphere.backend.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication; // ✅ THIS ONE
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,14 +25,33 @@ public class RatingController {
     @Autowired
     private ProductRepository productRepo;
 
+    @Autowired
+    private OrderRepository orderRepo;
+
     @GetMapping("/check")
     public boolean hasUserRated(@RequestParam String productId, Authentication auth) {
-        String userId = auth.getName(); // grabs from token
+        String userId = auth.getName();
         return ratingRepo.findByUserIdAndProductId(userId, productId).isPresent();
     }
+
+    @GetMapping("/can-rate")
+    public boolean canUserRate(@RequestParam String productId, Authentication auth) {
+        String userId = auth.getName();
+        // Check if user has already rated
+        if (ratingRepo.findByUserIdAndProductId(userId, productId).isPresent()) {
+            return false;
+        }
+        // Check if user has purchased and received the book
+        List<Order> orders = orderRepo.findAllByUserEmailOrderByCreatedAtDesc(userId);
+        return orders.stream()
+            .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+            .anyMatch(order -> order.getItems().stream()
+                .anyMatch(item -> item.getProductId().equals(productId)));
+    }
+
     @PostMapping
     public Rating submitRating(@RequestBody Rating rating, Authentication auth) {
-        String userId = auth.getName(); // ✅ pulls from token
+        String userId = auth.getName();
         rating.setUserId(userId);
 
         Optional<Rating> existing = ratingRepo.findByUserIdAndProductId(userId, rating.getProductId());

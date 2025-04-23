@@ -92,8 +92,8 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
   const [averageRating, setAverageRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasRated, setHasRated] = useState(false);
-  const [canRate, setCanRate] = useState(false);
   const [showRatingRequired, setShowRatingRequired] = useState(false);
+  const [orderStatus, setOrderStatus] = useState(null);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -109,16 +109,10 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           })
         ]);
 
-        console.log('Product Response Status:', productRes.status);
-        console.log('Ratings Response Status:', ratingsRes.status);
-
         if (productRes.ok && ratingsRes.ok) {
           const product = await productRes.json();
           const ratings = await ratingsRes.json();
           
-          console.log('Raw Product Data:', JSON.stringify(product, null, 2));
-          console.log('Raw Ratings Data:', JSON.stringify(ratings, null, 2));
-
           // Handle ratings data
           let processedReviews = [];
           if (Array.isArray(ratings)) {
@@ -126,58 +120,34 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           } else if (ratings && typeof ratings === 'object') {
             processedReviews = [ratings];
           }
-
-          console.log('Processed Reviews:', JSON.stringify(processedReviews, null, 2));
-          console.log('Review objects:', processedReviews.map(review => ({
-            id: review.id,
-            rating: review.rating,
-            comment: review.comment,
-            submittedAt: review.submittedAt,
-            userName: review.userName
-          })));
           
           setReviews(processedReviews);
           setAverageRating(product.rating || 0);
-        } else {
-          console.error('Failed to fetch data:', {
-            productStatus: productRes.status,
-            ratingsStatus: ratingsRes.status
-          });
-          // If we get a 403, set empty reviews but don't show an error
-          if (ratingsRes.status === 403) {
-            setReviews([]);
-          }
         }
 
-        // Check if user can rate (logged in and has purchased)
+        // Check if user has already rated and get order status
         if (token) {
-          const canRateRes = await fetch(
-            `http://localhost:8080/api/ratings/can-rate?productId=${bookId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          if (canRateRes.ok) {
-            const { canRate } = await canRateRes.json();
-            setCanRate(canRate);
-          } else if (canRateRes.status === 403) {
-            setCanRate(false);
-          }
+          const [ratedRes, ordersRes] = await Promise.all([
+            fetch(`http://localhost:8080/api/ratings/check?productId=${bookId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            }),
+            fetch('http://localhost:8080/api/orders', {
+              headers: { Authorization: `Bearer ${token}` }
+            })
+          ]);
 
-          // Check if user has already rated
-          const ratedRes = await fetch(
-            `http://localhost:8080/api/ratings/check?productId=${bookId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
           if (ratedRes.ok) {
             const hasRated = await ratedRes.json();
             setHasRated(hasRated);
+          }
+
+          if (ordersRes.ok) {
+            const orders = await ordersRes.json();
+            const orderWithBook = orders.find(order => 
+              order.status === 'DELIVERED' && 
+              order.items.some(item => item.productId === bookId)
+            );
+            setOrderStatus(orderWithBook ? 'DELIVERED' : null);
           }
         }
       } catch (err) {
@@ -193,10 +163,6 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
     const token = localStorage.getItem('token');
     
     if (!token) {
-      return;
-    }
-
-    if (!canRate) {
       return;
     }
 
@@ -255,7 +221,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         </div>
       </div>
 
-      {!hasRated && canRate && (
+      {!hasRated && orderStatus === 'DELIVERED' && (
         <form className="rating-form" onSubmit={handleSubmit}>
           <div className="star-input">
             <span>Your Rating:</span>
@@ -301,9 +267,15 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         </div>
       )}
 
-      {localStorage.getItem('token') && !canRate && (
+      {localStorage.getItem('token') && orderStatus !== 'DELIVERED' && !hasRated && (
         <div className="notification info">
           You need to purchase and receive this book before you can rate it.
+        </div>
+      )}
+
+      {hasRated && (
+        <div className="notification success">
+          You have already rated this book.
         </div>
       )}
 
