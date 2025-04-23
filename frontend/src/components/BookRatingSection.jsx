@@ -140,10 +140,13 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           })
         ]);
 
-        if (productRes.ok && ratingsRes.ok) {
+        if (productRes.ok) {
           const product = await productRes.json();
+          setAverageRating(product.rating || 0);
+        }
+
+        if (ratingsRes.ok) {
           const ratings = await ratingsRes.json();
-          
           // Handle ratings data
           let processedReviews = [];
           if (Array.isArray(ratings)) {
@@ -151,9 +154,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           } else if (ratings && typeof ratings === 'object') {
             processedReviews = [ratings];
           }
-          
           setReviews(processedReviews);
-          setAverageRating(product.rating || 0);
         }
 
         // Check if user has already rated and get order status
@@ -294,12 +295,12 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         <div className="average-rating">
           <StarRating rating={averageRating || 0} />
           <span className="rating-count">
-            ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+            ({reviews.length} {reviews.length === 1 ? 'rating' : 'ratings'})
           </span>
         </div>
       </div>
 
-      {!hasRated && orderStatus === 'DELIVERED' && (
+      {localStorage.getItem('token') && !hasRated && orderStatus === 'DELIVERED' && (
         <form className="rating-form" onSubmit={handleSubmit}>
           <div className="star-input">
             <span>Your Rating:</span>
@@ -351,7 +352,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         </div>
       )}
 
-      {userRating && (
+      {localStorage.getItem('token') && userRating && (
         <div style={styles.reviewItem}>
           <div style={styles.reviewHeader}>
             <div style={styles.reviewerInfo}>
@@ -412,8 +413,10 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
                 </p>
               </div>
             ))
+          ) : reviews.length > 0 ? (
+            <p style={styles.noReviews}>No reviews with comments yet. Be the first to leave a review!</p>
           ) : (
-            <p style={styles.noReviews}>No reviews yet. Be the first to review!</p>
+            <p style={styles.noReviews}>No ratings yet. Be the first to rate this book!</p>
           )}
         </div>
       </div>
