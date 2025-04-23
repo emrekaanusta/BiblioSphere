@@ -53,17 +53,17 @@ const ShoppingCart = () => {
                 
                 <div className="cart-items">
                     {cart && cart.length > 0 ? cart.map((item, index) => (
-                        <div key={`${item.id}-${index}`} className="cart-item">
+                        <div key={`${item.isbn}-${index}`} className="cart-item">
                             <img src={item.image} alt={item.title} className="cart-item-image" />
                             <div className="cart-item-details">
                                 <h3>{item.title}</h3>
                                 <p>Price: ${item.price}</p>
                                 <div className="quantity-controls">
-                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                                    <button onClick={() => updateQuantity(item.isbn, item.quantity - 1)}>-</button>
                                     <span>{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                                    <button onClick={() => updateQuantity(item.isbn, item.quantity + 1)}>+</button>
                                 </div>
-                                <button onClick={() => removeFromCart(item.id)} className="remove-btn">Remove</button>
+                                <button onClick={() => removeFromCart(item.isbn)} className="remove-btn">Remove</button>
                             </div>
                         </div>
                     )) : (

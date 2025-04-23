@@ -20,6 +20,8 @@ export const CartProvider = ({ children }) => {
         const savedMethod = localStorage.getItem('shippingMethod');
         return savedMethod || 'standard';
     });
+    const [shippingCost, setShippingCost] = useState(0);
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
         localStorage.setItem('cart', JSON.stringify(cart));
@@ -27,19 +29,28 @@ export const CartProvider = ({ children }) => {
 
     useEffect(() => {
         localStorage.setItem('shippingMethod', shippingMethod);
-    }, [shippingMethod]);
+        const newShippingCost = calculateShippingCost();
+        setShippingCost(newShippingCost);
+        setTotal(getSubtotal() + newShippingCost);
+    }, [shippingMethod, cart]);
 
     const shippingRates = {
         standard: 5,
         express: 15
     };
 
+    const calculateShippingCost = () => {
+        const subtotal = getSubtotal();
+        if (subtotal >= 100) return 0;
+        return shippingMethod === "express" ? 15 : 5;
+    };
+
     const addToCart = (product) => {
         setCart(currentCart => {
-            const existingItem = currentCart.find(item => item.id === product.id);
+            const existingItem = currentCart.find(item => item.isbn === product.isbn);
             if (existingItem) {
                 return currentCart.map(item =>
-                    item.id === product.id
+                    item.isbn === product.isbn
                         ? { ...item, quantity: item.quantity + 1 }
                         : item
                 );
@@ -52,35 +63,33 @@ export const CartProvider = ({ children }) => {
     };
 
     const removeFromCart = (productId) => {
-        setCart(currentCart => currentCart.filter(item => item.id !== productId));
+        setCart(currentCart => currentCart.filter(item => item.isbn !== productId));
     };
 
     const updateQuantity = (productId, newQuantity) => {
-        if (newQuantity < 1) return;
+        if (newQuantity < 1) {
+            removeFromCart(productId);
+            return;
+        }
         setCart(currentCart =>
             currentCart.map(item =>
-                item.id === productId
+                item.isbn === productId
                     ? { ...item, quantity: newQuantity }
                     : item
             )
         );
     };
 
-
     const getShippingCost = () => {
-        const subtotal = getSubtotal();
-        if (subtotal >= 100) return 0;
-        return shippingMethod === "express" ? 15 : 5;
-      };
-      
+        return shippingCost;
+    };
 
     const getSubtotal = () => {
         return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
     };
 
     const getCartTotal = () => {
-        const subtotal = getSubtotal();
-        return subtotal;
+        return total;
     };
 
     const toggleCart = () => {
@@ -90,6 +99,13 @@ export const CartProvider = ({ children }) => {
     const clearCart = () => {
         setCart([]);
         localStorage.removeItem('cart');
+    };
+
+    const updateShippingMethod = (method) => {
+        setShippingMethod(method);
+        const newShippingCost = calculateShippingCost();
+        setShippingCost(newShippingCost);
+        setTotal(getSubtotal() + newShippingCost);
     };
 
     const value = {
@@ -103,9 +119,12 @@ export const CartProvider = ({ children }) => {
         clearCart,
         getSubtotal,
         shippingMethod,
-        setShippingMethod,
+        updateShippingMethod,
         shippingRates,
-        getShippingCost
+        getShippingCost,
+        getSubtotal,
+        shippingCost,
+        total
     };
 
     return (
