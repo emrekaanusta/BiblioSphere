@@ -34,6 +34,12 @@ public class RatingController {
         return ratingRepo.findByUserIdAndProductId(userId, productId).isPresent();
     }
 
+    @GetMapping("/user-rating")
+    public Rating getUserRating(@RequestParam String productId, Authentication auth) {
+        String userId = auth.getName();
+        return ratingRepo.findByUserIdAndProductId(userId, productId).orElse(null);
+    }
+
     @GetMapping("/can-rate")
     public boolean canUserRate(@RequestParam String productId, Authentication auth) {
         String userId = auth.getName();
@@ -53,9 +59,6 @@ public class RatingController {
     public Rating submitRating(@RequestBody Rating rating, Authentication auth) {
         String userId = auth.getName();
         rating.setUserId(userId);
-        if (rating.getComment() != null && !rating.getComment().isBlank()) {
-            rating.setVisible(false); // ✅ add this line
-        }
 
         Optional<Rating> existing = ratingRepo.findByUserIdAndProductId(userId, rating.getProductId());
         if (existing.isPresent()) {
@@ -63,24 +66,44 @@ public class RatingController {
         }
 
         rating.setSubmittedAt(LocalDateTime.now());
-
-        // ✅ Hide comment by default
-        if (rating.getComment() != null && !rating.getComment().isBlank()) {
-            rating.setVisible(false); // Hidden until admin approves
-        }
-
         Rating savedRating = ratingRepo.save(rating);
 
-        // ✅ Recalculate average rating
         List<Rating> allRatings = ratingRepo.findByProductId(rating.getProductId());
         float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
 
         productRepo.findById(rating.getProductId()).ifPresent(product -> {
             product.setRating(avg);
-            productRepo.save(product); // only update rating
+            if (rating.getComment() != null && !rating.getComment().isBlank()) {
+                if (product.getReview() == null) {
+                    product.setReview(new java.util.ArrayList<>());
+                }
+                product.getReview().add(rating.getComment());
+            }
+            productRepo.save(product);
         });
 
         return savedRating;
+    }
+
+    @DeleteMapping("/{ratingId}")
+    public void deleteRating(@PathVariable String ratingId, Authentication auth) {
+        String userId = auth.getName();
+        Optional<Rating> rating = ratingRepo.findById(ratingId);
+        
+        if (rating.isPresent() && rating.get().getUserId().equals(userId)) {
+            ratingRepo.deleteById(ratingId);
+            
+            // Recalculate average rating
+            List<Rating> allRatings = ratingRepo.findByProductId(rating.get().getProductId());
+            float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
+            
+            productRepo.findById(rating.get().getProductId()).ifPresent(product -> {
+                product.setRating(avg);
+                productRepo.save(product);
+            });
+        } else {
+            throw new RuntimeException("Not authorized to delete this rating");
+        }
     }
 
     @GetMapping("/product/{productId}")

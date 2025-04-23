@@ -83,6 +83,29 @@ const styles = {
     fontStyle: 'italic',
     marginTop: '20px',
   },
+  deleteButton: {
+    background: 'none',
+    border: 'none',
+    color: '#dc2626',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    fontSize: '0.9em',
+  },
+  statusBadge: {
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: '12px',
+    fontSize: '0.8em',
+    marginLeft: '8px',
+  },
+  pendingStatus: {
+    backgroundColor: '#fef3c7',
+    color: '#92400e',
+  },
+  visibleStatus: {
+    backgroundColor: '#dcfce7',
+    color: '#166534',
+  },
 };
 
 const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
@@ -94,6 +117,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
   const [hasRated, setHasRated] = useState(false);
   const [showRatingRequired, setShowRatingRequired] = useState(false);
   const [orderStatus, setOrderStatus] = useState(null);
+  const [userRating, setUserRating] = useState(null);
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -127,11 +151,14 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
 
         // Check if user has already rated and get order status
         if (token) {
-          const [ratedRes, ordersRes] = await Promise.all([
+          const [ratedRes, ordersRes, userRatingRes] = await Promise.all([
             fetch(`http://localhost:8080/api/ratings/check?productId=${bookId}`, {
               headers: { Authorization: `Bearer ${token}` }
             }),
             fetch('http://localhost:8080/api/orders', {
+              headers: { Authorization: `Bearer ${token}` }
+            }),
+            fetch(`http://localhost:8080/api/ratings/user-rating?productId=${bookId}`, {
               headers: { Authorization: `Bearer ${token}` }
             })
           ]);
@@ -148,6 +175,11 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
               order.items.some(item => item.productId === bookId)
             );
             setOrderStatus(orderWithBook ? 'DELIVERED' : null);
+          }
+
+          if (userRatingRes.ok) {
+            const rating = await userRatingRes.json();
+            setUserRating(rating);
           }
         }
       } catch (err) {
@@ -206,6 +238,41 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
       alert('Something went wrong');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteRating = async (ratingId) => {
+    if (!window.confirm('Are you sure you want to delete your review?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:8080/api/ratings/${ratingId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setHasRated(false);
+        setUserRating(null);
+        // Refresh reviews
+        const productRes = await fetch(`http://localhost:8080/api/products/${bookId}`);
+        if (productRes.ok) {
+          const product = await productRes.json();
+          const reviewsData = product.reviews || product.review || product.ratings || [];
+          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+          setAverageRating(product.rating || 0);
+        }
+      } else {
+        const errText = await res.text();
+        alert('Failed to delete rating: ' + errText);
+      }
+    } catch (err) {
+      console.error('Failed to delete rating:', err);
+      alert('Something went wrong');
     }
   };
 
@@ -277,9 +344,38 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         </div>
       )}
 
-      {hasRated && (
-        <div className="notification success">
-          You have already rated this book.
+      {userRating && (
+        <div style={styles.reviewItem}>
+          <div style={styles.reviewHeader}>
+            <div style={styles.reviewerInfo}>
+              <img 
+                src={`https://ui-avatars.com/api/?name=You&background=random`} 
+                alt="Your avatar" 
+                style={styles.reviewerAvatar}
+              />
+              <div style={styles.reviewerDetails}>
+                <span style={styles.reviewerName}>Your Review</span>
+                <span style={styles.reviewDate}>{formatDate(userRating.submittedAt || new Date())}</span>
+                <div style={styles.reviewerRating}>
+                  <StarRating rating={Number(userRating.rating) || 0} readOnly />
+                </div>
+              </div>
+            </div>
+            <button
+              style={styles.deleteButton}
+              onClick={() => handleDeleteRating(userRating.id)}
+            >
+              Delete
+            </button>
+          </div>
+          {userRating.comment && (
+            <p style={styles.reviewText}>
+              {userRating.comment}
+              <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
+                {userRating.visible ? 'Visible' : 'Pending Approval'}
+              </span>
+            </p>
+          )}
         </div>
       )}
 
