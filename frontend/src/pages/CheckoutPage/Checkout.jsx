@@ -131,7 +131,7 @@ const Checkout = () => {
                   <h3>{it.title}</h3>
                   <p>Price: ${it.price}</p>
                   <div className="quantity-controls">
-                    <button onClick={() => updateQuantity(it.id, Math.max(1, it.quantity - 1))}>-</button>
+                    <button onClick={() => updateQuantity(it.id, it.quantity - 1)}>-</button>
                     <span>{it.quantity}</span>
                     <button onClick={() => updateQuantity(it.id, it.quantity + 1)}>+</button>
                   </div>
