@@ -23,6 +23,8 @@ public class Rating {
     private int rating; // 1 to 5
     private String comment; // optional
 
-    private String orderId; // optional, helps trace source
+    private String orderId; // optional
     private LocalDateTime submittedAt;
+
+    private boolean visible = false; // ✅ New field: only visible comments are shown
 }

@@ -209,6 +209,10 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
     }
   };
 
+  const visibleComments = reviews.filter(
+    (r) => r.visible && r.comment && r.comment.trim() !== ''
+  );
+  
   return (
     <div className="rating-section" id="reviews">
       <div className="rating-header">
@@ -281,8 +285,8 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
 
       <div style={styles.container}>
         <div style={styles.reviewsList}>
-          {reviews.length > 0 ? (
-            reviews.map((review, index) => (
+          {visibleComments.length > 0 ? (
+            visibleComments.map((review, index) => (
               <div key={index} style={styles.reviewItem}>
                 <div style={styles.reviewHeader}>
                   <div style={styles.reviewerInfo}>
