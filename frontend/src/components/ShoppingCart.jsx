@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import './ShoppingCart.css';
@@ -12,17 +12,33 @@ const ShoppingCart = () => {
         toggleCart,
         getCartTotal,
         shippingMethod,
-        setShippingMethod
+        updateShippingMethod,
+        getSubtotal,
+        shippingCost,
+        total
     } = useCart();
     const navigate = useNavigate();
 
-    const subtotal = getCartTotal();
-    const isFreeShipping = subtotal >= 100;
-    const shippingCost = isFreeShipping ? 0 : (shippingMethod === 'express' ? 15 : shippingMethod === 'standard' ? 5 : 0);
-    const total = subtotal + shippingCost;
+    const [subtotal, setSubtotal] = useState(0);
+    const [isFreeShipping, setIsFreeShipping] = useState(false);
+
+    useEffect(() => {
+        const newSubtotal = getSubtotal();
+        setSubtotal(newSubtotal);
+        setIsFreeShipping(newSubtotal >= 100);
+    }, [cart, getSubtotal]);
+
+    const handleShippingMethodChange = (method) => {
+        updateShippingMethod(method);
+    };
 
     const handleCheckout = () => {
+        const token = localStorage.getItem('token');
         toggleCart();
+        if (!token) {
+            navigate('/login');
+            return;
+        }
         navigate('/checkout');
     };
 
@@ -36,14 +52,14 @@ const ShoppingCart = () => {
                 </div>
                 
                 <div className="cart-items">
-                    {cart && cart.length > 0 ? cart.map((item) => (
-                        <div key={item.id} className="cart-item">
+                    {cart && cart.length > 0 ? cart.map((item, index) => (
+                        <div key={`${item.id}-${index}`} className="cart-item">
                             <img src={item.image} alt={item.title} className="cart-item-image" />
                             <div className="cart-item-details">
                                 <h3>{item.title}</h3>
                                 <p>Price: ${item.price}</p>
                                 <div className="quantity-controls">
-                                    <button onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}>-</button>
+                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
                                     <span>{item.quantity}</span>
                                     <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
                                 </div>
@@ -74,7 +90,7 @@ const ShoppingCart = () => {
                                             name="shipping"
                                             value="standard"
                                             checked={shippingMethod === 'standard'}
-                                            onChange={(e) => setShippingMethod(e.target.value)}
+                                            onChange={() => handleShippingMethodChange('standard')}
                                         />
                                         <label htmlFor="standard">Standard Shipping ($5.00)</label>
                                     </div>
@@ -85,7 +101,7 @@ const ShoppingCart = () => {
                                             name="shipping"
                                             value="express"
                                             checked={shippingMethod === 'express'}
-                                            onChange={(e) => setShippingMethod(e.target.value)}
+                                            onChange={() => handleShippingMethodChange('express')}
                                         />
                                         <label htmlFor="express">Express Shipping ($15.00)</label>
                                     </div>
