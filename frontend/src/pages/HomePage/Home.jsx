@@ -73,11 +73,6 @@ const Homepage = () => {
   };
 
   const handleToggleFavorite = (book) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
     if (isBookFavorite(book.id)) {
       removeFromFavorites(book.id);
     } else {
@@ -143,9 +138,6 @@ const Homepage = () => {
 
           <div className="rating-wrapper">
             <StarRating rating={book.rating || 0} />
-            <span className="rating-count">
-              ({book.reviews?.length || 0} {book.reviews?.length === 1 ? 'rating' : 'ratings'})
-            </span>
           </div>
 
           <button
