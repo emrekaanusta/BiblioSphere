@@ -242,7 +242,10 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
       setIsSubmitting(false);
     }
   };
-
+  const visibleComments = reviews.filter(
+    (r) => r.visible && r.comment && r.comment.trim() !== ''
+  );
+  
   return (
     <div className="rating-section" id="reviews">
       <div className="rating-header">
@@ -254,7 +257,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           </span>
         </div>
       </div>
-
+  
       {!hasRated && canRate && (
         <form className="rating-form" onSubmit={handleSubmit}>
           <div className="star-input">
@@ -277,14 +280,14 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
               Please select a rating before submitting your review.
             </div>
           )}
-
+  
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Share your thoughts about this book..."
             className="comment-box"
           />
-
+  
           <button
             type="submit"
             className="submit-rating-btn"
@@ -294,34 +297,38 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           </button>
         </form>
       )}
-
+  
       {!localStorage.getItem('token') && (
         <div className="notification info">
           Please <a href="/login">login</a> to rate and review this book.
         </div>
       )}
-
+  
       {localStorage.getItem('token') && !canRate && (
         <div className="notification info">
           You need to purchase and receive this book before you can rate it.
         </div>
       )}
-
+  
       <div style={styles.container}>
         <div style={styles.reviewsList}>
-          {reviews.length > 0 ? (
-            reviews.map((review, index) => (
+          {visibleComments.length > 0 ? (
+            visibleComments.map((review, index) => (
               <div key={index} style={styles.reviewItem}>
                 <div style={styles.reviewHeader}>
                   <div style={styles.reviewerInfo}>
-                    <img 
-                      src={`https://ui-avatars.com/api/?name=${review.userName || 'Anonymous'}&background=random`} 
-                      alt="User avatar" 
+                    <img
+                      src={`https://ui-avatars.com/api/?name=${review.userName || 'Anonymous'}&background=random`}
+                      alt="User avatar"
                       style={styles.reviewerAvatar}
                     />
                     <div style={styles.reviewerDetails}>
-                      <span style={styles.reviewerName}>{maskUsername(review.userName || 'Anonymous')}</span>
-                      <span style={styles.reviewDate}>{formatDate(review.submittedAt || new Date())}</span>
+                      <span style={styles.reviewerName}>
+                        {maskUsername(review.userName || 'Anonymous')}
+                      </span>
+                      <span style={styles.reviewDate}>
+                        {formatDate(review.submittedAt || new Date())}
+                      </span>
                       <div style={styles.reviewerRating}>
                         <StarRating rating={Number(review.rating) || 0} readOnly />
                       </div>
@@ -329,7 +336,9 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
                   </div>
                 </div>
                 <p style={styles.reviewText}>
-                  {typeof review.comment === 'string' ? review.comment : 'No comment provided'}
+                  {typeof review.comment === 'string'
+                    ? review.comment
+                    : 'No comment provided'}
                 </p>
               </div>
             ))
@@ -340,6 +349,6 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
       </div>
     </div>
   );
-};
+}  
 
 export default BookRatingSection; 

@@ -11,26 +11,21 @@ import StarRating from '../../components/StarRating';
 import axios from 'axios';
 
 export default function ProductPage() {
-  /* ───────── state ───────── */
-  const [isCartOpen,   setIsCartOpen]   = useState(false);
-  const [books,        setBooks]        = useState([]);
-  const [displayList,  setDisplayList]  = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [books, setBooks] = useState([]);
+  const [displayList, setDisplayList] = useState([]);
 
-  /* UI controls */
-  const [searchTerm,   setSearchTerm]   = useState('');
-  const [category,     setCategory]     = useState('all');
-  const [sortOption,   setSortOption]   = useState('none');      // price‑asc | points‑desc …
+  const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState('all');
+  const [sortOption, setSortOption] = useState('none');
 
-  /* meta */
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  /* contexts */
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isBookFavorite, updateFavorites } = useFavorites();
 
-  /* ───── fetch books on mount ───── */
   useEffect(() => {
     axios
       .get('http://localhost:8080/api/products')
@@ -47,11 +42,9 @@ export default function ProductPage() {
       });
   }, []);
 
-  /* ───── recompute list whenever controls change ───── */
   useEffect(() => {
     let list = [...books];
 
-    /* 1 – search */
     const term = searchTerm.trim().toLowerCase();
     if (term) {
       list = list.filter(
@@ -61,12 +54,10 @@ export default function ProductPage() {
       );
     }
 
-    /* 2 – category */
     if (category !== 'all') {
       list = list.filter((b) => b.type === category);
     }
 
-    /* 3 – sort */
     switch (sortOption) {
       case 'price-asc':
         list.sort((a, b) => a.price - b.price);
@@ -74,7 +65,7 @@ export default function ProductPage() {
       case 'price-desc':
         list.sort((a, b) => b.price - a.price);
         break;
-      case 'points-desc':               // highest rating first
+      case 'points-desc':
         list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'points-asc':
@@ -87,7 +78,6 @@ export default function ProductPage() {
     setDisplayList(list);
   }, [books, searchTerm, category, sortOption]);
 
-  /* ───── handlers ───── */
   const handleAddToCart = (book) => {
     addToCart(book);
     setIsCartOpen(true);
@@ -117,9 +107,8 @@ export default function ProductPage() {
       .catch(console.error);
   };
 
-  /* ───── UI ───── */
-  if (loading) return <div>Loading books…</div>;
-  if (error)   return <div>{error}</div>;
+  if (loading) return <div className="product-page">Loading books…</div>;
+  if (error) return <div className="product-page">{error}</div>;
 
   const categories = ['all', ...new Set(books.map((b) => b.type))];
 
@@ -128,9 +117,7 @@ export default function ProductPage() {
       <div className="product-page">
         <h1>All Books</h1>
 
-        {/* controls row */}
         <div className="controls">
-          {/* search */}
           <div className="search-bar">
             <input
               type="text"
@@ -143,7 +130,6 @@ export default function ProductPage() {
             </button>
           </div>
 
-          {/* category filter */}
           <select
             className="control-select"
             value={category}
@@ -156,7 +142,6 @@ export default function ProductPage() {
             ))}
           </select>
 
-          {/* sort dropdown */}
           <select
             className="control-select"
             value={sortOption}
@@ -170,15 +155,13 @@ export default function ProductPage() {
           </select>
         </div>
 
-        {/* grid */}
         <div className="book-list">
           {displayList.map((book) => (
-            <div className="book-item" key={book.id}>
+            <div className="book-card" key={book.id}>
               <div className="book-image-container">
                 <Link to={`/books/${book.id}`}>
                   <img src={book.image} alt={book.title} className="book-image" />
                 </Link>
-
                 <button
                   className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
                   onClick={() => handleToggleFavorite(book)}
@@ -187,27 +170,26 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              <Link to={`/books/${book.id}`} className="book-title">
-                <h3>{book.title}</h3>
-              </Link>
+              <div className="book-info">
+                <Link to={`/books/${book.id}`} className="book-title">
+                  <h3>{book.title}</h3>
+                </Link>
+                <p className="author">By {book.author}</p>
+                <p className="price">${book.price?.toFixed(2)}</p>
+                <p className="stock">Stock: {book.stock}</p>
 
-              <p>Author: {book.author}</p>
-              <p>Genre:  {book.type}</p>
-              <p>Year:   {book.publishYear ?? book.publisYear}</p>
-              <p className="price">Price: ${book.price?.toFixed(2)}</p>
-              <p className="stock">
-                {book.stock > 0 ? `Stock: ${book.stock}` : 'Out of stock'}
-              </p>
+                <div className="rating-wrapper">
+                  <StarRating rating={book.rating || 0} />
+                </div>
 
-              <StarRating rating={book.rating || 0} />
-
-              <button
-                className="btn"
-                disabled={book.stock === 0}
-                onClick={() => handleAddToCart(book)}
-              >
-                {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
-              </button>
+                <button
+                  className="add-to-cart-btn"
+                  onClick={() => handleAddToCart(book)}
+                  disabled={book.stock === 0}
+                >
+                  {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                </button>
+              </div>
             </div>
           ))}
         </div>

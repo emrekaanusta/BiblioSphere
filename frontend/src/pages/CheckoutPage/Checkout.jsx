@@ -125,7 +125,7 @@ const Checkout = () => {
           <h2>Order Summary</h2>
           <div className="cart-items">
             {cart.map((it) => (
-              <div key={it.id} className="checkout-item">
+              <div key={it.isbn} className="checkout-item">
                 <img src={it.image} alt={it.title} className="checkout-item-image" />
                 <div className="checkout-item-details">
                   <h3>{it.title}</h3>

@@ -3,15 +3,21 @@ import React, { useState } from "react";
 const RatingForm = ({ productId, orderId, onRated }) => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!rating) {
+      setError("Please select a rating before submitting.");
+      return;
+    }
 
     const payload = {
       productId,
       orderId,
       rating,
-      comment,
+      comment: comment.trim() || null, // allow empty or null comments
     };
 
     try {
@@ -19,13 +25,13 @@ const RatingForm = ({ productId, orderId, onRated }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // ✅ Auth from token
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        onRated?.(); // 👈 Notify parent (e.g., Receipt page) to update UI
+        onRated?.();
       } else {
         const errText = await res.text();
         alert("Rating failed: " + errText);
@@ -39,10 +45,14 @@ const RatingForm = ({ productId, orderId, onRated }) => {
   return (
     <form className="rating-form" onSubmit={handleSubmit}>
       <div className="star-input">
+        <span>Your Rating:</span>
         {[1, 2, 3, 4, 5].map((s) => (
           <span
             key={s}
-            onClick={() => setRating(s)}
+            onClick={() => {
+              setRating(s);
+              setError("");
+            }}
             style={{
               cursor: "pointer",
               color: rating >= s ? "#facc15" : "#ccc",
@@ -53,6 +63,8 @@ const RatingForm = ({ productId, orderId, onRated }) => {
           </span>
         ))}
       </div>
+
+      {error && <div className="rating-error" style={{ color: "red" }}>{error}</div>}
 
       <textarea
         value={comment}
