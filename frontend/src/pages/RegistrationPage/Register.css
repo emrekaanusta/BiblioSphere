@@ -1,19 +1,23 @@
 .page-container {
-    height: 100vh;
+    min-height: 100vh;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #e6f8ff;
+    background-color: var(--green);
+    margin: 0;
+    padding: 0;
 }
 
 .register-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 60px); /* Navbar yüksekliği çıkarıldı */
+    min-height: calc(100vh - 60px);
     width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .register-box {
@@ -47,6 +51,7 @@
     line-height: 1.4;
     font-family: Arial, sans-serif;
     box-sizing: border-box;
+    text-transform: none;
 }
 
 .input-group input::placeholder {
@@ -55,20 +60,70 @@
     opacity: 1;
     font-family: Arial, sans-serif;
 }
+
+:root{
+    --green:#34495E;
+    --dark-color:#2C3E50;
+    --black:#444;
+    --light-color:#666;
+    --border:.1rem solid rgba(0,0,0,.1);
+    --border-hover:.1rem solid var(--black);
+    --box-shadow:0 .5rem 1rem rgba(0,0,0,.1);
+}
+
 .register-btn {
     width: 100%;
-    padding: 10px;
-    border: none;
-    background-color: #99e4ff;
+    padding: 1rem;
+    background: var(--green);
     color: white;
-    font-size: 16px;
-    border-radius: 5px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: background-color 0.3s ease;
+    margin-top: 1rem;
 }
 
 .register-btn:hover {
-    background-color: #357abd;
+    background: var(--dark-color);
+}
+
+.register-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.login-link {
+    color: var(--green);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-link:hover {
+    color: var(--dark-color);
+    text-decoration: underline;
+}
+
+.social-login-btn {
+    width: 100%;
+    padding: 1rem;
+    background: white;
+    color: var(--green);
+    border: 1px solid var(--green);
+    border-radius: 4px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.social-login-btn:hover {
+    background: var(--green);
+    color: white;
 }
 
 html, body {
