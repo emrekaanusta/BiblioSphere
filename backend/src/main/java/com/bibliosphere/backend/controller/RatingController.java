@@ -29,8 +29,11 @@ public class RatingController {
     }
     @PostMapping
     public Rating submitRating(@RequestBody Rating rating, Authentication auth) {
-        String userId = auth.getName(); // ✅ pulls from token
+        String userId = auth.getName();
         rating.setUserId(userId);
+        if (rating.getComment() != null && !rating.getComment().isBlank()) {
+            rating.setVisible(false); // ✅ add this line
+        }
 
         Optional<Rating> existing = ratingRepo.findByUserIdAndProductId(userId, rating.getProductId());
         if (existing.isPresent()) {
@@ -38,20 +41,21 @@ public class RatingController {
         }
 
         rating.setSubmittedAt(LocalDateTime.now());
+
+        // ✅ Hide comment by default
+        if (rating.getComment() != null && !rating.getComment().isBlank()) {
+            rating.setVisible(false); // Hidden until admin approves
+        }
+
         Rating savedRating = ratingRepo.save(rating);
 
+        // ✅ Recalculate average rating
         List<Rating> allRatings = ratingRepo.findByProductId(rating.getProductId());
         float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
 
         productRepo.findById(rating.getProductId()).ifPresent(product -> {
             product.setRating(avg);
-            if (rating.getComment() != null && !rating.getComment().isBlank()) {
-                if (product.getReview() == null) {
-                    product.setReview(new java.util.ArrayList<>());
-                }
-                product.getReview().add(rating.getComment());
-            }
-            productRepo.save(product);
+            productRepo.save(product); // only update rating
         });
 
         return savedRating;
