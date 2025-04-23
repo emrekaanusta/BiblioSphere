@@ -4,6 +4,7 @@ import axios from 'axios';
 
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import StarRating from '../../components/StarRating';
 
 import './CategoryPage.css';
 
@@ -48,7 +49,7 @@ export default function CategoryPage() {
 
     const cat = decodeURIComponent(category).toLowerCase();
 
-    /* 1 – category filter */
+    /* 1 – category filter */
     let list = books.filter((b) => {
       if (!b.type) return false;
       const pieces = b.type
@@ -57,17 +58,18 @@ export default function CategoryPage() {
       return pieces.includes(cat);
     });
 
-    /* 2 – search */
+    /* 2 – search */
     const term = searchTerm.trim().toLowerCase();
     if (term) {
       list = list.filter(
         (b) =>
           b.title?.toLowerCase().includes(term) ||
-          b.author?.toLowerCase().includes(term)
+          b.author?.toLowerCase().includes(term) ||
+          b.description?.toLowerCase().includes(term)
       );
     }
 
-    /* 3 – sort */
+    /* 3 – sort */
     switch (sortOption) {
       case 'price-asc':
         list.sort((a, b) => a.price - b.price);
@@ -89,7 +91,16 @@ export default function CategoryPage() {
   }, [books, category, searchTerm, sortOption, loading]);
 
   /* ───── handlers ───── */
-  const handleAddToCart = (book) => addToCart(book);
+  const handleAddToCart = (book) => {
+    const success = addToCart(book);
+    if (!success) {
+      if (book.stock === 0) {
+        alert('This item is out of stock.');
+      } else {
+        alert(`Cannot add more items. Only ${book.stock} available in stock.`);
+      }
+    }
+  };
 
   const handleToggleFavorite = (book) => {
     const token = localStorage.getItem('token');
@@ -154,10 +165,10 @@ export default function CategoryPage() {
           onChange={(e) => setSortOption(e.target.value)}
         >
           <option value="none">Sort</option>
-          <option value="price-asc">Price – low → high</option>
-          <option value="price-desc">Price – high → low</option>
-          <option value="points-desc">Points – high → low</option>
-          <option value="points-asc">Points – low → high</option>
+          <option value="price-asc">Price – low → high</option>
+          <option value="price-desc">Price – high → low</option>
+          <option value="points-desc">Points – high → low</option>
+          <option value="points-asc">Points – low → high</option>
         </select>
       </div>
 
@@ -197,16 +208,18 @@ export default function CategoryPage() {
                   <Link to={`/books/${book.id}`} className="book-title">
                     <h3>{book.title}</h3>
                   </Link>
-                  <p className="author">by {book.author}</p>
+                  <p className="author">By {book.author}</p>
                   <p className="price">${book.price?.toFixed(2)}</p>
-                  <p className="stock">
-                    {book.stock > 0 ? `Stock: ${book.stock}` : 'Out of stock'}
-                  </p>
+                  <p className="stock">Stock: {book.stock}</p>
+
+                  <div className="rating-wrapper">
+                    <StarRating rating={book.rating || 0} />
+                  </div>
 
                   <button
                     className="add-to-cart-btn"
-                    disabled={book.stock === 0}
                     onClick={() => handleAddToCart(book)}
+                    disabled={book.stock === 0}
                   >
                     {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>

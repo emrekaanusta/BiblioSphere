@@ -52,6 +52,11 @@
   color: #ffb400;
 }
 
+.rating-count {
+  font-size: 0.8rem;
+  color: #666;
+}
+
 .rating-number {
   color: #333;
   font-weight: bold;
@@ -60,25 +65,39 @@
 .add-to-cart-btn {
   width: 100%;
   padding: 0.8rem;
-  background: #4CAF50;
+  background: var(--green);
   color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 6px;
   font-size: 1rem;
-  transition: background-color 0.3s ease;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
 }
 
 .add-to-cart-btn:hover {
-  background: #45a049;
+  background: var(--dark-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+
+.add-to-cart-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .book-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 2rem;
   justify-content: center;
   padding: 1rem 0;
-}.product-page {
+}
+
+.product-page {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;

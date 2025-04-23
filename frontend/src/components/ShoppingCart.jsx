@@ -15,7 +15,9 @@ const ShoppingCart = () => {
         updateShippingMethod,
         getSubtotal,
         shippingCost,
-        total
+        total,
+        warning,
+        showWarning
     } = useCart();
     const navigate = useNavigate();
 
@@ -42,6 +44,14 @@ const ShoppingCart = () => {
         navigate('/checkout');
     };
 
+    const handleQuantityChange = (item, newQuantity) => {
+        if (newQuantity > item.stock) {
+            showWarning(`Cannot add more items. Only ${item.stock} available in stock.`);
+            return;
+        }
+        updateQuantity(item.isbn, newQuantity);
+    };
+
     return (
         <>
             <div className={`cart-overlay ${isCartOpen ? 'open' : ''}`} onClick={toggleCart}></div>
@@ -59,10 +69,21 @@ const ShoppingCart = () => {
                                 <h3>{item.title}</h3>
                                 <p>Price: ${item.price}</p>
                                 <div className="quantity-controls">
-                                    <button onClick={() => updateQuantity(item.isbn, item.quantity - 1)}>-</button>
+                                    <button 
+                                        onClick={() => handleQuantityChange(item, item.quantity - 1)}
+                                        disabled={item.quantity <= 1}
+                                    >
+                                        -
+                                    </button>
                                     <span>{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item.isbn, item.quantity + 1)}>+</button>
+                                    <button 
+                                        onClick={() => handleQuantityChange(item, item.quantity + 1)}
+                                        disabled={item.quantity >= item.stock}
+                                    >
+                                        +
+                                    </button>
                                 </div>
+                                <p>Stock: {item.stock}</p>
                                 <button onClick={() => removeFromCart(item.isbn)} className="remove-btn">Remove</button>
                             </div>
                         </div>
@@ -127,12 +148,27 @@ const ShoppingCart = () => {
                             </div>
                         </div>
 
-                        <button onClick={handleCheckout} className="checkout-btn">
+                        <button 
+                            onClick={() => {
+                                if (cart.some(item => item.stock === 0)) {
+                                    showWarning("Cannot proceed with out-of-stock items in cart");
+                                } else {
+                                    handleCheckout();
+                                }
+                            }}
+                            className="checkout-btn"
+                            disabled={cart.some(item => item.stock === 0)}
+                        >
                             Proceed to Checkout
                         </button>
                     </div>
                 )}
             </div>
+            {warning && (
+                <div className="warning-popup">
+                    {warning}
+                </div>
+            )}
         </>
     );
 };

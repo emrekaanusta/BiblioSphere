@@ -1,0 +1,26 @@
+.warning-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    background: #ff4444;
+    color: white;
+    border-radius: 4px;
+    animation: slideIn 0.3s ease-out;
+    z-index: 9999;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    font-weight: 500;
+    min-width: 300px;
+    text-align: center;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+} 

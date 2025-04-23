@@ -413,10 +413,8 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
                 </p>
               </div>
             ))
-          ) : reviews.length > 0 ? (
-            <p style={styles.noReviews}>No reviews with comments yet. Be the first to leave a review!</p>
           ) : (
-            <p style={styles.noReviews}>No ratings yet. Be the first to rate this book!</p>
+            <p style={styles.noReviews}>No reviews yet. Be the first to review!</p>
           )}
         </div>
       </div>

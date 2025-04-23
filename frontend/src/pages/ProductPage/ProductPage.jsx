@@ -5,13 +5,11 @@ import './productpage.css';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 
-import ShoppingCart from '../../components/ShoppingCart';
 import StarRating from '../../components/StarRating';
 
 import axios from 'axios';
 
 export default function ProductPage() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [books, setBooks] = useState([]);
   const [displayList, setDisplayList] = useState([]);
 
@@ -50,7 +48,8 @@ export default function ProductPage() {
       list = list.filter(
         (b) =>
           b.title?.toLowerCase().includes(term) ||
-          b.author?.toLowerCase().includes(term)
+          b.author?.toLowerCase().includes(term) ||
+          b.description?.toLowerCase().includes(term)
       );
     }
 
@@ -79,8 +78,14 @@ export default function ProductPage() {
   }, [books, searchTerm, category, sortOption]);
 
   const handleAddToCart = (book) => {
-    addToCart(book);
-    setIsCartOpen(true);
+    const success = addToCart(book);
+    if (!success) {
+      if (book.stock === 0) {
+        alert('This item is out of stock.');
+      } else {
+        alert(`Cannot add more items. Only ${book.stock} available in stock.`);
+      }
+    }
   };
 
   const handleToggleFavorite = (book) => {
@@ -107,8 +112,13 @@ export default function ProductPage() {
       .catch(console.error);
   };
 
-  if (loading) return <div className="product-page">Loading books…</div>;
-  if (error) return <div className="product-page">{error}</div>;
+  if (loading) {
+    return <div>Loading products...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   const categories = ['all', ...new Set(books.map((b) => b.type))];
 
@@ -148,10 +158,10 @@ export default function ProductPage() {
             onChange={(e) => setSortOption(e.target.value)}
           >
             <option value="none">Sort</option>
-            <option value="price-asc">Price – low → high</option>
-            <option value="price-desc">Price – high → low</option>
-            <option value="points-desc">Points – high → low</option>
-            <option value="points-asc">Points – low → high</option>
+            <option value="price-asc">Price – low → high</option>
+            <option value="price-desc">Price – high → low</option>
+            <option value="points-desc">Points – high → low</option>
+            <option value="points-asc">Points – low → high</option>
           </select>
         </div>
 
@@ -194,8 +204,6 @@ export default function ProductPage() {
           ))}
         </div>
       </div>
-
-      <ShoppingCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 }

@@ -20,6 +20,12 @@ const BookDetailPage = () => {
     const [book, setBook] = useState(null);
     const [loading, setLoading] = useState(true);
     const [ratings, setRatings] = useState([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        setIsLoggedIn(!!token);
+    }, []);
 
     // Fetch the book data from the backend when this component mounts or bookId changes
     useEffect(() => {
@@ -55,17 +61,24 @@ const BookDetailPage = () => {
     }, [bookId]);
 
     const handleAddToCart = () => {
-        if (!localStorage.getItem('token')) {
+        if (!isLoggedIn) {
             navigate('/login');
             return;
         }
         if (book) {
-            addToCart(book);
+            const success = addToCart(book);
+            if (!success) {
+                if (book.stock === 0) {
+                    alert('This item is out of stock.');
+                } else {
+                    alert(`Cannot add more items. Only ${book.stock} available in stock.`);
+                }
+            }
         }
     };
 
     const handleToggleFavorite = () => {
-        if (!localStorage.getItem('token')) {
+        if (!isLoggedIn) {
             navigate('/login');
             return;
         }
@@ -114,8 +127,12 @@ const BookDetailPage = () => {
                 <div className="book-image-section">
                     <img src={book.image} alt={book.title} className="book-cover" />
                     <div className="book-actions">
-                        <button className="add-to-cart-btn" onClick={handleAddToCart}>
-                            Add to Cart - ${book.price}
+                        <button 
+                            className="add-to-cart-btn" 
+                            onClick={handleAddToCart}
+                            disabled={book.stock === 0}
+                        >
+                            {book.stock === 0 ? 'Out of Stock' : `Add to Cart - $${book.price}`}
                         </button>
                         <button
                             className={`favorite-btn ${isBookFavorite(book.isbn) ? 'active' : ''}`}

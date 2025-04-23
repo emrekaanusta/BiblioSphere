@@ -9,7 +9,14 @@ const FavoritesPage = () => {
     const { addToCart } = useCart();
 
     const handleAddToCart = (book) => {
-        addToCart(book);
+        const success = addToCart(book);
+        if (!success) {
+            if (book.stock === 0) {
+                alert('This item is out of stock.');
+            } else {
+                alert(`Cannot add more items. Only ${book.stock} available in stock.`);
+            }
+        }
     };
 
     return (
@@ -32,13 +39,15 @@ const FavoritesPage = () => {
                                     <h3>{book.title}</h3>
                                 </Link>
                                 <p className="book-price">${book.price}</p>
+                                <p className="stock">Stock: {book.stock}</p>
                                 <div className="book-actions">
                                     <button 
                                         onClick={() => handleAddToCart(book)}
                                         className="add-to-cart-btn"
+                                        disabled={book.stock === 0}
                                     >
                                         <i className="fas fa-shopping-cart"></i>
-                                        Add to Cart
+                                        {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                                     </button>
                                     <button 
                                         onClick={() => removeFromFavorites(book.id)}

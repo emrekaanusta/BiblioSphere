@@ -14,6 +14,8 @@ const Checkout = () => {
     shippingMethod,
     setShippingMethod,
     clearCart,
+    showWarning,
+    warning
   } = useCart();
 
   const navigate = useNavigate();
@@ -59,9 +61,22 @@ const Checkout = () => {
     return Object.keys(e).length === 0;
   };
 
+  const handleQuantityChange = (item, newQuantity) => {
+    if (newQuantity > item.stock) {
+      showWarning(`Cannot add more items. Only ${item.stock} available in stock.`);
+      return;
+    }
+    updateQuantity(item.isbn, newQuantity);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
+
+    if (cart.some(item => item.stock === 0)) {
+      showWarning("Cannot proceed with out-of-stock items in cart");
+      return;
+    }
 
     try {
       setIsProcessing(true);
@@ -72,7 +87,7 @@ const Checkout = () => {
 
       const orderPayload = {
         items: cart.map((item) => ({
-          productId: item.isbn, // or item.id, depending on your product shape
+          productId: item.isbn,
           title: item.title,
           quantity: item.quantity,
           price: item.price,
@@ -102,7 +117,7 @@ const Checkout = () => {
       navigate(`/receipt/${order.id}`);
     } catch (err) {
       console.error(err);
-      alert("Something went wrong. Please try again.");
+      showWarning("Something went wrong. Please try again.");
       setIsProcessing(false);
     }
   };
@@ -131,11 +146,25 @@ const Checkout = () => {
                   <h3>{it.title}</h3>
                   <p>Price: ${it.price}</p>
                   <div className="quantity-controls">
-                    <button onClick={() => updateQuantity(it.id, it.quantity - 1)}>-</button>
+                    <button 
+                      onClick={() => handleQuantityChange(it, it.quantity - 1)}
+                      disabled={it.quantity <= 1}
+                    >
+                      -
+                    </button>
                     <span>{it.quantity}</span>
-                    <button onClick={() => updateQuantity(it.id, it.quantity + 1)}>+</button>
+                    <button 
+                      onClick={() => handleQuantityChange(it, it.quantity + 1)}
+                      disabled={it.quantity >= it.stock}
+                    >
+                      +
+                    </button>
                   </div>
-                  <button onClick={() => removeFromCart(it.id)} className="remove-btn">
+                  <p>Stock: {it.stock}</p>
+                  <button 
+                    onClick={() => removeFromCart(it.isbn)} 
+                    className="remove-btn"
+                  >
                     Remove
                   </button>
                 </div>
@@ -218,9 +247,20 @@ const Checkout = () => {
             )}
           </div>
 
-          <button type="submit" className="place-order-btn">Place Order</button>
+          <button 
+            type="submit" 
+            className="place-order-btn"
+            disabled={cart.some(item => item.stock === 0)}
+          >
+            Place Order
+          </button>
         </form>
       </div>
+      {warning && (
+        <div className="warning-popup">
+          {warning}
+        </div>
+      )}
     </div>
   );
 };

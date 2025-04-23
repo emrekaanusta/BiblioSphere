@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './homepage.css';
-import ShoppingCart from '../../components/ShoppingCart';
 import Favorites from '../../components/Favorites';
 import ProfileDropdown from '../../components/ProfileDropdown';
 import StarRating from '../../components/StarRating';
@@ -24,10 +23,9 @@ const Homepage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [featuredBooks, setFeaturedBooks] = useState([]);
 
-  const { addToCart } = useCart();
+  const { addToCart, toggleCart } = useCart();
   const { addToFavorites, removeFromFavorites, isBookFavorite } = useFavorites();
 
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -45,10 +43,13 @@ const Homepage = () => {
       })
       .then((response) => {
         console.log('Books fetched from backend:', response.data);
-        const dataWithIds = response.data.map((item) => ({
-          ...item,
-          id: item.isbn || item._id,
-        }));
+        const dataWithIds = response.data
+          .filter(book => book.image && book.rating)
+          .map((item) => ({
+            ...item,
+            id: item.isbn || item._id,
+          }))
+          .slice(0, 12);
         setFeaturedBooks(dataWithIds);
       })
       .catch((error) => {
@@ -68,8 +69,14 @@ const Homepage = () => {
   }, []);
 
   const handleAddToCart = (book) => {
-    addToCart(book);
-    setIsCartOpen(true);
+    const success = addToCart(book);
+    if (!success) {
+      if (book.stock === 0) {
+        alert('This item is out of stock.');
+      } else {
+        alert(`Cannot add more items. Only ${book.stock} available in stock.`);
+      }
+    }
   };
 
   const handleToggleFavorite = (book) => {
@@ -86,8 +93,14 @@ const Homepage = () => {
     const navigate = useNavigate();
 
     const handleAddToCart = () => {
-      addToCart(book);
-      setIsCartOpen(true);
+      const success = addToCart(book);
+      if (!success) {
+        if (book.stock === 0) {
+          alert('This item is out of stock.');
+        } else {
+          alert(`Cannot add more items. Only ${book.stock} available in stock.`);
+        }
+      }
     };
 
     const handleToggleFavorite = () => {
@@ -183,14 +196,16 @@ const Homepage = () => {
           <div className="row">
             <div className="content">
               <h3>Up to 75% off</h3>
-              <p>Start your reading journey with Chuck Palahniuk!</p>
+              <p>Discover our featured collection!</p>
               <Link to="/products" className="btn">View All Books</Link>
             </div>
             <div className="swiper books-slider">
               <div className="swiper-wrapper">
-                <a href="#" className="swiper-slide"><img src="/images/book1.jpg" alt="Book 1" /></a>
-                <a href="#" className="swiper-slide"><img src="/images/book2.jpg" alt="Book 2" /></a>
-                <a href="#" className="swiper-slide"><img src="/images/book3.jpg" alt="Book 3" /></a>
+                {featuredBooks.slice(0, 3).map((book) => (
+                  <Link to={`/books/${book.id}`} key={book.id} className="swiper-slide">
+                    <img src={book.image} alt={book.title} />
+                  </Link>
+                ))}
               </div>
               <img src="/images/stand.png" className="stand" alt="Stand" />
             </div>
@@ -243,20 +258,6 @@ const Homepage = () => {
         </div>
       </section>
 
-      <div className="deal-container">
-        <section className="deal">
-          <div className="content">
-            <h3>Special Sale</h3>
-            <h1>up to 50% off</h1>
-            <p>Discover amazing deals on our best-selling books!</p>
-            <Link to="/products" className="btn">Shop Now</Link>
-          </div>
-          <div className="image">
-            <img src="/images/deal-img.jpg" alt="Deal" />
-          </div>
-        </section>
-      </div>
-
       <section className="footer">
         <div className="box-container">
           <h3>Contact Us</h3>
@@ -265,7 +266,6 @@ const Homepage = () => {
         </div>
       </section>
 
-      <ShoppingCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <Favorites isOpen={isFavoritesOpen} onClose={() => setIsFavoritesOpen(false)} />
     </>
   );

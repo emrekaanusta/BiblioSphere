@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ratings")
@@ -30,12 +31,14 @@ public class RatingController {
 
     @GetMapping("/check")
     public boolean hasUserRated(@RequestParam String productId, Authentication auth) {
+        if (auth == null) return false;
         String userId = auth.getName();
         return ratingRepo.findByUserIdAndProductId(userId, productId).isPresent();
     }
 
     @GetMapping("/user-rating")
     public Rating getUserRating(@RequestParam String productId, Authentication auth) {
+        if (auth == null) return null;
         String userId = auth.getName();
         return ratingRepo.findByUserIdAndProductId(userId, productId).orElse(null);
     }
@@ -108,6 +111,8 @@ public class RatingController {
 
     @GetMapping("/product/{productId}")
     public List<Rating> getRatingsByProduct(@PathVariable String productId) {
-        return ratingRepo.findByProductId(productId);
+        return ratingRepo.findByProductId(productId).stream()
+            .filter(rating -> rating.isVisible())
+            .collect(Collectors.toList());
     }
 }
