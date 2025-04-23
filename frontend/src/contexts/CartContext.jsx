@@ -102,7 +102,7 @@ export const CartProvider = ({ children }) => {
                 item.isbn === productId
                     ? { ...item, quantity: newQuantity }
                     : item
-            );
+        );
         });
     };
 
