@@ -80,6 +80,81 @@ const Homepage = () => {
     }
   };
 
+  const BookCard = ({ book }) => {
+    const { addToCart } = useCart();
+    const { isBookFavorite, updateFavorites } = useFavorites();
+    const navigate = useNavigate();
+
+    const handleAddToCart = () => {
+      addToCart(book);
+      setIsCartOpen(true);
+    };
+
+    const handleToggleFavorite = () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const endpoint = isBookFavorite(book._id) ? 'remove' : 'add';
+
+      fetch(`http://localhost:8080/favorites/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId: book._id.toString() }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to update wishlist');
+          return res.json();
+        })
+        .then(updateFavorites)
+        .catch(console.error);
+    };
+
+    return (
+      <div className="book-card" key={book._id}>
+        <div className="book-image-container">
+          <Link to={`/books/${book._id}`}>
+            <img src={book.image} alt={book.title} className="book-image" />
+          </Link>
+          <button
+            className={`favorite-btn ${isBookFavorite(book._id) ? 'active' : ''}`}
+            onClick={handleToggleFavorite}
+          >
+            <i className="fas fa-heart" />
+          </button>
+        </div>
+
+        <div className="book-info">
+          <Link to={`/books/${book._id}`} className="book-title">
+            <h3>{book.title}</h3>
+          </Link>
+          <p className="author">By {book.author}</p>
+          <p className="price">${book.price?.toFixed(2)}</p>
+          <p className="stock">Stock: {book.stock}</p>
+
+          <div className="rating-wrapper">
+            <StarRating rating={book.rating || 0} />
+            <span className="rating-count">
+              ({book.reviews?.length || 0} {book.reviews?.length === 1 ? 'rating' : 'ratings'})
+            </span>
+          </div>
+
+          <button
+            className="add-to-cart-btn"
+            onClick={handleAddToCart}
+            disabled={book.stock === 0}
+          >
+            {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <nav className="bottom-navbar">
@@ -143,30 +218,7 @@ const Homepage = () => {
         >
           {featuredBooks.map((book) => (
             <SwiperSlide key={book.id}>
-              <div className="book-card">
-                <div className="image">
-                  <Link to={`/books/${book.id}`}>
-                    <img src={book.image} alt={book.title} />
-                  </Link>
-                  <button
-                    className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleToggleFavorite(book);
-                    }}
-                  >
-                    <i className="fas fa-heart"></i>
-                  </button>
-                </div>
-                <div className="content">
-                  <Link to={`/books/${book.id}`} className="book-title">
-                    <h3>{book.title}</h3>
-                  </Link>
-                  <div className="price">${book.price?.toFixed(2)}</div>
-                  <StarRating rating={book.rating || 0} />
-                  <button onClick={() => handleAddToCart(book)} className="btn">Add to Cart</button>
-                </div>
-              </div>
+              <BookCard book={book} />
             </SwiperSlide>
           ))}
         </Swiper>
