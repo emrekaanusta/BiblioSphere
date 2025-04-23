@@ -1,13 +1,114 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import RatingForm from "../../components/RatingForm";
+import StarRating from "../../components/StarRating";
 import "./Receipt.css";
+
+const maskUsername = (name) => {
+  if (!name) return 'Anonymous';
+  const parts = name.split(' ');
+  if (parts.length < 2) return name[0] + '*'.repeat(name.length - 1);
+  
+  const firstName = parts[0];
+  const lastName = parts[parts.length - 1];
+  const maskedFirstName = firstName[0] + '*'.repeat(firstName.length - 1);
+  const maskedLastName = lastName[0] + '*'.repeat(lastName.length - 1);
+  
+  return `${maskedFirstName} ${maskedLastName}`;
+};
+
+const getInitials = (name) => {
+  if (!name) return 'A';
+  const parts = name.split(' ');
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+const styles = {
+  reviewItem: {
+    border: '1px solid #e0e0e0',
+    borderRadius: '8px',
+    padding: '15px',
+    marginBottom: '15px',
+    backgroundColor: '#fff',
+  },
+  reviewHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '10px',
+  },
+  reviewerInfo: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+  },
+  reviewerAvatar: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+  },
+  reviewerDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  reviewerName: {
+    fontWeight: 'bold',
+    marginBottom: '4px',
+  },
+  reviewDate: {
+    color: '#666',
+    fontSize: '0.9em',
+    marginBottom: '4px',
+  },
+  reviewerRating: {
+    marginTop: '4px',
+  },
+  reviewText: {
+    marginTop: '10px',
+    color: '#333',
+    lineHeight: '1.5',
+  },
+  deleteButton: {
+    background: 'none',
+    border: 'none',
+    color: '#dc2626',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    fontSize: '0.9em',
+  },
+  statusBadge: {
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: '12px',
+    fontSize: '0.8em',
+    marginLeft: '8px',
+  },
+  pendingStatus: {
+    backgroundColor: '#fef3c7',
+    color: '#92400e',
+  },
+  visibleStatus: {
+    backgroundColor: '#dcfce7',
+    color: '#166534',
+  },
+};
 
 const Receipt = () => {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [ratedProducts, setRatedProducts] = useState({});
   const [bookDetails, setBookDetails] = useState({});
+  const [userRatings, setUserRatings] = useState({});
   const token = localStorage.getItem("token");
 
   // Fetch the order
@@ -24,38 +125,47 @@ const Receipt = () => {
       .catch((err) => console.error("Failed to fetch order:", err));
   }, [orderId, token]);
 
-  // Fetch book details and check which items are rated
+  // Fetch book details, check ratings, and get user ratings
   useEffect(() => {
     if (!order || !token) return;
 
     const checkRatings = async () => {
       const results = {};
+      const userRatingsMap = {};
       await Promise.all(
         order.items.map(async (item) => {
           if (!item.productId) return;
           try {
-            const res = await fetch(
-              `http://localhost:8080/api/ratings/check?productId=${item.productId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`, // ✅ JWT
-                },
-              }
-            );
-    
-            // ✅ Handle 403 errors gracefully
-            if (!res.ok) {
-              if (res.status === 403) {
-                console.warn("Not authorized to check rating (403)");
-              } else {
-                console.warn("Rating check failed:", res.statusText);
-              }
-              results[item.productId] = false;
-              return;
+            const [ratedRes, userRatingRes] = await Promise.all([
+              fetch(
+                `http://localhost:8080/api/ratings/check?productId=${item.productId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              ),
+              fetch(
+                `http://localhost:8080/api/ratings/user-rating?productId=${item.productId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              )
+            ]);
+
+            if (ratedRes.ok) {
+              const hasRated = await ratedRes.json();
+              results[item.productId] = hasRated;
             }
-    
-            const hasRated = await res.json();
-            results[item.productId] = hasRated;
+
+            if (userRatingRes.ok) {
+              const rating = await userRatingRes.json();
+              if (rating) {
+                userRatingsMap[item.productId] = rating;
+              }
+            }
           } catch (err) {
             console.error("Failed to check rating", err);
             results[item.productId] = false;
@@ -63,8 +173,8 @@ const Receipt = () => {
         })
       );
       setRatedProducts(results);
+      setUserRatings(userRatingsMap);
     };
-    
 
     const fetchBookDetails = async () => {
       const ids = order.items.map((i) => i.productId);
@@ -98,7 +208,37 @@ const Receipt = () => {
 
     checkRatings();
     fetchBookDetails();
-  }, [order, token]); // ✅ proper dependencies
+  }, [order, token]);
+
+  const handleDeleteRating = async (ratingId, productId) => {
+    if (!window.confirm('Are you sure you want to delete your review?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/ratings/${ratingId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        setRatedProducts(prev => ({ ...prev, [productId]: false }));
+        setUserRatings(prev => {
+          const newRatings = { ...prev };
+          delete newRatings[productId];
+          return newRatings;
+        });
+      } else {
+        const errText = await res.text();
+        alert('Failed to delete rating: ' + errText);
+      }
+    } catch (err) {
+      console.error('Failed to delete rating:', err);
+      alert('Something went wrong');
+    }
+  };
 
   if (!order) {
     return <div className="receipt-container">Loading order...</div>;
@@ -106,20 +246,19 @@ const Receipt = () => {
 
   return (
     <div className="receipt-container">
-      <div className="receipt-box">
-        <h1>Thank You For Your Order!</h1>
-        <p><strong>Order ID:</strong> {order.id}</p>
-        <p><strong>Shipping Method:</strong> {order.shippingMethod}</p>
-        <p><strong>Status:</strong> {order.status}</p>
+      <div className="receipt-content">
+        <h2>Order Receipt</h2>
+        <p className="order-date">Order Date: {new Date(order.createdAt).toLocaleDateString()}</p>
+        <p className="order-status">Status: {order.status}</p>
 
-        <h2>Items:</h2>
-        <ul className="receipt-item-list">
-          {order.items.map((item) => {
-            const book = bookDetails[item.productId];
+        <ul className="receipt-items">
+          {order.items.map((item, index) => {
             const isRated = ratedProducts[item.productId];
+            const userRating = userRatings[item.productId];
+            const book = bookDetails[item.productId];
 
             return (
-              <li key={item.productId} className="receipt-item">
+              <li key={index} className="receipt-item">
                 <div className="receipt-book-row">
                   <Link to={`/books/${item.productId}`}>
                     <img
@@ -139,9 +278,38 @@ const Receipt = () => {
                     {order.status === "DELIVERED" && (
                       <div className="rating-section">
                         {isRated ? (
-                          <p className="already-rated">
-                            ✅ You've already rated this product.
-                          </p>
+                          <div style={styles.reviewItem}>
+                            <div style={styles.reviewHeader}>
+                              <div style={styles.reviewerInfo}>
+                                <img 
+                                  src={`https://ui-avatars.com/api/?name=${getInitials('You')}&background=random`} 
+                                  alt="Your avatar" 
+                                  style={styles.reviewerAvatar}
+                                />
+                                <div style={styles.reviewerDetails}>
+                                  <span style={styles.reviewerName}>Your Review</span>
+                                  <span style={styles.reviewDate}>{formatDate(userRating?.submittedAt || new Date())}</span>
+                                  <div style={styles.reviewerRating}>
+                                    <StarRating rating={Number(userRating?.rating) || 0} readOnly />
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                style={styles.deleteButton}
+                                onClick={() => handleDeleteRating(userRating?.id, item.productId)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                            {userRating?.comment && (
+                              <p style={styles.reviewText}>
+                                {userRating.comment}
+                                <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
+                                  {userRating.visible ? 'Visible' : 'Pending Approval'}
+                                </span>
+                              </p>
+                            )}
+                          </div>
                         ) : (
                           <RatingForm
                             productId={item.productId}
