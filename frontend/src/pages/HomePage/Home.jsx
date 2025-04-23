@@ -73,6 +73,11 @@ const Homepage = () => {
   };
 
   const handleToggleFavorite = (book) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     if (isBookFavorite(book.id)) {
       removeFromFavorites(book.id);
     } else {
@@ -96,7 +101,7 @@ const Homepage = () => {
         navigate('/login');
         return;
       }
-      const endpoint = isBookFavorite(book._id) ? 'remove' : 'add';
+      const endpoint = isBookFavorite(book.id) ? 'remove' : 'add';
 
       fetch(`http://localhost:8080/favorites/${endpoint}`, {
         method: 'POST',
@@ -104,7 +109,7 @@ const Homepage = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId: book._id.toString() }),
+        body: JSON.stringify({ productId: book.id.toString() }),
       })
         .then((res) => {
           if (!res.ok) throw new Error('Failed to update wishlist');
@@ -115,13 +120,13 @@ const Homepage = () => {
     };
 
     return (
-      <div className="book-card" key={book._id}>
+      <div className="book-card" key={book.id}>
         <div className="book-image-container">
-          <Link to={`/books/${book._id}`}>
+          <Link to={`/books/${book.id}`} style={{ display: 'block', width: '100%' }}>
             <img src={book.image} alt={book.title} className="book-image" />
           </Link>
           <button
-            className={`favorite-btn ${isBookFavorite(book._id) ? 'active' : ''}`}
+            className={`favorite-btn ${isBookFavorite(book.id) ? 'active' : ''}`}
             onClick={handleToggleFavorite}
           >
             <i className="fas fa-heart" />
@@ -129,7 +134,7 @@ const Homepage = () => {
         </div>
 
         <div className="book-info">
-          <Link to={`/books/${book._id}`} className="book-title">
+          <Link to={`/books/${book.id}`} className="book-title">
             <h3>{book.title}</h3>
           </Link>
           <p className="author">By {book.author}</p>
@@ -224,23 +229,35 @@ const Homepage = () => {
         </Swiper>
       </section>
 
-      <div className="newsletter-container">
-        <section className="newsletter">
-          <form action="">
-            <h3>subscribe for latest updates</h3>
-            <input type="email" placeholder="enter your email" className="box" />
-            <input type="submit" value="subscribe" className="btn" />
-          </form>
-        </section>
-      </div>
+      <section className="categories" id="categories">
+        <h1 className="heading"><span>Book Categories</span></h1>
+        <div className="categories-container">
+          <div className="category-card">
+            <h3>Fiction</h3>
+            <Link to="/category/fiction" className="btn">Explore</Link>
+          </div>
+          <div className="category-card">
+            <h3>Non-Fiction</h3>
+            <Link to="/category/non-fiction" className="btn">Explore</Link>
+          </div>
+          <div className="category-card">
+            <h3>Science</h3>
+            <Link to="/category/science" className="btn">Explore</Link>
+          </div>
+          <div className="category-card">
+            <h3>Romance</h3>
+            <Link to="/category/romance" className="btn">Explore</Link>
+          </div>
+        </div>
+      </section>
 
       <div className="deal-container">
         <section className="deal">
           <div className="content">
-            <h3>deal of the day</h3>
+            <h3>Special Sale</h3>
             <h1>up to 50% off</h1>
-            <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit...</p>
-            <a href="#" className="btn">shop now</a>
+            <p>Discover amazing deals on our best-selling books!</p>
+            <Link to="/products" className="btn">Shop Now</Link>
           </div>
           <div className="image">
             <img src="/images/deal-img.jpg" alt="Deal" />
