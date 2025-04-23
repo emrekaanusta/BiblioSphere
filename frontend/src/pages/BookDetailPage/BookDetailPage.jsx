@@ -19,29 +19,56 @@ const BookDetailPage = () => {
     // State to hold the fetched book data
     const [book, setBook] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [ratings, setRatings] = useState([]);
 
     // Fetch the book data from the backend when this component mounts or bookId changes
     useEffect(() => {
-        axios
-            .get(`http://localhost:8080/api/products/${bookId}`)
-            .then((response) => {
-                setBook(response.data);
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+                const [productRes, ratingsRes] = await Promise.all([
+                    fetch(`http://localhost:8080/api/products/${bookId}`),
+                    fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
+                        headers: headers
+                    })
+                ]);
+
+                if (productRes.ok) {
+                    const product = await productRes.json();
+                    setBook(product);
+                }
+
+                if (ratingsRes.ok) {
+                    const ratingsData = await ratingsRes.json();
+                    setRatings(Array.isArray(ratingsData) ? ratingsData : []);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
                 setLoading(false);
-            })
-            .catch((error) => {
-                console.error('Error fetching book:', error);
-                setLoading(false);
-            });
+            }
+        };
+
+        fetchData();
     }, [bookId]);
 
-
     const handleAddToCart = () => {
+        if (!localStorage.getItem('token')) {
+            navigate('/login');
+            return;
+        }
         if (book) {
             addToCart(book);
         }
     };
 
     const handleToggleFavorite = () => {
+        if (!localStorage.getItem('token')) {
+            navigate('/login');
+            return;
+        }
         if (!book) return;
         if (isBookFavorite(book.isbn)) {
             removeFromFavorites(book.isbn);
@@ -107,7 +134,7 @@ const BookDetailPage = () => {
                     <div className="book-rating" onClick={scrollToReviews}>
                         <StarRating rating={book.rating || 0} />
                         <span className="rating-count">
-                            ({book.reviews?.length || 0} {book.reviews?.length === 1 ? 'review' : 'reviews'})
+                            ({ratings.length} {ratings.length === 1 ? 'rating' : 'ratings'})
                         </span>
                     </div>
                     <div className="book-meta">
@@ -152,7 +179,7 @@ const BookDetailPage = () => {
                             <td>{book.language}</td>
                         </tr>
 
-                        {/* ⬇⬇ new row ⬇⬇ */}
+                        {/* ⬇⬇ new row ⬇⬇ */}
                         <tr>
                             <td>Stock:</td>
                             <td>{book.stock > 0 ? book.stock : 'Out of stock'}</td>

@@ -41,9 +41,11 @@ public class SecurityConfig {
                                 "/api/products",
                                 "/api/products/**",
                                 "/test-order",
-                                "/test-email"
+                                "/test-email",
+                                "/api/ratings/product/**",  // Allow public access to view ratings
+                                "/api/books/**"  // Allow public access to book details
                         ).permitAll()
-                        .requestMatchers("/api/ratings/**").authenticated()  // ✅ ADD THIS
+                        .requestMatchers("/api/ratings/**").authenticated()  // Keep authentication for other rating operations
                         .requestMatchers("/api/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
