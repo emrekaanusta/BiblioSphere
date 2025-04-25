@@ -243,15 +243,35 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
       });
 
       if (res.ok) {
+        const newRating = await res.json();
         setHasRated(true);
+        setUserRating(newRating);
+        setRating(0);
+        setComment('');
         onRatingSubmitted?.();
-        // Refresh reviews
-        const productRes = await fetch(`http://localhost:8080/api/products/${bookId}`);
+        
+        // Update reviews list immediately
+        const [productRes, ratingsRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/products/${bookId}`),
+          fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
         if (productRes.ok) {
           const product = await productRes.json();
-          const reviewsData = product.reviews || product.review || product.ratings || [];
-          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
           setAverageRating(product.rating || 0);
+        }
+
+        if (ratingsRes.ok) {
+          const ratings = await ratingsRes.json();
+          let processedReviews = [];
+          if (Array.isArray(ratings)) {
+            processedReviews = ratings;
+          } else if (ratings && typeof ratings === 'object') {
+            processedReviews = [ratings];
+          }
+          setReviews(processedReviews);
         }
       } else {
         const errText = await res.text();
@@ -282,13 +302,29 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
       if (res.ok) {
         setHasRated(false);
         setUserRating(null);
-        // Refresh reviews
-        const productRes = await fetch(`http://localhost:8080/api/products/${bookId}`);
+        
+        // Update reviews list immediately
+        const [productRes, ratingsRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/products/${bookId}`),
+          fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
         if (productRes.ok) {
           const product = await productRes.json();
-          const reviewsData = product.reviews || product.review || product.ratings || [];
-          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
           setAverageRating(product.rating || 0);
+        }
+
+        if (ratingsRes.ok) {
+          const ratings = await ratingsRes.json();
+          let processedReviews = [];
+          if (Array.isArray(ratings)) {
+            processedReviews = ratings;
+          } else if (ratings && typeof ratings === 'object') {
+            processedReviews = [ratings];
+          }
+          setReviews(processedReviews);
         }
       } else {
         const errText = await res.text();
@@ -323,7 +359,8 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         const updatedRating = await res.json();
         setUserRating(updatedRating);
         setIsEditing(false);
-        // Refresh reviews
+        
+        // Update reviews list immediately
         const [productRes, ratingsRes] = await Promise.all([
           fetch(`http://localhost:8080/api/products/${bookId}`),
           fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {

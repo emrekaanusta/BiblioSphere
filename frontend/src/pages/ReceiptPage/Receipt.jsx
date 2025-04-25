@@ -456,14 +456,14 @@ const Receipt = () => {
                                       </div>
                                       <div>
                                         <button
-                                            style={styles.editButton}
-                                            onClick={() => startEditing(userRating)}
+                                          style={styles.editButton}
+                                          onClick={() => startEditing(userRating)}
                                         >
                                           Edit
                                         </button>
                                         <button
-                                            style={styles.deleteButton}
-                                            onClick={() => handleDeleteRating(userRating?.id, item.productId)}
+                                          style={styles.deleteButton}
+                                          onClick={() => handleDeleteRating(userRating.id, item.productId)}
                                         >
                                           Delete
                                         </button>
@@ -473,13 +473,26 @@ const Receipt = () => {
                               ) : (
                                   <RatingForm
                                       productId={item.productId}
-                                      orderId={order.id}
-                                      onRated={() =>
-                                          setRatedProducts((prev) => ({
-                                            ...prev,
-                                            [item.productId]: true,
-                                          }))
-                                      }
+                                      orderId={orderId}
+                                      onRated={() => {
+                                        setRatedProducts(prev => ({ ...prev, [item.productId]: true }));
+                                        // Fetch the updated rating
+                                        fetch(`http://localhost:8080/api/ratings/user-rating?productId=${item.productId}`, {
+                                          headers: {
+                                            Authorization: `Bearer ${token}`,
+                                          },
+                                        })
+                                          .then(res => res.json())
+                                          .then(rating => {
+                                            if (rating) {
+                                              setUserRatings(prev => ({
+                                                ...prev,
+                                                [item.productId]: rating
+                                              }));
+                                            }
+                                          })
+                                          .catch(err => console.error('Failed to fetch updated rating:', err));
+                                      }}
                                   />
                               )}
                             </div>
