@@ -86,6 +86,15 @@ const styles = {
     padding: '4px 8px',
     fontSize: '0.9em',
   },
+  editButton: {
+    background: 'none',
+    border: 'none',
+    color: '#2563eb',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    fontSize: '0.9em',
+    marginRight: '8px',
+  },
   statusBadge: {
     display: 'inline-block',
     padding: '2px 8px',
@@ -109,6 +118,9 @@ const Receipt = () => {
   const [ratedProducts, setRatedProducts] = useState({});
   const [bookDetails, setBookDetails] = useState({});
   const [userRatings, setUserRatings] = useState({});
+  const [editingRatings, setEditingRatings] = useState({});
+  const [editComments, setEditComments] = useState({});
+  const [editRatings, setEditRatings] = useState({});
   const token = localStorage.getItem("token");
 
   // Fetch the order
@@ -240,6 +252,50 @@ const Receipt = () => {
     }
   };
 
+  const handleEditRating = async (ratingId, productId) => {
+    if (!window.confirm('Are you sure you want to edit your review?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/ratings/${ratingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: editRatings[productId],
+          comment: editComments[productId],
+        }),
+      });
+
+      if (res.ok) {
+        const updatedRating = await res.json();
+        setUserRatings(prev => ({ ...prev, [productId]: updatedRating }));
+        setEditingRatings(prev => ({ ...prev, [productId]: false }));
+        // Refresh reviews
+        const productRes = await fetch(`http://localhost:8080/api/products/${productId}`);
+        if (productRes.ok) {
+          const product = await productRes.json();
+          setBookDetails(prev => ({ ...prev, [product.isbn]: product }));
+        }
+      } else {
+        const errText = await res.text();
+        alert('Failed to update rating: ' + errText);
+      }
+    } catch (err) {
+      console.error('Failed to update rating:', err);
+      alert('Something went wrong');
+    }
+  };
+
+  const startEditing = (rating, productId) => {
+    setEditRatings(prev => ({ ...prev, [productId]: rating.rating }));
+    setEditComments(prev => ({ ...prev, [productId]: rating.comment || '' }));
+    setEditingRatings(prev => ({ ...prev, [productId]: true }));
+  };
+
   if (!order) {
     return <div className="receipt-container">Loading order...</div>;
   }
@@ -294,20 +350,72 @@ const Receipt = () => {
                                   </div>
                                 </div>
                               </div>
-                              <button
-                                style={styles.deleteButton}
-                                onClick={() => handleDeleteRating(userRating?.id, item.productId)}
-                              >
-                                Delete
-                              </button>
+                              <div>
+                                <button
+                                  style={styles.editButton}
+                                  onClick={() => startEditing(userRating, item.productId)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  style={styles.deleteButton}
+                                  onClick={() => handleDeleteRating(userRating?.id, item.productId)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </div>
-                            {userRating?.comment && (
-                              <p style={styles.reviewText}>
-                                {userRating.comment}
-                                <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
-                                  {userRating.visible ? 'Visible' : 'Pending Approval'}
-                                </span>
-                              </p>
+                            {editingRatings[item.productId] ? (
+                              <div>
+                                <div className="star-input">
+                                  <span>Your Rating:</span>
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <span
+                                      key={star}
+                                      onClick={() => setEditRatings(prev => ({ ...prev, [item.productId]: star }))}
+                                      className={`star ${editRatings[item.productId] >= star ? 'filled' : ''}`}
+                                    >
+                                      ★
+                                    </span>
+                                  ))}
+                                </div>
+                                <textarea
+                                  value={editComments[item.productId] || ''}
+                                  onChange={(e) => setEditComments(prev => ({ ...prev, [item.productId]: e.target.value }))}
+                                  placeholder="Share your thoughts about this book..."
+                                  className="comment-box"
+                                />
+                                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                  <button
+                                    onClick={() => handleEditRating(userRating?.id, item.productId)}
+                                    className="submit-rating-btn"
+                                  >
+                                    Save Changes
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingRatings(prev => ({ ...prev, [item.productId]: false }))}
+                                    style={{
+                                      background: 'none',
+                                      border: '1px solid #dc2626',
+                                      color: '#dc2626',
+                                      padding: '8px 16px',
+                                      borderRadius: '4px',
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              userRating?.comment && (
+                                <p style={styles.reviewText}>
+                                  {userRating.comment}
+                                  <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
+                                    {userRating.visible ? 'Visible' : 'Pending Approval'}
+                                  </span>
+                                </p>
+                              )
                             )}
                           </div>
                         ) : (

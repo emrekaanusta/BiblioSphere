@@ -115,4 +115,32 @@ public class RatingController {
             .filter(rating -> rating.isVisible())
             .collect(Collectors.toList());
     }
+
+    @PutMapping("/{ratingId}")
+    public Rating updateRating(@PathVariable String ratingId, @RequestBody Rating updatedRating, Authentication auth) {
+        String userId = auth.getName();
+        Optional<Rating> existingRating = ratingRepo.findById(ratingId);
+        
+        if (existingRating.isPresent() && existingRating.get().getUserId().equals(userId)) {
+            Rating rating = existingRating.get();
+            rating.setRating(updatedRating.getRating());
+            rating.setComment(updatedRating.getComment());
+            rating.setVisible(false); // Reset visibility when edited
+            
+            Rating savedRating = ratingRepo.save(rating);
+            
+            // Recalculate average rating
+            List<Rating> allRatings = ratingRepo.findByProductId(rating.getProductId());
+            float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
+            
+            productRepo.findById(rating.getProductId()).ifPresent(product -> {
+                product.setRating(avg);
+                productRepo.save(product);
+            });
+            
+            return savedRating;
+        } else {
+            throw new RuntimeException("Not authorized to update this rating");
+        }
+    }
 }

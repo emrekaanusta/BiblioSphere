@@ -98,6 +98,15 @@ const styles = {
     padding: '4px 8px',
     fontSize: '0.9em',
   },
+  editButton: {
+    background: 'none',
+    border: 'none',
+    color: '#2563eb',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    fontSize: '0.9em',
+    marginRight: '8px',
+  },
   statusBadge: {
     display: 'inline-block',
     padding: '2px 8px',
@@ -125,6 +134,9 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
   const [showRatingRequired, setShowRatingRequired] = useState(false);
   const [orderStatus, setOrderStatus] = useState(null);
   const [userRating, setUserRating] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editRating, setEditRating] = useState(0);
+  const [editComment, setEditComment] = useState('');
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -284,6 +296,53 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
     }
   };
 
+  const handleEditRating = async (ratingId) => {
+    if (!window.confirm('Are you sure you want to edit your review?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:8080/api/ratings/${ratingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: editRating,
+          comment: editComment,
+        }),
+      });
+
+      if (res.ok) {
+        const updatedRating = await res.json();
+        setUserRating(updatedRating);
+        setIsEditing(false);
+        // Refresh reviews
+        const productRes = await fetch(`http://localhost:8080/api/products/${bookId}`);
+        if (productRes.ok) {
+          const product = await productRes.json();
+          const reviewsData = product.reviews || product.review || product.ratings || [];
+          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+          setAverageRating(product.rating || 0);
+        }
+      } else {
+        const errText = await res.text();
+        alert('Failed to update rating: ' + errText);
+      }
+    } catch (err) {
+      console.error('Failed to update rating:', err);
+      alert('Something went wrong');
+    }
+  };
+
+  const startEditing = (rating) => {
+    setEditRating(rating.rating);
+    setEditComment(rating.comment || '');
+    setIsEditing(true);
+  };
+
   const visibleComments = reviews.filter(
     (r) => r.visible && r.comment && r.comment.trim() !== ''
   );
@@ -369,20 +428,72 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
                 </div>
               </div>
             </div>
-            <button
-              style={styles.deleteButton}
-              onClick={() => handleDeleteRating(userRating.id)}
-            >
-              Delete
-            </button>
+            <div>
+              <button
+                style={styles.editButton}
+                onClick={() => startEditing(userRating)}
+              >
+                Edit
+              </button>
+              <button
+                style={styles.deleteButton}
+                onClick={() => handleDeleteRating(userRating.id)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
-          {userRating.comment && (
-            <p style={styles.reviewText}>
-              {userRating.comment}
-              <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
-                {userRating.visible ? 'Visible' : 'Pending Approval'}
-              </span>
-            </p>
+          {isEditing ? (
+            <div>
+              <div className="star-input">
+                <span>Your Rating:</span>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    onClick={() => setEditRating(star)}
+                    className={`star ${editRating >= star ? 'filled' : ''}`}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+              <textarea
+                value={editComment}
+                onChange={(e) => setEditComment(e.target.value)}
+                placeholder="Share your thoughts about this book..."
+                className="comment-box"
+              />
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <button
+                  onClick={() => handleEditRating(userRating.id)}
+                  className="submit-rating-btn"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  style={{
+                    background: 'none',
+                    border: '1px solid #dc2626',
+                    color: '#dc2626',
+                    padding: '8px 16px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            userRating.comment && (
+              <p style={styles.reviewText}>
+                {userRating.comment}
+                <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
+                  {userRating.visible ? 'Visible' : 'Pending Approval'}
+                </span>
+              </p>
+            )
           )}
         </div>
       )}
