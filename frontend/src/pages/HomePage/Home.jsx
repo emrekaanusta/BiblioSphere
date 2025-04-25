@@ -244,16 +244,24 @@ const Homepage = () => {
             <Link to="/category/fiction" className="btn">Explore</Link>
           </div>
           <div className="category-card">
-            <h3>Non-Fiction</h3>
-            <Link to="/category/non-fiction" className="btn">Explore</Link>
+            <h3>Drama</h3>
+            <Link to="/category/drama" className="btn">Explore</Link>
           </div>
           <div className="category-card">
-            <h3>Science</h3>
-            <Link to="/category/science" className="btn">Explore</Link>
+            <h3>Mystery</h3>
+            <Link to="/category/mystery" className="btn">Explore</Link>
           </div>
           <div className="category-card">
             <h3>Romance</h3>
             <Link to="/category/romance" className="btn">Explore</Link>
+          </div>
+          <div className="category-card">
+            <h3>Science Fiction</h3>
+            <Link to="/category/science-fiction" className="btn">Explore</Link>
+          </div>
+          <div className="category-card">
+            <h3>Fantasy</h3>
+            <Link to="/category/fantasy" className="btn">Explore</Link>
           </div>
         </div>
       </section>
