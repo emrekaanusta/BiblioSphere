@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "../../contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import "./Checkout.css";
@@ -22,10 +22,11 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
+    email: localStorage.getItem("userEmail") || "",
     address: "",
     city: "",
     zipCode: "",
@@ -34,6 +35,15 @@ const Checkout = () => {
     cvv: "",
   });
   const [errors, setErrors] = useState({});
+
+  const handleEmailEdit = () => {
+    setIsEditingEmail(true);
+  };
+
+  const handleEmailSave = () => {
+    setIsEditingEmail(false);
+    localStorage.setItem("userEmail", formData.email);
+  };
 
   const validateCardNumber = (n) => n.replace(/\D/g, "").length === 16;
   const validateCVV = (c) => /^\d{3}$/.test(c);
@@ -201,7 +211,27 @@ const Checkout = () => {
               <input name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleInputChange} required />
               <input name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleInputChange} required />
             </div>
-            <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} required />
+            <div className="email-input-group">
+              <input 
+                type="email" 
+                name="email" 
+                placeholder="Email" 
+                value={formData.email} 
+                onChange={handleInputChange} 
+                required 
+                className={!isEditingEmail ? "autofilled" : ""}
+                readOnly={!isEditingEmail}
+              />
+              {!isEditingEmail ? (
+                <button type="button" className="edit-email-btn" onClick={handleEmailEdit}>
+                  Edit
+                </button>
+              ) : (
+                <button type="button" className="save-email-btn" onClick={handleEmailSave}>
+                  Save
+                </button>
+              )}
+            </div>
             <input name="address" placeholder="Address" value={formData.address} onChange={handleInputChange} required />
             <div className="form-row">
               <input name="city" placeholder="City" value={formData.city} onChange={handleInputChange} required />
