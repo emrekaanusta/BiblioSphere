@@ -134,7 +134,6 @@ const generateItemsHtml = (items) => {
 
 const Receipt = () => {
   const { orderId } = useParams();
-  const [emailSent, setEmailSent] = useState(false);
   const [order, setOrder] = useState(null);
   const [ratedProducts, setRatedProducts] = useState({});
   const [bookDetails, setBookDetails] = useState({});
@@ -242,37 +241,6 @@ const Receipt = () => {
     checkRatings();
     fetchBookDetails();
   }, [order, token]);
-
-  useEffect(() => {
-    if (!order || emailSent) return;
-
-    const templateParams = {
-      to_email: order.shippingInfo.email,
-      order_date: new Date(order.createdAt).toLocaleDateString(),
-      items_html: generateItemsHtml(order.items), // 🔥 bu satırı ekle
-
-      subtotal: order.subtotal.toFixed(2),
-      shipping: order.shippingCost.toFixed(2),
-      total: order.total.toFixed(2),
-      name: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
-      address_line: order.shippingInfo.address,
-      city_zip: `${order.shippingInfo.city}, ${order.shippingInfo.zipCode}`,
-      email: order.shippingInfo.email,
-    };
-    console.log("🚀 Sending confirmation email to:", order.shippingInfo.email);
-    emailjs.send(
-        'service_sp2mkzq',
-        'template_g066g9s',
-        templateParams,
-        'YHWWSBWcWWeVfPUUd'
-    ).then(() => {
-      setEmailSent(true);
-      console.log('Confirmation email sent');
-    }).catch((err) => {
-      console.error('Email send failed:', err);
-    });
-
-  }, [order, emailSent]);
 
   const handleDeleteRating = async (ratingId, productId) => {
     if (!window.confirm('Are you sure you want to delete your review?')) {
