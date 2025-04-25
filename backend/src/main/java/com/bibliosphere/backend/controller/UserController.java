@@ -5,6 +5,9 @@ import com.bibliosphere.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -52,16 +55,71 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
     }
 
-
-    /*@PostMapping("/wishlist/add")
-    public ResponseEntity<String> addToWishlist(@RequestBody Map<String, Long> payload) {
-        Long productId = payload.get("productId");
-        // Get current user (e.g., via a custom method that extracts user info from token)
-        User currentUser = userService.getCurrentUser();
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
+    @PostMapping("/wishlist/add")
+    public ResponseEntity<String> addToWishlist(@RequestBody String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            userService.addProductToWishlist(currentUser, isbn);
+            return ResponseEntity.ok("Product added to wishlist.");
+        } else {
+            return ResponseEntity.ok("Product added to wishlist.");
         }
-        userService.addProductToWishlist(currentUser, productId);
-        return ResponseEntity.ok("Product added to wishlist.");
-    }*/
+    }
+
+    @PostMapping("/wishlist/remove")
+    public ResponseEntity<String> removeFromWishlist(@RequestBody String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            userService.removeProductFromWishlist(currentUser, isbn);
+            return ResponseEntity.ok("Product added to wishlist.");
+        } else {
+            return ResponseEntity.ok("Product added to wishlist.");
+        }
+    }
+
+    @PostMapping("/cart/add")
+    public ResponseEntity<String> addToCart(@RequestParam String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            if (userService.addProductToCart(currentUser, isbn)){
+                return ResponseEntity.ok("Product is added to cart.");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is out of stock");
+        } else {
+            User user = new User();
+            if (userService.addProductToCart(user, isbn)){
+                user = null;
+                return ResponseEntity.ok("Product is added to cart.");
+            }
+            user = null;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is out of stock");
+        }
+    }
+
+    @PostMapping("/cart/remove")
+    public ResponseEntity<String> removeFromCart(@RequestParam String isbn) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            String email = auth.getName();
+            User currentUser = userService.getCurrentUser(email);
+            if (userService.removeProductFromCart(currentUser, isbn)){
+                return ResponseEntity.ok("Product is removed from cart.");
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is not in your list or there is no such product");
+        } else {
+            User user = new User();
+            if (userService.removeProductFromCart(user, isbn)){
+                user = null;
+                return ResponseEntity.ok("Product is removed from cart.");
+            }
+            user = null;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product is not in your list or there is no such product");
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package com.bibliosphere.backend.service;
 
+import com.bibliosphere.backend.model.Product;
 import com.bibliosphere.backend.model.User;
+import com.bibliosphere.backend.repository.ProductRepository;
 import com.bibliosphere.backend.repository.UserRepository;
 import com.bibliosphere.backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,8 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -19,6 +22,20 @@ public class UserService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    public User getCurrentUser(String email) {
+        User currentUser = new User();
+        if (email == null) {
+            currentUser = null;
+        }
+        else {
+            currentUser = userRepository.findById(email).orElse(null);
+        }
+        return currentUser;
+    }
 
     public User loadUserByEmail(String email) {
         return userRepository.findById(email).orElse(null);
@@ -73,27 +90,69 @@ public class UserService {
         return false;
     }
 
-    // For demo: token is the user email (not secure).
-    public User getUserFromToken(String token) {
-        return userRepository.findById(token).orElse(null);
+    public void addProductToWishlist(User user, String isbn) {
+        Product product = productRepository.findById(isbn).orElse(null);
+        if (product != null) {
+            user.getWishlist().add(product);
+            userRepository.save(user);
+        }
     }
 
-    // Add a product ID to the user's wishlist
-    public User addToWishlist(User user, String productId) {
-        if (user.getWishlist() == null) {
-            user.setWishlist(new ArrayList<>());  // create new empty list
+    public void removeProductFromWishlist(User user, String productId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product != null) {
+            user.getWishlist().remove(product);
+            userRepository.save(user);
         }
-        if (!user.getWishlist().contains(productId)) {
-            user.getWishlist().add(productId);
-        }
-        return userRepository.save(user);
     }
 
-    // Remove a product ID from the user's wishlist
-    public User removeFromWishlist(User user, String productId) {
-        if (user.getWishlist() != null) {
-            user.getWishlist().remove(productId);
+    public boolean addProductToCart(User user, String isbn) {
+        Product product = productRepository.findById(isbn).orElse(null);
+        if (product != null) {
+            if (product.getStock() == 0) {
+                return false;
+            }
+            product.setStock(product.getStock() - 1);
+            if (user.getEmail()==null){
+                productRepository.save(product);
+                return true;
+            }
+            user.getWishlist().add(product);
+            userRepository.save(user);
+            productRepository.save(product);
+            return true;
         }
-        return userRepository.save(user);
+        return false;
+    }
+
+    public boolean removeProductFromCart(User user, String productId) {
+        Product product = productRepository.findById(productId).orElse(null);
+        if (product != null) {
+            if (user.getEmail() == null) {
+                product.setStock(product.getStock() + 1);
+                productRepository.save(product);
+                return true;
+            }
+
+            List<Product> cart = user.getShopping_cart();
+            Iterator<Product> iterator = cart.iterator();
+            boolean removed = false;
+            while (iterator.hasNext()) {
+                Product p = iterator.next();
+                if (p.getIsbn().equals(productId)) {
+                    iterator.remove();
+                    removed = true;
+                    break;
+                }
+            }
+            if (!removed) {
+                return false;
+            }
+            product.setStock(product.getStock() + 1);
+            productRepository.save(product);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 }
