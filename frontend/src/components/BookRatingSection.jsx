@@ -229,6 +229,12 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
 
     setIsSubmitting(true);
     try {
+      // Calculate new average rating immediately
+      const currentTotal = averageRating * reviews.length;
+      const newTotal = currentTotal + rating;
+      const newAverage = newTotal / (reviews.length + 1);
+      setAverageRating(newAverage);
+
       const res = await fetch('http://localhost:8080/api/ratings', {
         method: 'POST',
         headers: {
@@ -250,7 +256,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         setComment('');
         onRatingSubmitted?.();
         
-        // Update reviews list immediately
+        // Update reviews list and average rating with server data
         const [productRes, ratingsRes] = await Promise.all([
           fetch(`http://localhost:8080/api/products/${bookId}`),
           fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
@@ -274,10 +280,22 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           setReviews(processedReviews);
         }
       } else {
+        // Revert the average rating if the submission failed
+        const currentTotal = averageRating * reviews.length;
+        const newTotal = currentTotal - rating;
+        const newAverage = reviews.length > 0 ? newTotal / reviews.length : 0;
+        setAverageRating(newAverage);
+        
         const errText = await res.text();
         alert('Failed to submit rating: ' + errText);
       }
     } catch (err) {
+      // Revert the average rating if there was an error
+      const currentTotal = averageRating * reviews.length;
+      const newTotal = currentTotal - rating;
+      const newAverage = reviews.length > 0 ? newTotal / reviews.length : 0;
+      setAverageRating(newAverage);
+      
       console.error('Failed to submit rating:', err);
       alert('Something went wrong');
     } finally {
