@@ -102,6 +102,14 @@ const styles = {
     backgroundColor: '#dcfce7',
     color: '#166534',
   },
+  editButton: {
+    background: 'none',
+    border: 'none',
+    color: '#3b82f6',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    fontSize: '0.9em',
+  },
 };
 
 const generateItemsHtml = (items) => {
@@ -131,6 +139,9 @@ const Receipt = () => {
   const [ratedProducts, setRatedProducts] = useState({});
   const [bookDetails, setBookDetails] = useState({});
   const [userRatings, setUserRatings] = useState({});
+  const [editingRating, setEditingRating] = useState(null);
+  const [editRating, setEditRating] = useState(0);
+  const [editComment, setEditComment] = useState('');
   const token = localStorage.getItem("token");
 
   // Fetch the order
@@ -293,6 +304,53 @@ const Receipt = () => {
     }
   };
 
+  const startEditing = (rating) => {
+    setEditingRating(rating);
+    setEditRating(rating.rating);
+    setEditComment(rating.comment || '');
+  };
+
+  const handleEditRating = async (ratingId) => {
+    if (!window.confirm('Are you sure you want to edit your review?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/ratings/${ratingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          rating: editRating,
+          comment: editComment,
+        }),
+      });
+
+      if (res.ok) {
+        const updatedRating = await res.json();
+        setUserRatings(prev => ({
+          ...prev,
+          [updatedRating.productId]: updatedRating
+        }));
+        setEditingRating(null);
+      } else {
+        const errText = await res.text();
+        alert('Failed to update rating: ' + errText);
+      }
+    } catch (err) {
+      console.error('Failed to update rating:', err);
+      alert('Something went wrong');
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingRating(null);
+    setEditRating(0);
+    setEditComment('');
+  };
+
   if (!order) {
     return <div className="receipt-container">Loading order...</div>;
   }
@@ -343,25 +401,74 @@ const Receipt = () => {
                                           <span style={styles.reviewerName}>Your Review</span>
                                           <span style={styles.reviewDate}>{formatDate(userRating?.submittedAt || new Date())}</span>
                                           <div style={styles.reviewerRating}>
-                                            <StarRating rating={Number(userRating?.rating) || 0} readOnly />
+                                            {editingRating?.id === userRating?.id ? (
+                                              <div>
+                                                <div className="star-input">
+                                                  <span>Your Rating:</span>
+                                                  {[1, 2, 3, 4, 5].map((star) => (
+                                                    <span
+                                                      key={star}
+                                                      onClick={() => setEditRating(star)}
+                                                      className={`star ${editRating >= star ? 'filled' : ''}`}
+                                                    >
+                                                      ★
+                                                    </span>
+                                                  ))}
+                                                </div>
+                                                <textarea
+                                                  value={editComment}
+                                                  onChange={(e) => setEditComment(e.target.value)}
+                                                  placeholder="Share your thoughts about this book..."
+                                                  className="comment-box"
+                                                />
+                                                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                                  <button
+                                                    onClick={() => handleEditRating(userRating.id)}
+                                                    className="submit-rating-btn"
+                                                  >
+                                                    Save Changes
+                                                  </button>
+                                                  <button
+                                                    onClick={cancelEditing}
+                                                    style={{
+                                                      background: 'none',
+                                                      border: '1px solid #dc2626',
+                                                      color: '#dc2626',
+                                                      padding: '8px 16px',
+                                                      borderRadius: '4px',
+                                                      cursor: 'pointer',
+                                                    }}
+                                                  >
+                                                    Cancel
+                                                  </button>
+                                                </div>
+                                              </div>
+                                            ) : userRating?.comment && (
+                                              <p style={styles.reviewText}>
+                                                {userRating.comment}
+                                                <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
+                                                  {userRating.visible ? 'Visible' : 'Pending Approval'}
+                                                </span>
+                                              </p>
+                                            )}
                                           </div>
                                         </div>
                                       </div>
-                                      <button
-                                          style={styles.deleteButton}
-                                          onClick={() => handleDeleteRating(userRating?.id, item.productId)}
-                                      >
-                                        Delete
-                                      </button>
+                                      <div>
+                                        <button
+                                            style={styles.editButton}
+                                            onClick={() => startEditing(userRating)}
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                            style={styles.deleteButton}
+                                            onClick={() => handleDeleteRating(userRating?.id, item.productId)}
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
                                     </div>
-                                    {userRating?.comment && (
-                                        <p style={styles.reviewText}>
-                                          {userRating.comment}
-                                          <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
-                                  {userRating.visible ? 'Visible' : 'Pending Approval'}
-                                </span>
-                                        </p>
-                                    )}
                                   </div>
                               ) : (
                                   <RatingForm

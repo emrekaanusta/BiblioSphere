@@ -324,20 +324,37 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         setUserRating(updatedRating);
         setIsEditing(false);
         // Refresh reviews
-        const productRes = await fetch(`http://localhost:8080/api/products/${bookId}`);
+        const [productRes, ratingsRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/products/${bookId}`),
+          fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
         if (productRes.ok) {
           const product = await productRes.json();
-          const reviewsData = product.reviews || product.review || product.ratings || [];
-          setReviews(Array.isArray(reviewsData) ? reviewsData : []);
           setAverageRating(product.rating || 0);
+        }
+
+        if (ratingsRes.ok) {
+          const ratings = await ratingsRes.json();
+          let processedReviews = [];
+          if (Array.isArray(ratings)) {
+            processedReviews = ratings;
+          } else if (ratings && typeof ratings === 'object') {
+            processedReviews = [ratings];
+          }
+          setReviews(processedReviews);
         }
       } else {
         const errText = await res.text();
         alert('Failed to update rating: ' + errText);
+        setIsEditing(false);
       }
     } catch (err) {
       console.error('Failed to update rating:', err);
       alert('Something went wrong');
+      setIsEditing(false);
     }
   };
 
