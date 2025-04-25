@@ -411,13 +411,27 @@ const Receipt = () => {
                                                   </button>
                                                 </div>
                                               </div>
-                                            ) : userRating?.comment && (
-                                              <p style={styles.reviewText}>
-                                                {userRating.comment}
-                                                <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
-                                                  {userRating.visible ? 'Visible' : 'Pending Approval'}
-                                                </span>
-                                              </p>
+                                            ) : (
+                                              <div>
+                                                <div className="stars">
+                                                  {[1, 2, 3, 4, 5].map((star) => (
+                                                    <span
+                                                      key={star}
+                                                      className={`star ${userRating?.rating >= star ? 'filled' : ''}`}
+                                                    >
+                                                      ★
+                                                    </span>
+                                                  ))}
+                                                </div>
+                                                {userRating?.comment && (
+                                                  <p style={styles.reviewText}>
+                                                    {userRating.comment}
+                                                    <span style={{ ...styles.statusBadge, ...(userRating.visible ? styles.visibleStatus : styles.pendingStatus) }}>
+                                                      {userRating.visible ? 'Visible' : 'Pending Approval'}
+                                                    </span>
+                                                  </p>
+                                                )}
+                                              </div>
                                             )}
                                           </div>
                                         </div>

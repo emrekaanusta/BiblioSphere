@@ -81,7 +81,7 @@
 }
 
 .star {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: #ddd;
   cursor: pointer;
   transition: color 0.2s;
@@ -112,7 +112,7 @@
 }
 
 .star-input .star {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: #ddd;
   cursor: pointer;
   transition: color 0.2s, transform 0.2s;
