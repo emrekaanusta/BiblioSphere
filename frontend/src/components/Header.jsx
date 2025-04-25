@@ -22,6 +22,7 @@ const Header = () => {
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
     setIsLoggedIn(false);
     clearFavorites();                 // wipe client‑side data
     setShowAuthDropdown(false);

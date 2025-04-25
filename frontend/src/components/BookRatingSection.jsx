@@ -16,6 +16,10 @@ const maskUsername = (name) => {
 };
 
 const getInitials = (name) => {
+  const userEmail = localStorage.getItem('userEmail');
+  if (userEmail) {
+    return userEmail[0].toUpperCase();
+  }
   if (!name) return 'A';
   const parts = name.split(' ');
   if (parts.length === 1) return parts[0][0].toUpperCase();

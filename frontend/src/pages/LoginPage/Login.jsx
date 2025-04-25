@@ -30,6 +30,7 @@ const Login = () => {
       .then((token) => {
         if (token && token.length > 0) {
           localStorage.setItem("token", token);
+          localStorage.setItem("userEmail", email);  // Store the email
           console.log("Success", "Login successful!");
           navigate("/");
           window.location.reload();
