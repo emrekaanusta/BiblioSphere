@@ -257,7 +257,7 @@ const Homepage = () => {
           </div>
           <div className="category-card">
             <h3>Science Fiction</h3>
-            <Link to="/category/science-fiction" className="btn">Explore</Link>
+            <Link to="/category/Science Fiction" className="btn">Explore</Link>
           </div>
           <div className="category-card">
             <h3>Fantasy</h3>
