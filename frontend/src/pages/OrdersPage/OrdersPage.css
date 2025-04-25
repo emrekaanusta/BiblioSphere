@@ -320,6 +320,15 @@
     font-weight: 500;
   }
   
+  .status-transfer {
+    background: #cce5ff;
+    color: #004085;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
   .status-completed {
     background: #d4edda;
     color: #155724;

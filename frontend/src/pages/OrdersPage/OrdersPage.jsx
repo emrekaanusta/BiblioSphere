@@ -58,6 +58,8 @@ const Orders = () => {
     switch (status) {
         case 'PROCESSED':
             return 'status-pending';
+        case 'TRANSFER':
+            return 'status-transfer';
         case 'DELIVERED':
             return 'status-completed';
         case 'CANCELLED':
@@ -71,6 +73,8 @@ const Orders = () => {
     switch (status) {
         case 'PROCESSED':
             return 'Processing';
+        case 'TRANSFER':
+            return 'In Transit';
         case 'DELIVERED':
             return 'Delivered';
         case 'CANCELLED':
