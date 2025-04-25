@@ -126,7 +126,7 @@ const Header = () => {
 
                     <button onClick={handleSignOut}>
                       <i className="fas fa-sign-out-alt"></i>
-                      Sign Out
+                      Sign Out
                     </button>
                   </>
                 ) : (
