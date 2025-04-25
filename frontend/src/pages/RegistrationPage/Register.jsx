@@ -101,10 +101,11 @@ const Register = () => {
                 type="text"
                 name="name"
                 className="register-input"
-                placeholder="Enter your name"
+                placeholder="enter your name"
                 value={formData.name}
                 onChange={handleChange}
                 required
+                autoCapitalize="none"
               />
             </div>
 
@@ -114,10 +115,11 @@ const Register = () => {
                 type="text"
                 name="surname"
                 className="register-input"
-                placeholder="Enter your surname"
+                placeholder="enter your surname"
                 value={formData.surname}
                 onChange={handleChange}
                 required
+                autoCapitalize="none"
               />
             </div>
 
@@ -127,10 +129,11 @@ const Register = () => {
                 type="text"
                 name="email"
                 className="register-input"
-                placeholder="Enter your email"
+                placeholder="enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 required
+                autoCapitalize="none"
               />
             </div>
 
@@ -140,10 +143,11 @@ const Register = () => {
                 type="password"
                 name="password"
                 className="register-input"
-                placeholder="Enter your password"
+                placeholder="enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 required
+                autoCapitalize="none"
               />
             </div>
 
@@ -153,10 +157,11 @@ const Register = () => {
                 type="password"
                 name="confirmPassword"
                 className="register-input"
-                placeholder="Confirm your password"
+                placeholder="confirm your password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
+                autoCapitalize="none"
               />
             </div>
 

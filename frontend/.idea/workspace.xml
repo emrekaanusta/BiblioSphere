@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="8f56fcbb-546a-428b-b7ee-d76187022fa5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/src/pages/App/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/App/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/CheckoutPage/Checkout.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/CheckoutPage/Checkout.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/CheckoutPage/Checkout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/CheckoutPage/Checkout.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/RegistrationPage/Register.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/RegistrationPage/Register.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -17,9 +19,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 5
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
   <component name="ProjectId" id="2vM9KzsKP7bSqpIkuICpNFNNo9B" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -29,19 +31,22 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "emka__lasy",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/My/CS-308---Website/backend",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "npm.start.executor": "Run",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="jdk-21.0.1-openjdk-21.0.1-3183f394aec4-7d648f2c" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-WS-243.26053.12" />
       </set>
     </attachedChunks>
   </component>
@@ -54,6 +59,7 @@
       <option name="presentableId" value="Default" />
       <updated>1743944016021</updated>
       <workItem from="1743944017117" duration="18000" />
+      <workItem from="1745615848175" duration="627000" />
     </task>
     <servers />
   </component>
