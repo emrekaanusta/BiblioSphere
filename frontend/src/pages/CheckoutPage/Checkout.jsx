@@ -13,6 +13,7 @@ const Checkout = () => {
     getCartTotal,
     shippingMethod,
     setShippingMethod,
+    updateShippingMethod,
     clearCart,
     showWarning,
     warning
@@ -236,11 +237,11 @@ const Checkout = () => {
             ) : (
               <>
                 <div className="shipping-option">
-                  <input type="radio" id="standard" name="shipping" value="standard" checked={shippingMethod === "standard"} onChange={(e) => setShippingMethod(e.target.value)} />
+                  <input type="radio" id="standard" name="shipping" value="standard" checked={shippingMethod === "standard"} onChange={(e) => updateShippingMethod(e.target.value)} />
                   <label htmlFor="standard">Standard Shipping ($5.00) - 5-7 business days</label>
                 </div>
                 <div className="shipping-option">
-                  <input type="radio" id="express" name="shipping" value="express" checked={shippingMethod === "express"} onChange={(e) => setShippingMethod(e.target.value)} />
+                  <input type="radio" id="express" name="shipping" value="express" checked={shippingMethod === "express"} onChange={(e) => updateShippingMethod(e.target.value)} />
                   <label htmlFor="express">Express Shipping ($15.00) - 1-2 business days</label>
                 </div>
               </>
