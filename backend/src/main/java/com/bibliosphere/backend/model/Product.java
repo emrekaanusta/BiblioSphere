@@ -49,4 +49,8 @@ public class Product {
             .average()
             .orElse(0);
     }
+
+    public void setId(String id) {
+        this.isbn = id;
+    }
 }

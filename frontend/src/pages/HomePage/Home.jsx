@@ -44,7 +44,7 @@ const Homepage = () => {
       .then((response) => {
         console.log('Books fetched from backend:', response.data);
         const dataWithIds = response.data
-          .filter(book => book.image && book.rating)
+          .filter(book => book.image && book.rating && book.stock > 0)
           .map((item) => ({
             ...item,
             id: item.isbn || item._id,
