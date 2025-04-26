@@ -96,4 +96,12 @@ public class UserService {
         }
         return userRepository.save(user);
     }
+
+    public void clearUserCart(String email) {
+        User user = loadUserByEmail(email);
+        if (user != null) {
+            user.setShopping_cart(new ArrayList<>());
+            userRepository.save(user);
+        }
+    }
 }

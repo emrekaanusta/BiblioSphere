@@ -5,7 +5,7 @@ import { useFavorites } from "../contexts/FavoritesContext";
 import "./Header.css";
 
 const Header = () => {
-  const { toggleCart, cart } = useCart();
+  const { toggleCart, cart, clearCart } = useCart();
   const { toggleFavorites, favorites, clearFavorites } = useFavorites();
 
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
@@ -20,11 +20,32 @@ const Header = () => {
     setIsLoggedIn(!!token);
   }, []);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const response = await fetch("http://localhost:8080/logout", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+        
+        if (!response.ok) {
+          console.error("Logout failed:", await response.text());
+        }
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
+    }
+    
+    // Clear local storage and state regardless of API call success
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     setIsLoggedIn(false);
     clearFavorites();                 // wipe client‑side data
+    clearCart();                      // clear the cart when logging out
     setShowAuthDropdown(false);
     navigate("/");
   };
