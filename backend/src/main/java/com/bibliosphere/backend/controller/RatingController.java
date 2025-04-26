@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/ratings")
@@ -48,37 +49,52 @@ public class RatingController {
 
     @GetMapping("/check")
     public boolean hasUserRated(@RequestParam String productId, Authentication auth) {
-        if (auth == null) return false;
+        if (auth == null || productId == null) {
+            return false;
+        }
         String userId = auth.getName();
         return ratingRepo.findByUserIdAndProductId(userId, productId).isPresent();
     }
 
     @GetMapping("/user-rating")
     public Rating getUserRating(@RequestParam String productId, Authentication auth) {
-        if (auth == null) return null;
+        if (auth == null || productId == null) {
+            return null;
+        }
         String userId = auth.getName();
         return ratingRepo.findByUserIdAndProductId(userId, productId).orElse(null);
     }
 
     @GetMapping("/can-rate")
     public boolean canUserRate(@RequestParam String productId, Authentication auth) {
+        if (auth == null || productId == null) {
+            return false;
+        }
         String userId = auth.getName();
-        // Check if user has already rated
+        
         if (ratingRepo.findByUserIdAndProductId(userId, productId).isPresent()) {
             return false;
         }
-        // Check if user has purchased and received the book
+        
         List<Order> orders = orderRepo.findAllByUserEmailOrderByCreatedAtDesc(userId);
         return orders.stream()
-            .filter(order -> order.getStatus() == OrderStatus.DELIVERED)
+            .filter(order -> order != null && order.getStatus() == OrderStatus.DELIVERED)
             .anyMatch(order -> order.getItems().stream()
-                .anyMatch(item -> item.getProductId().equals(productId)));
+                .anyMatch(item -> item != null && productId.equals(item.getProductId())));
     }
 
     @PostMapping
     public Rating submitRating(@RequestBody Rating rating, Authentication auth) {
+        if (auth == null || rating == null) {
+            throw new IllegalArgumentException("Invalid request");
+        }
+        
         String userId = auth.getName();
         rating.setUserId(userId);
+
+        if (rating.getProductId() == null) {
+            throw new IllegalArgumentException("Product ID is required");
+        }
 
         Optional<Rating> existing = ratingRepo.findByUserIdAndProductId(userId, rating.getProductId());
         if (existing.isPresent()) {
@@ -88,32 +104,34 @@ public class RatingController {
         rating.setSubmittedAt(LocalDateTime.now());
         Rating savedRating = ratingRepo.save(rating);
 
-        // Update product's ratingList and average rating
         productRepo.findById(rating.getProductId()).ifPresent(product -> {
-            // Create rating map
             Map<String, Object> ratingMap = new HashMap<>();
             ratingMap.put("ratingId", savedRating.getId());
             ratingMap.put("score", savedRating.getRating());
             ratingMap.put("userId", userId);
             ratingMap.put("submittedAt", savedRating.getSubmittedAt());
 
-            // Add to ratingList
             if (product.getRatingList() == null) {
-                product.setRatingList(new java.util.ArrayList<>());
+                product.setRatingList(new ArrayList<>());
             }
             product.getRatingList().add(ratingMap);
 
-            // Calculate new average rating
             float avg = (float) product.getRatingList().stream()
-                .mapToInt(r -> (int) r.get("score"))
+                .filter(r -> r != null && r.containsKey("score"))
+                .mapToDouble(r -> {
+                    Object score = r.get("score");
+                    if (score instanceof Number) {
+                        return ((Number) score).doubleValue();
+                    }
+                    return 0.0;
+                })
                 .average()
-                .orElse(0);
+                .orElse(0.0);
             product.setRating(avg);
 
-            // Add comment to reviews if present
             if (rating.getComment() != null && !rating.getComment().isBlank()) {
                 if (product.getReview() == null) {
-                    product.setReview(new java.util.ArrayList<>());
+                    product.setReview(new ArrayList<>());
                 }
                 product.getReview().add(rating.getComment());
             }
@@ -126,25 +144,37 @@ public class RatingController {
 
     @DeleteMapping("/{ratingId}")
     public void deleteRating(@PathVariable String ratingId, Authentication auth) {
+        if (auth == null || ratingId == null) {
+            throw new IllegalArgumentException("Invalid request");
+        }
+        
         String userId = auth.getName();
         Optional<Rating> rating = ratingRepo.findById(ratingId);
         
         if (rating.isPresent() && rating.get().getUserId().equals(userId)) {
             ratingRepo.deleteById(ratingId);
             
-            // Update product's ratingList and recalculate average
             productRepo.findById(rating.get().getProductId()).ifPresent(product -> {
-                // Remove from ratingList
-                product.getRatingList().removeIf(item -> ratingId.equals(item.get("ratingId")));
-                
-                // Recalculate average rating
-                float avg = (float) product.getRatingList().stream()
-                    .mapToInt(r -> (int) r.get("score"))
-                    .average()
-                    .orElse(0);
-                product.setRating(avg);
-                
-                productRepo.save(product);
+                if (product.getRatingList() != null) {
+                    product.getRatingList().removeIf(item -> 
+                        item != null && ratingId.equals(item.get("ratingId"))
+                    );
+                    
+                    float avg = (float) product.getRatingList().stream()
+                        .filter(r -> r != null && r.containsKey("score"))
+                        .mapToDouble(r -> {
+                            Object score = r.get("score");
+                            if (score instanceof Number) {
+                                return ((Number) score).doubleValue();
+                            }
+                            return 0.0;
+                        })
+                        .average()
+                        .orElse(0.0);
+                    product.setRating(avg);
+                    
+                    productRepo.save(product);
+                }
             });
         } else {
             throw new RuntimeException("Not authorized to delete this rating");
@@ -153,6 +183,10 @@ public class RatingController {
 
     @PutMapping("/{ratingId}")
     public Rating updateRating(@PathVariable String ratingId, @RequestBody Rating updatedRating, Authentication auth) {
+        if (auth == null || ratingId == null || updatedRating == null) {
+            throw new IllegalArgumentException("Invalid request");
+        }
+        
         String userId = auth.getName();
         Optional<Rating> existingRating = ratingRepo.findById(ratingId);
         
@@ -160,26 +194,32 @@ public class RatingController {
             Rating rating = existingRating.get();
             rating.setRating(updatedRating.getRating());
             rating.setComment(updatedRating.getComment());
-            rating.setVisible(false); // Reset visibility when edited
+            rating.setVisible(false);
             
             Rating savedRating = ratingRepo.save(rating);
             
-            // Update product's ratingList and recalculate average
             productRepo.findById(rating.getProductId()).ifPresent(product -> {
-                // Update rating in ratingList
-                product.getRatingList().stream()
-                    .filter(item -> ratingId.equals(item.get("ratingId")))
-                    .findFirst()
-                    .ifPresent(item -> item.put("score", updatedRating.getRating()));
-                
-                // Recalculate average rating
-                float avg = (float) product.getRatingList().stream()
-                    .mapToInt(r -> (int) r.get("score"))
-                    .average()
-                    .orElse(0);
-                product.setRating(avg);
-                
-                productRepo.save(product);
+                if (product.getRatingList() != null) {
+                    product.getRatingList().stream()
+                        .filter(item -> item != null && ratingId.equals(item.get("ratingId")))
+                        .findFirst()
+                        .ifPresent(item -> item.put("score", updatedRating.getRating()));
+                    
+                    float avg = (float) product.getRatingList().stream()
+                        .filter(r -> r != null && r.containsKey("score"))
+                        .mapToDouble(r -> {
+                            Object score = r.get("score");
+                            if (score instanceof Number) {
+                                return ((Number) score).doubleValue();
+                            }
+                            return 0.0;
+                        })
+                        .average()
+                        .orElse(0.0);
+                    product.setRating(avg);
+                    
+                    productRepo.save(product);
+                }
             });
             
             return savedRating;
@@ -190,8 +230,11 @@ public class RatingController {
 
     @GetMapping("/product/{productId}")
     public List<Rating> getRatingsByProduct(@PathVariable String productId) {
+        if (productId == null) {
+            return new ArrayList<>();
+        }
         return ratingRepo.findByProductId(productId).stream()
-            .filter(rating -> rating.isVisible())
+            .filter(rating -> rating != null && rating.isVisible())
             .collect(Collectors.toList());
     }
 }

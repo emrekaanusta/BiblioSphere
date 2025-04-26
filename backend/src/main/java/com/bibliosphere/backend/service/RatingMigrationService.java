@@ -35,14 +35,18 @@ public class RatingMigrationService {
     private final MongoClient mongoClient;
 
     private String extractEmailFromUserString(String userString) {
+        if (userString == null) {
+            return null;
+        }
         Pattern pattern = Pattern.compile("email=([^,]+)");
         Matcher matcher = pattern.matcher(userString);
         if (matcher.find()) {
             return matcher.group(1);
         }
-        return userString; // fallback to original string if pattern not found
+        return userString;
     }
 
+    @Transactional
     public void migrateRatings() {
         log.info("Starting rating migration process using native MongoDB driver...");
         
@@ -50,7 +54,6 @@ public class RatingMigrationService {
         MongoCollection<Document> productsCollection = database.getCollection("products");
         MongoCollection<Document> ratingsCollection = database.getCollection("ratings");
         
-        // Get all ratings grouped by productId
         List<Document> ratingsByProduct = ratingsCollection.aggregate(List.of(
             new Document("$group", 
                 new Document("_id", "$productId")
@@ -63,28 +66,39 @@ public class RatingMigrationService {
         
         for (Document productRatings : ratingsByProduct) {
             String productId = productRatings.getString("_id");
+            if (productId == null) {
+                log.warn("Skipping rating with null productId");
+                continue;
+            }
+
             List<Document> ratings = (List<Document>) productRatings.get("ratings");
+            if (ratings == null || ratings.isEmpty()) {
+                continue;
+            }
+
+            List<Document> ratingList = new ArrayList<>();
+            float totalScore = 0;
             
-            if (ratings != null && !ratings.isEmpty()) {
-                List<Document> ratingList = new ArrayList<>();
-                float totalScore = 0;
-                
-                for (Document rating : ratings) {
-                    Document ratingItem = new Document()
-                        .append("ratingId", rating.getObjectId("_id").toString())
-                        .append("score", rating.getInteger("rating"))
-                        .append("userId", extractEmailFromUserString(rating.getString("userId")))
-                        .append("submittedAt", rating.getDate("submittedAt"));
-                    
-                    ratingList.add(ratingItem);
-                    totalScore += rating.getInteger("rating");
-                    totalRatingsMigrated++;
+            for (Document rating : ratings) {
+                if (rating == null) {
+                    continue;
                 }
+
+                Document ratingItem = new Document()
+                    .append("ratingId", rating.getObjectId("_id") != null ? rating.getObjectId("_id").toString() : null)
+                    .append("score", rating.getInteger("rating", 0))
+                    .append("userId", extractEmailFromUserString(rating.getString("userId")))
+                    .append("submittedAt", rating.getDate("submittedAt"));
                 
-                float averageRating = totalScore / ratings.size();
+                ratingList.add(ratingItem);
+                totalScore += rating.getInteger("rating", 0);
+                totalRatingsMigrated++;
+            }
+            
+            if (!ratingList.isEmpty()) {
+                float averageRating = totalScore / ratingList.size();
                 
-                // Update the product document
-                Bson filter = eq("_id", new org.bson.types.ObjectId(productId));
+                Bson filter = eq("_id", productId);
                 Bson update = combine(
                     set("ratingList", ratingList),
                     set("rating", averageRating)
@@ -101,7 +115,6 @@ public class RatingMigrationService {
         
         log.info("Migration completed. Total ratings migrated: {}", totalRatingsMigrated);
         
-        // Verify the migration
         long productsWithRatings = productsCollection.countDocuments(
             new Document("ratingList", new Document("$exists", true).append("$ne", new ArrayList<>()))
         );
