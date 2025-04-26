@@ -26,18 +26,8 @@ public class ProductController {
 
     /* ---------- GET ---------- */
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        // Sort products to show in-stock items first
-        products.sort((p1, p2) -> {
-            if (p1.getStock() == 0 && p2.getStock() > 0) {
-                return 1; // p1 (out of stock) comes after p2 (in stock)
-            } else if (p1.getStock() > 0 && p2.getStock() == 0) {
-                return -1; // p1 (in stock) comes before p2 (out of stock)
-            }
-            return 0; // maintain original order for same stock status
-        });
-        return ResponseEntity.ok(products);
+    public List<Product> getAll() {
+        return repo.findAll();
     }
 
     @GetMapping("/{isbn}")
