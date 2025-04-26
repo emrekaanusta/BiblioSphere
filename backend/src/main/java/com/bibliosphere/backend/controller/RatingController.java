@@ -7,7 +7,9 @@ import com.bibliosphere.backend.model.OrderStatus;
 import com.bibliosphere.backend.repository.RatingRepository;
 import com.bibliosphere.backend.repository.ProductRepository;
 import com.bibliosphere.backend.repository.OrderRepository;
+import com.bibliosphere.backend.service.RatingMigrationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/ratings")
@@ -28,6 +32,19 @@ public class RatingController {
 
     @Autowired
     private OrderRepository orderRepo;
+
+    @Autowired
+    private RatingMigrationService migrationService;
+
+    @PostMapping("/migrate")
+    public ResponseEntity<String> migrateRatings() {
+        try {
+            migrationService.migrateRatings();
+            return ResponseEntity.ok("Rating migration completed successfully");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error during migration: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/check")
     public boolean hasUserRated(@RequestParam String productId, Authentication auth) {
@@ -71,17 +88,36 @@ public class RatingController {
         rating.setSubmittedAt(LocalDateTime.now());
         Rating savedRating = ratingRepo.save(rating);
 
-        List<Rating> allRatings = ratingRepo.findByProductId(rating.getProductId());
-        float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
-
+        // Update product's ratingList and average rating
         productRepo.findById(rating.getProductId()).ifPresent(product -> {
+            // Create rating map
+            Map<String, Object> ratingMap = new HashMap<>();
+            ratingMap.put("ratingId", savedRating.getId());
+            ratingMap.put("score", savedRating.getRating());
+            ratingMap.put("userId", userId);
+            ratingMap.put("submittedAt", savedRating.getSubmittedAt());
+
+            // Add to ratingList
+            if (product.getRatingList() == null) {
+                product.setRatingList(new java.util.ArrayList<>());
+            }
+            product.getRatingList().add(ratingMap);
+
+            // Calculate new average rating
+            float avg = (float) product.getRatingList().stream()
+                .mapToInt(r -> (int) r.get("score"))
+                .average()
+                .orElse(0);
             product.setRating(avg);
+
+            // Add comment to reviews if present
             if (rating.getComment() != null && !rating.getComment().isBlank()) {
                 if (product.getReview() == null) {
                     product.setReview(new java.util.ArrayList<>());
                 }
                 product.getReview().add(rating.getComment());
             }
+
             productRepo.save(product);
         });
 
@@ -96,24 +132,23 @@ public class RatingController {
         if (rating.isPresent() && rating.get().getUserId().equals(userId)) {
             ratingRepo.deleteById(ratingId);
             
-            // Recalculate average rating
-            List<Rating> allRatings = ratingRepo.findByProductId(rating.get().getProductId());
-            float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
-            
+            // Update product's ratingList and recalculate average
             productRepo.findById(rating.get().getProductId()).ifPresent(product -> {
+                // Remove from ratingList
+                product.getRatingList().removeIf(item -> ratingId.equals(item.get("ratingId")));
+                
+                // Recalculate average rating
+                float avg = (float) product.getRatingList().stream()
+                    .mapToInt(r -> (int) r.get("score"))
+                    .average()
+                    .orElse(0);
                 product.setRating(avg);
+                
                 productRepo.save(product);
             });
         } else {
             throw new RuntimeException("Not authorized to delete this rating");
         }
-    }
-
-    @GetMapping("/product/{productId}")
-    public List<Rating> getRatingsByProduct(@PathVariable String productId) {
-        return ratingRepo.findByProductId(productId).stream()
-            .filter(rating -> rating.isVisible())
-            .collect(Collectors.toList());
     }
 
     @PutMapping("/{ratingId}")
@@ -129,12 +164,21 @@ public class RatingController {
             
             Rating savedRating = ratingRepo.save(rating);
             
-            // Recalculate average rating
-            List<Rating> allRatings = ratingRepo.findByProductId(rating.getProductId());
-            float avg = (float) allRatings.stream().mapToInt(Rating::getRating).average().orElse(0);
-            
+            // Update product's ratingList and recalculate average
             productRepo.findById(rating.getProductId()).ifPresent(product -> {
+                // Update rating in ratingList
+                product.getRatingList().stream()
+                    .filter(item -> ratingId.equals(item.get("ratingId")))
+                    .findFirst()
+                    .ifPresent(item -> item.put("score", updatedRating.getRating()));
+                
+                // Recalculate average rating
+                float avg = (float) product.getRatingList().stream()
+                    .mapToInt(r -> (int) r.get("score"))
+                    .average()
+                    .orElse(0);
                 product.setRating(avg);
+                
                 productRepo.save(product);
             });
             
@@ -142,5 +186,12 @@ public class RatingController {
         } else {
             throw new RuntimeException("Not authorized to update this rating");
         }
+    }
+
+    @GetMapping("/product/{productId}")
+    public List<Rating> getRatingsByProduct(@PathVariable String productId) {
+        return ratingRepo.findByProductId(productId).stream()
+            .filter(rating -> rating.isVisible())
+            .collect(Collectors.toList());
     }
 }

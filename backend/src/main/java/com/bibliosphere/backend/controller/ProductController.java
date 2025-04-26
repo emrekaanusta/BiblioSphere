@@ -64,6 +64,7 @@ public class ProductController {
                 stock,                           
                 language, publisher,
                 0f,                              
+                new ArrayList<>(),             
                 new ArrayList<>());             
 
         return ResponseEntity.ok(repo.save(p));

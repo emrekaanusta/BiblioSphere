@@ -201,7 +201,7 @@ const Homepage = () => {
             </div>
             <div className="swiper books-slider">
               <div className="swiper-wrapper">
-                {featuredBooks.slice(0, 3).map((book) => (
+                {featuredBooks.slice(0, 6).map((book) => (
                   <Link to={`/books/${book.id}`} key={book.id} className="swiper-slide">
                     <img src={book.image} alt={book.title} />
                   </Link>
@@ -219,13 +219,13 @@ const Homepage = () => {
           modules={[Navigation]}
           spaceBetween={30}
           slidesPerView={3}
-          navigation
-          loop
+          navigation={true}
+          loop={true}
           className="featured-slider"
           breakpoints={{
-            0: { slidesPerView: 1 },
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
+            0: { slidesPerView: 1, spaceBetween: 10 },
+            576: { slidesPerView: 2, spaceBetween: 15 },
+            768: { slidesPerView: 3, spaceBetween: 30 }
           }}
         >
           {featuredBooks.map((book) => (

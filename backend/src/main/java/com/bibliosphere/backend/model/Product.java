@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -30,4 +32,21 @@ public class Product {
     private String publisher;
     private float rating;
     private List<String> review = new ArrayList<>();
+    private List<Map<String, Object>> ratingList = new ArrayList<>(); // Changed to List<Map>
+
+    // Helper method to get rating count
+    public int getRatingCount() {
+        return ratingList != null ? ratingList.size() : 0;
+    }
+
+    // Helper method to get average rating
+    public float getAverageRating() {
+        if (ratingList == null || ratingList.isEmpty()) {
+            return 0;
+        }
+        return (float) ratingList.stream()
+            .mapToInt(rating -> (int) rating.get("score"))
+            .average()
+            .orElse(0);
+    }
 }

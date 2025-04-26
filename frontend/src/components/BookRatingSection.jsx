@@ -133,6 +133,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
   const [comment, setComment] = useState('');
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
+  const [book, setBook] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasRated, setHasRated] = useState(false);
   const [showRatingRequired, setShowRatingRequired] = useState(false);
@@ -158,6 +159,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
 
         if (productRes.ok) {
           const product = await productRes.json();
+          setBook(product);
           setAverageRating(product.rating || 0);
         }
 
@@ -430,7 +432,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         <div className="average-rating">
           <StarRating rating={averageRating || 0} />
           <span className="rating-count">
-            ({reviews.length} {reviews.length === 1 ? 'rating' : 'ratings'})
+            ({book?.ratingList?.length || 0} ratings, {book?.ratingList?.filter(r => r.comment).length || 0} reviews)
           </span>
         </div>
       </div>
