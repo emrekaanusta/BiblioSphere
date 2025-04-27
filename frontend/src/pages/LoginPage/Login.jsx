@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import "./Login.css"; // Login  CSS
+import "./Login.css"; // Login için CSS
 import Navbar from "../NavigationBar/Navbar";
 import { useNavigate, Link } from "react-router-dom";
-
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); 
+  const [errorMessage, setErrorMessage] = useState(""); // ✅ Yeni hata mesajı için state
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
@@ -24,7 +23,7 @@ const Login = () => {
     fetch("http://localhost:8080/login", requestOptions)
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Invalid credentials"); 
+          throw new Error("Invalid credentials");
         }
         return response.text();
       })
@@ -36,18 +35,18 @@ const Login = () => {
           navigate("/");
           window.location.reload();
         } else {
-          setErrorMessage("Invalid credentials"); 
+          setErrorMessage("Invalid email or password."); // ✅ Token boşsa hata mesajı
         }
       })
       .catch((error) => {
         console.error(error);
-        setErrorMessage("Email or password is incorrect. Please try again."); 
+        setErrorMessage("Invalid email or password."); // ✅ Sunucudan hata gelirse
       });
   };
 
   return (
     <div className="page-container">
-      <Navbar />
+      <Navbar /> {/* Navbar sayfanın en üstüne eklendi */}
       <div className="login-container">
         <div className="login-box">
           <h2>Login</h2>
@@ -75,7 +74,7 @@ const Login = () => {
               />
             </div>
 
-            {/* error messages */}
+            {/* ✅ Eğer errorMessage varsa gösteriyoruz */}
             {errorMessage && <p className="error-message">{errorMessage}</p>}
 
             <button type="submit" className="login-btn">Login</button>
