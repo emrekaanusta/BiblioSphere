@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Login.css"; // Login için CSS
+import "./Login.css"; // Login  CSS
 import Navbar from "../NavigationBar/Navbar";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -7,6 +7,7 @@ import { useNavigate, Link } from "react-router-dom";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); 
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
@@ -23,28 +24,30 @@ const Login = () => {
     fetch("http://localhost:8080/login", requestOptions)
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Invalid credentials");
+          throw new Error("Invalid credentials"); 
         }
-        return response.text();  // You expect the token as text
+        return response.text();
       })
       .then((token) => {
         if (token && token.length > 0) {
           localStorage.setItem("token", token);
-          localStorage.setItem("userEmail", email);  // Store the email
+          localStorage.setItem("userEmail", email);
           console.log("Success", "Login successful!");
           navigate("/");
           window.location.reload();
         } else {
-          console.log("Error", "Invalid credentials");
+          setErrorMessage("Invalid credentials"); 
         }
       })
       .catch((error) => {
         console.error(error);
+        setErrorMessage("Email or password is incorrect. Please try again."); 
       });
   };
+
   return (
     <div className="page-container">
-      <Navbar /> {/* Navbar sayfanın en üstüne eklendi */}
+      <Navbar />
       <div className="login-container">
         <div className="login-box">
           <h2>Login</h2>
@@ -71,8 +74,12 @@ const Login = () => {
                 autoCapitalize="none"
               />
             </div>
+
+            {/* error messages */}
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
+
             <button type="submit" className="login-btn">Login</button>
-            <p>Don't you have an account ? <Link to="/register">sign up</Link></p>
+            <p>Don't you have an account? <Link to="/register">sign up</Link></p>
           </form>
         </div>
       </div>
