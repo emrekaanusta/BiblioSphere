@@ -11,13 +11,18 @@ const Header = () => {
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState('');
 
   const navigate = useNavigate();
 
   /* -------------------------- auth state -------------------------- */
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const userEmail = localStorage.getItem("userEmail");
     setIsLoggedIn(!!token);
+    if (userEmail) {
+      setUsername(userEmail.split('@')[0]);
+    }
   }, []);
 
   const handleSignOut = async () => {
@@ -133,6 +138,7 @@ const Header = () => {
           <div className="auth-container">
             <button className="icon-button" onClick={handleAuthClick}>
               <i className="fas fa-user"></i>
+              {isLoggedIn && username && <span className="user-email">{username}</span>}
             </button>
 
             {showAuthDropdown && (
