@@ -209,10 +209,10 @@ const Receipt = () => {
                         {isRated ? (
                           <div>
                             <strong>Your Rating:</strong>
-                            <StarRating rating={userRating.rating} readOnly />
+                            <StarRating rating={userRating?.rating || 0} readOnly />
                             <div style={{ marginTop: '8px' }}>
                               <button onClick={() => startEditing(userRating, item.productId)}>Edit</button>
-                              <button onClick={() => handleDeleteRating(userRating.id, item.productId)}>Delete</button>
+                              <button onClick={() => handleDeleteRating(userRating?.id, item.productId)}>Delete</button>
                             </div>
 
                             {editingRatings[item.productId] && (
@@ -231,13 +231,13 @@ const Receipt = () => {
                                   ))}
                                 </div>
                                 <textarea
-                                  value={editComments[item.productId]}
+                                  value={editComments[item.productId] || ''}
                                   onChange={(e) => setEditComments(prev => ({ ...prev, [item.productId]: e.target.value }))}
                                   placeholder="Edit your comment"
                                   className="comment-box"
                                 />
                                 <div style={{ marginTop: '8px' }}>
-                                  <button onClick={() => handleEditRating(userRating.id, item.productId)}>Save</button>
+                                  <button onClick={() => handleEditRating(userRating?.id, item.productId)}>Save</button>
                                 </div>
                               </div>
                             )}

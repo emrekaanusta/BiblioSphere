@@ -32,6 +32,7 @@ const RatingForm = ({ productId, orderId, onRated }) => {
 
       if (res.ok) {
         onRated?.();
+        window.location.reload(); // Refresh the page after successful rating
       } else {
         const errText = await res.text();
         alert("Rating failed: " + errText);
