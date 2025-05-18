@@ -85,6 +85,15 @@
   border-bottom: none;
 }
 
+.favorite-item-image-container {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.favorite-item-image-container:hover {
+  transform: scale(1.05);
+}
+
 .favorite-item-image {
   width: 80px;
   height: 120px;
@@ -105,6 +114,15 @@
 .favorite-item-details p {
   color: #666;
   margin-bottom: 1rem;
+}
+
+.book-title {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.book-title:hover {
+  color: #4CAF50;
 }
 
 .remove-btn {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useNavigate, Link } from 'react-router-dom';
 import './FavoritesList.css';
@@ -12,9 +12,21 @@ const FavoritesList = () => {
     } = useFavorites();
     const navigate = useNavigate();
 
+    // Open the slider when favorites change
+    useEffect(() => {
+        if (favorites.length > 0) {
+            toggleFavorites();
+        }
+    }, [favorites.length]);
+
     const handleViewAllFavorites = () => {
         toggleFavorites(); // Close the slider
         navigate('/favorites'); // Navigate to favorites page
+    };
+
+    const handleBookClick = (bookId) => {
+        toggleFavorites(); // Close the slider
+        navigate(`/books/${bookId}`); // Navigate to book detail page
     };
 
     return (
@@ -30,13 +42,19 @@ const FavoritesList = () => {
                     {favorites.length > 0 ? (
                         favorites.map((book) => (
                             <div key={book.id || book.isbn || book._id} className="favorite-item">
-                                <Link to={`/book/${book.id || book.isbn || book._id}`}>
+                                <div 
+                                    className="favorite-item-image-container"
+                                    onClick={() => handleBookClick(book.id || book.isbn || book._id)}
+                                >
                                     <img src={book.image} alt={book.title} className="favorite-item-image" />
-                                </Link>
+                                </div>
                                 <div className="favorite-item-details">
-                                    <Link to={`/book/${book.id || book.isbn || book._id}`} className="book-title">
+                                    <div 
+                                        className="book-title"
+                                        onClick={() => handleBookClick(book.id || book.isbn || book._id)}
+                                    >
                                         <h3>{book.title}</h3>
-                                    </Link>
+                                    </div>
                                     <p>${book.price}</p>
                                     <button 
                                         onClick={() => removeFromFavorites(book.id || book.isbn || book._id)} 

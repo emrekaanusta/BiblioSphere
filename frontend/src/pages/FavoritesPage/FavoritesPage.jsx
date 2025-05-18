@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import './FavoritesPage.css';
@@ -7,6 +7,7 @@ import './FavoritesPage.css';
 const FavoritesPage = () => {
     const { favorites, removeFromFavorites } = useFavorites();
     const { addToCart } = useCart();
+    const navigate = useNavigate();
 
     const handleAddToCart = (book) => {
         const success = addToCart(book);
@@ -17,6 +18,10 @@ const FavoritesPage = () => {
                 alert(`Cannot add more items. Only ${book.stock} available in stock.`);
             }
         }
+    };
+
+    const handleBookClick = (bookId) => {
+        navigate(`/books/${bookId}`);
     };
 
     return (
@@ -30,14 +35,20 @@ const FavoritesPage = () => {
             ) : (
                 <div className="favorites-grid">
                     {favorites.map((book) => (
-                        <div key={book.id} className="favorite-book-card">
-                            <Link to={`/book/${book.id}`}>
+                        <div key={book.id || book.isbn || book._id} className="favorite-book-card">
+                            <div 
+                                className="book-image-container"
+                                onClick={() => handleBookClick(book.id || book.isbn || book._id)}
+                            >
                                 <img src={book.image} alt={book.title} className="book-image" />
-                            </Link>
+                            </div>
                             <div className="book-info">
-                                <Link to={`/book/${book.id}`} className="book-title">
+                                <div 
+                                    className="book-title"
+                                    onClick={() => handleBookClick(book.id || book.isbn || book._id)}
+                                >
                                     <h3>{book.title}</h3>
-                                </Link>
+                                </div>
                                 <p className="book-price">${book.price}</p>
                                 <p className="stock">Stock: {book.stock}</p>
                                 <div className="book-actions">
