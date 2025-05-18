@@ -13,7 +13,7 @@ export default function CategoryPage() {
   const { category } = useParams();
   const navigate     = useNavigate();
   const { addToCart } = useCart();
-  const { isBookFavorite, updateFavorites } = useFavorites();
+  const { isBookFavorite, updateFavorites, removeFromFavorites, addToFavorites } = useFavorites();
 
   /* ───── state ───── */
   const [books,       setBooks]       = useState([]);
@@ -103,27 +103,15 @@ export default function CategoryPage() {
   };
 
   const handleToggleFavorite = (book) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!localStorage.getItem('token')) {
       navigate('/login');
       return;
     }
-    const endpoint = isBookFavorite(book.id) ? 'remove' : 'add';
-
-    fetch(`http://localhost:8080/favorites/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ productId: book.id.toString() }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to update wishlist');
-        return res.json();
-      })
-      .then(updateFavorites)
-      .catch(console.error);
+    if (isBookFavorite(book.id)) {
+      removeFromFavorites(book.id);
+    } else {
+      addToFavorites(book);
+    }
   };
 
   /* ───── UI ───── */

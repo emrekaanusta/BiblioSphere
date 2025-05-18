@@ -29,17 +29,17 @@ const FavoritesList = () => {
                 <div className="favorites-items">
                     {favorites.length > 0 ? (
                         favorites.map((book) => (
-                            <div key={book.id} className="favorite-item">
-                                <Link to={`/book/${book.id}`}>
+                            <div key={book.id || book.isbn || book._id} className="favorite-item">
+                                <Link to={`/book/${book.id || book.isbn || book._id}`}>
                                     <img src={book.image} alt={book.title} className="favorite-item-image" />
                                 </Link>
                                 <div className="favorite-item-details">
-                                    <Link to={`/book/${book.id}`} className="book-title">
+                                    <Link to={`/book/${book.id || book.isbn || book._id}`} className="book-title">
                                         <h3>{book.title}</h3>
                                     </Link>
                                     <p>${book.price}</p>
                                     <button 
-                                        onClick={() => removeFromFavorites(book.id)} 
+                                        onClick={() => removeFromFavorites(book.id || book.isbn || book._id)} 
                                         className="remove-btn"
                                     >
                                         Remove
@@ -67,4 +67,4 @@ const FavoritesList = () => {
     );
 };
 
-export default FavoritesList; 
+export default FavoritesList;

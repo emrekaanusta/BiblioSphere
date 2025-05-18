@@ -50,7 +50,7 @@ const FavoritesPage = () => {
                                         {book.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                                     </button>
                                     <button 
-                                        onClick={() => removeFromFavorites(book.id)}
+                                        onClick={() => removeFromFavorites(book.id || book.isbn || book._id)}
                                         className="remove-btn"
                                     >
                                         <i className="fas fa-trash-alt"></i>
