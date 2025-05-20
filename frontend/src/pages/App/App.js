@@ -15,6 +15,7 @@ import CategoryPage from "../CategoryPage/CategoryPage";
 import Header from "../../components/Header";
 import ShoppingCart from "../../components/ShoppingCart";
 import FavoritesList from "../../components/FavoritesList";
+import ProductManagerCommentsPage from '../ProductManager/ProductManagerCommentsPage';
 import "./App.css";
 
 function App() {
@@ -53,6 +54,8 @@ function App() {
                                 <Route path="/category/:category" element={<CategoryPage />} />
                                 <Route path="/orders" element={<Orders />} />
                                 <Route path="/receipt/:orderId" element={<Receipt />} />
+
+                                <Route path="/pm/comments" element={<ProductManagerCommentsPage />} />
 
                             </Routes>
                         </main>

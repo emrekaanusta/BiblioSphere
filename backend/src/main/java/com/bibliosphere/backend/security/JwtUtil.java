@@ -1,13 +1,14 @@
 package com.bibliosphere.backend.security;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Component;        // ← add this
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
-@Component
+@Component                                          // ← and this
 public class JwtUtil {
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
@@ -15,7 +16,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .setExpiration(new Date(System.currentTimeMillis() + 3_600_000))
                 .signWith(secretKey)
                 .compact();
     }
@@ -30,24 +31,11 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token, String email) {
-        return (email.equals(extractEmail(token)) && !isTokenExpired(token));
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return Jwts.parserBuilder()
+        var claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
+                .getBody();
+        return email.equals(claims.getSubject()) && claims.getExpiration().after(new Date());
     }
-
-
-
-
 }
-

@@ -237,4 +237,31 @@ public class RatingController {
             .filter(rating -> rating != null && rating.isVisible())
             .collect(Collectors.toList());
     }
+
+
+    @GetMapping
+    public List<Rating> getAllRatings() {
+        return ratingRepo.findAll();
+    }
+
+    // ADMIN: toggle the visible flag
+    @PatchMapping("/{id}")
+    public ResponseEntity<Rating> updateVisibility(
+            @PathVariable("id") String id,
+            @RequestBody Map<String, Boolean> body
+    ) {
+        Boolean visible = body.get("visible");
+        if (visible == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Rating rating = ratingRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Rating not found: " + id));
+        rating.setVisible(visible);
+        Rating saved = ratingRepo.save(rating);
+        return ResponseEntity.ok(saved);
+    }
+
+
+
 }
