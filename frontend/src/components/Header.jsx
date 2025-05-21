@@ -57,7 +57,15 @@ const Header = () => {
 
   const handleAuthClick   = () => setShowAuthDropdown(!showAuthDropdown);
   const handleCartClick   = (e) => { e.preventDefault(); toggleCart(); };
-  const handleFavoritesClick = (e) => { e.preventDefault(); toggleFavorites(); };
+  const handleFavoritesClick = (e) => { 
+    e.preventDefault(); 
+    if (!isLoggedIn) {
+      alert('Please log in to view your favorites');
+      navigate('/login');
+      return;
+    }
+    toggleFavorites(); 
+  };
 
   const handleAuthOption = (path) => {
     setShowAuthDropdown(false);
