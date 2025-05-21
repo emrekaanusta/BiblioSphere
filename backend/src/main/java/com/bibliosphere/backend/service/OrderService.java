@@ -80,4 +80,11 @@ public class OrderService {
     public Optional<Order> getOrderById(String id) {
         return orderRepo.findById(id);
     }
+
+    public Order updateOrderStatus(String orderId, OrderStatus newStatus) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        order.setStatus(newStatus);
+        return orderRepo.save(order);
+    }
 }

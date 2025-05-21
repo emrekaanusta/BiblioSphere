@@ -323,11 +323,60 @@ const Receipt = () => {
     return <div className="receipt-container">Loading order...</div>;
   }
 
+  // Delivery status steps
+  const statusSteps = ["PROCESSED", "SHIPPED", "DELIVERED"];
+  const statusLabels = {
+    PROCESSED: "Processed",
+    SHIPPED: "Shipped",
+    DELIVERED: "Delivered"
+  };
+  const currentStep = statusSteps.indexOf(order.status);
+
   return (
       <div className="receipt-container">
         <div className="receipt-content">
           <h2>Order Receipt</h2>
           <p className="order-date">Order Date: {new Date(order.createdAt).toLocaleDateString()}</p>
+
+          {/* Delivery Status Tracker */}
+          <div className="delivery-status-tracker" style={{ margin: '24px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+              {statusSteps.map((step, idx) => (
+                <React.Fragment key={step}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: idx <= currentStep ? '#4ade80' : '#e5e7eb',
+                        color: idx <= currentStep ? '#fff' : '#6b7280',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                        border: idx === currentStep ? '3px solid #22c55e' : '2px solid #d1d5db',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {idx + 1}
+                    </div>
+                    <span style={{ marginTop: 8, fontSize: 14, color: idx <= currentStep ? '#16a34a' : '#6b7280' }}>
+                      {statusLabels[step]}
+                    </span>
+                  </div>
+                  {idx < statusSteps.length - 1 && (
+                    <div style={{ width: 40, height: 4, background: idx < currentStep ? '#4ade80' : '#e5e7eb', borderRadius: 2 }} />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: 12, fontWeight: 'bold', fontSize: 16 }}>
+              Current Status: <span style={{ color: '#16a34a' }}>{statusLabels[order.status] || order.status}</span>
+            </div>
+          </div>
+
           <p className="order-status">Status: {order.status}</p>
 
           <ul className="receipt-items">
@@ -492,12 +541,26 @@ const Receipt = () => {
             <p><strong>Total: ${order.total.toFixed(2)}</strong></p>
           </div>
 
-          <div className="shipping-info">
-            <h3>Shipping Information:</h3>
-            <p>{order.shippingInfo.firstName} {order.shippingInfo.lastName}</p>
-            <p>{order.shippingInfo.address}</p>
-            <p>{order.shippingInfo.city}, {order.shippingInfo.zipCode}</p>
-            <p>Email: {order.shippingInfo.email}</p>
+          <div className="shipping-info" style={{
+            border: '2px solid #3b82f6',
+            background: '#eff6ff',
+            borderRadius: 10,
+            padding: 18,
+            marginTop: 24,
+            marginBottom: 24,
+            boxShadow: '0 2px 8px rgba(59,130,246,0.08)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <span style={{ fontSize: 22, color: '#2563eb', marginRight: 8 }}>📦</span>
+              <h3 style={{ margin: 0, color: '#1d4ed8' }}>Delivery Address</h3>
+            </div>
+            <p style={{ fontWeight: 500 }}>{order.shippingInfo.firstName} {order.shippingInfo.lastName}</p>
+            <p style={{ fontWeight: 500 }}>{order.shippingInfo.address}</p>
+            <p style={{ fontWeight: 500 }}>{order.shippingInfo.city}, {order.shippingInfo.zipCode}</p>
+            <p style={{ fontWeight: 500 }}>Email: {order.shippingInfo.email}</p>
+            <div style={{ marginTop: 10, color: '#2563eb', fontWeight: 500, fontSize: 14 }}>
+              <span>Note: This address will be compared with the one on the product manager panel.</span>
+            </div>
           </div>
         </div>
       </div>

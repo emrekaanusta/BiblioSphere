@@ -84,6 +84,44 @@ const Orders = () => {
     }
   };
 
+  // Possible order statuses
+  const ORDER_STATUSES = [
+    { value: 'PROCESSED', label: 'Processing' },
+    { value: 'TRANSFER', label: 'In Transit' },
+    { value: 'DELIVERED', label: 'Delivered' },
+    { value: 'CANCELLED', label: 'Cancelled' },
+  ];
+
+  // Track status selection for each order
+  const [statusSelections, setStatusSelections] = useState({});
+
+  const handleStatusChange = (orderId, newStatus) => {
+    setStatusSelections(prev => ({ ...prev, [orderId]: newStatus }));
+  };
+
+  const handleUpdateStatus = async (orderId) => {
+    const newStatus = statusSelections[orderId];
+    if (!newStatus) return;
+    try {
+      const res = await fetch(`http://localhost:8080/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+        alert('Order status updated.');
+      } else {
+        alert('Failed to update status.');
+      }
+    } catch (err) {
+      alert('Error updating status.');
+    }
+  };
+
   /* ---------- render ---------- */
 
   if (loading)
@@ -180,6 +218,26 @@ const Orders = () => {
                   Cancel Order
                 </button>
               )}
+
+              {/* Admin status update controls (show to all for demo) */}
+              <div style={{ marginTop: 12 }}>
+                <select
+                  value={statusSelections[order.id] || order.status}
+                  onChange={e => handleStatusChange(order.id, e.target.value)}
+                  style={{ marginRight: 8 }}
+                >
+                  {ORDER_STATUSES.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => handleUpdateStatus(order.id)}
+                  disabled={(statusSelections[order.id] || order.status) === order.status}
+                  style={{ padding: '4px 12px' }}
+                >
+                  Update Status
+                </button>
+              </div>
             </div>
           </div>
         </div>

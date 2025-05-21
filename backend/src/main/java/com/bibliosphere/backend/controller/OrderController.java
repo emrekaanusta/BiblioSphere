@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.bibliosphere.backend.model.OrderStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -56,5 +57,25 @@ public class OrderController {
     @GetMapping
     public List<Order> myOrders(Authentication auth) {
         return orderService.getOrdersForUser(auth.getName());
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<Order> updateStatus(@PathVariable String orderId, @RequestBody StatusUpdateRequest request) {
+        try {
+            OrderStatus newStatus = OrderStatus.valueOf(request.getStatus());
+            Order updated = orderService.updateOrderStatus(orderId, newStatus);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build(); // invalid status
+        } catch (RuntimeException ex) {
+            return ResponseEntity.notFound().build(); // order not found
+        }
+    }
+
+    // DTO for status update
+    public static class StatusUpdateRequest {
+        private String status;
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
     }
 }
