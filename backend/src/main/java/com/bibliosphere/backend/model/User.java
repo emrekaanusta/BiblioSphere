@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -19,16 +20,31 @@ public class User {
     private String password;
     private String name;
     private String surname;
-    private String phone;
-    private String role;
-    private String home_address;
-    private String credit_card;
-    private List<String> shopping_cart;
-    private List<String> orders;
-    private List<String> wishlist;
-    private String address;
-    private String ZipCode;
-    private String city;
+    private String taxid = "";  // Initialize as empty string
+    private String role = "customer";  // Default to customer
+    private List<String> shopping_cart = new ArrayList<>();  // Initialize as empty list
+    private List<String> orders = new ArrayList<>();  // Initialize as empty list
+    private List<String> wishlist = new ArrayList<>();  // Initialize as empty list
+    private String address = "";  // Initialize as empty string
+    private String ZipCode = "";  // Initialize as empty string
+    private String city = "";  // Initialize as empty string
+
+    // Constructor for registration
+    public User(String email, String username, String password, String name, String surname) {
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.name = name;
+        this.surname = surname;
+        this.role = "customer";
+        this.shopping_cart = new ArrayList<>();
+        this.orders = new ArrayList<>();
+        this.wishlist = new ArrayList<>();
+        this.taxid = "";
+        this.address = "";
+        this.ZipCode = "";
+        this.city = "";
+    }
 
     public String getUsername() {
         return username;
