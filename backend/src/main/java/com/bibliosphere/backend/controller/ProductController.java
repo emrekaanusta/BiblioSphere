@@ -46,46 +46,33 @@ public class ProductController {
         repo.deleteById(isbn);
         return ResponseEntity.noContent().build();
     }
-    @PatchMapping("/products/{id}/price")
-    public ResponseEntity<?> updatePrice(@PathVariable String id, @RequestBody Map<String, Float> payload) {
-        float newPrice = payload.get("price");
-        Product product = productRepository.findById(id).orElseThrow();
+    @PutMapping("/{id}/price")
+    public ResponseEntity<Product> updatePrice(@PathVariable String id, @RequestBody Double newPrice) {
+        Product product = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
         product.setPrice(newPrice);
-        productRepository.save(product);
-        return ResponseEntity.ok(product);
+        return ResponseEntity.ok(repo.save(product));
     }
 
 
     /* ---------- POST (create) ---------- */
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Product> createProduct(
-            @RequestParam("file")        MultipartFile file,
-            @RequestParam("isbn")        String isbn,
-            @RequestParam("title")       String title,
-            @RequestParam("author")      String author,
-            @RequestParam("type")        String type,
-            @RequestParam("price")       float  price,
-            @RequestParam("stock")       int    stock,
-            @RequestParam("description") String description,
-            @RequestParam("publisYear")  String publisYear,
-            @RequestParam("pages")       int    pages,
-            @RequestParam("language")    String language,
-            @RequestParam("publisher")   String publisher
-    ) throws IOException {
-
-        String imageUrl = imageService.uploadImage(file);
-
-        // ⚠  order follows the field order in Product.java
-        Product p = new Product(
-                isbn, title, author, type, price,
-                imageUrl,                        
-                description, publisYear, pages,
-                stock,                           
-                language, publisher,
-                0f,                              
-                new ArrayList<>(),             
-                new ArrayList<>());             
-
+    @PostMapping
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+        Product p = new Product();
+        p.setIsbn(product.getIsbn());
+        p.setTitle(product.getTitle());
+        p.setAuthor(product.getAuthor());
+        p.setType(product.getType());
+        p.setPrice(product.getPrice());
+        p.setImage(product.getImage());
+        p.setDescription(product.getDescription());
+        p.setPublisYear(product.getPublisYear());
+        p.setPages(product.getPages());
+        p.setStock(product.getStock());
+        p.setLanguage(product.getLanguage());
+        p.setPublisher(product.getPublisher());
+        p.setRating(product.getRating());
+        p.setReview(new ArrayList<>());
+        p.setRatingList(new ArrayList<>());
         return ResponseEntity.ok(repo.save(p));
     }
 

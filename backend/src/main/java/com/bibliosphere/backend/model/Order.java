@@ -2,6 +2,7 @@ package com.bibliosphere.backend.model;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -14,6 +15,9 @@ public class Order {
     @Id
     private String id;
 
+    @DBRef
+    private User user;
+
     private String userEmail;          // who placed it
     private List<OrderItem> items;     // books purchased
     private ShippingInfo shippingInfo; // name & address
@@ -24,6 +28,15 @@ public class Order {
     private double total;
 
     private OrderStatus status = OrderStatus.PROCESSED;
+    private String refundStatus;
 
     private Instant createdAt = Instant.now();
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

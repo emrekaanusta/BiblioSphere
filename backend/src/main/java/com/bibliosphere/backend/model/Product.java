@@ -33,6 +33,8 @@ public class Product {
     private float rating;
     private List<String> review = new ArrayList<>();
     private List<Map<String, Object>> ratingList = new ArrayList<>(); // Changed to List<Map>
+    private Double discountPercentage;
+    private Double discountedPrice;
 
     // Helper method to get rating count
     public int getRatingCount() {
@@ -48,5 +50,36 @@ public class Product {
             .mapToInt(rating -> (int) rating.get("score"))
             .average()
             .orElse(0);
+    }
+
+    // Getters and setters
+    public void setPrice(Double price) {
+        if (price != null) {
+            this.price = price.floatValue();
+        }
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
+    }
+
+    public float getPrice() {
+        return this.price;
+    }
+
+    public Double getDiscountPercentage() {
+        return discountPercentage != null ? discountPercentage : 0.0;
+    }
+
+    public void setDiscountPercentage(Double discountPercentage) {
+        this.discountPercentage = discountPercentage;
+    }
+
+    public Double getDiscountedPrice() {
+        return discountedPrice != null ? discountedPrice : (double) price;
+    }
+
+    public void setDiscountedPrice(Double discountedPrice) {
+        this.discountedPrice = discountedPrice;
     }
 }

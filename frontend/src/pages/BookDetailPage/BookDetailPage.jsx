@@ -132,7 +132,20 @@ const BookDetailPage = () => {
                             onClick={handleAddToCart}
                             disabled={book.stock === 0}
                         >
-                            {book.stock === 0 ? 'Out of Stock' : `Add to Cart - $${book.price}`}
+                            {book.stock === 0 ? 'Out of Stock' : (
+                                book.discountPercentage > 0 ? (
+                                    <>
+                                        <span style={{ textDecoration: 'line-through', color: '#888' }}>${book.price}</span>
+                                        <span style={{ color: '#d32f2f', marginLeft: 8 }}>
+                                            Discounted Price: ${book.discountedPrice}
+                                        </span>
+                                        <br />
+                                        <span style={{ color: '#388e3c' }}>Discount: {book.discountPercentage}%</span>
+                                    </>
+                                ) : (
+                                    `Add to Cart - $${book.price}`
+                                )
+                            )}
                         </button>
                         <button
                             className={`favorite-btn ${isBookFavorite(book.isbn) ? 'active' : ''}`}

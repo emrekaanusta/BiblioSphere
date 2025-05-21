@@ -7,12 +7,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    @Autowired
+    private JavaMailSender javaMailSender;
 
     public void sendOrderReceipt(Order order) {
         try {
@@ -47,5 +52,13 @@ public class EmailService {
         } catch (MessagingException e) {
             e.printStackTrace(); // For debugging; replace with a logger in production
         }
+    }
+
+    public void sendEmail(String to, String subject, String body) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(body);
+        javaMailSender.send(message);
     }
 }

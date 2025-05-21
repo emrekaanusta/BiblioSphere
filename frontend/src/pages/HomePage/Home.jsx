@@ -138,7 +138,18 @@ const Homepage = () => {
             <h3>{book.title}</h3>
           </Link>
           <p className="author">By {book.author}</p>
-          <p className="price">${book.price?.toFixed(2)}</p>
+          {book.discountPercentage > 0 ? (
+            <p className="price">
+              <span style={{ textDecoration: 'line-through', color: '#888' }}>${book.price?.toFixed(2)}</span>
+              <span style={{ color: '#d32f2f', marginLeft: 8 }}>
+                Discounted Price: ${book.discountedPrice?.toFixed(2)}
+              </span>
+              <br />
+              <span style={{ color: '#388e3c' }}>Discount: {book.discountPercentage}%</span>
+            </p>
+          ) : (
+            <p className="price">${book.price?.toFixed(2)}</p>
+          )}
           <p className="stock">Stock: {book.stock}</p>
 
           <div className="rating-wrapper">

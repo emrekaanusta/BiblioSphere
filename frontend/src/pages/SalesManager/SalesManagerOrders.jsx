@@ -10,6 +10,15 @@ import {
     CartesianGrid,
     ResponsiveContainer
 } from "recharts";
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    TextField,
+    DialogActions,
+    Button
+} from "@mui/material";
+import axios from "axios";
 
 const loadImageAsBase64 = (url) =>
     fetch(url)
@@ -60,20 +69,34 @@ const SalesManagerOrders = () => {
     const [error, setError] = useState(null);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [refundMessage, setRefundMessage] = useState('');
+    const [openRefundDialog, setOpenRefundDialog] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [snackbar, setSnackbar] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+
+    const fetchOrders = async () => {
+        try {
+            const response = await fetch("http://localhost:8080/api/orders/all", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error("Failed to fetch orders");
+            const data = await response.json();
+            setOrders(data);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!isSales) return;
-
-        fetch("http://localhost:8080/api/orders/all", {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-            .then(res => {
-                if (!res.ok) throw new Error("Failed to fetch orders");
-                return res.json();
-            })
-            .then(data => setOrders(data))
-            .catch(err => setError(err.message))
-            .finally(() => setLoading(false));
+        fetchOrders();
     }, [isSales, token]);
 
     const filteredOrders = orders.filter(order => {
@@ -164,6 +187,27 @@ const SalesManagerOrders = () => {
         }
     };
 
+    const handleRefundResponse = async (orderId, isAccepted, message) => {
+        try {
+            await axios.post(`http://localhost:8080/api/sales-manager/refund/${orderId}/status`, {
+                isAccepted,
+                message
+            });
+            setSnackbar({
+                open: true,
+                message: 'Refund response sent successfully',
+                severity: 'success'
+            });
+            fetchOrders(); // Refresh the orders list
+        } catch (error) {
+            setSnackbar({
+                open: true,
+                message: 'Error sending refund response',
+                severity: 'error'
+            });
+        }
+    };
+
     if (!isSales) return <Navigate to="/login" replace />;
     if (loading) return <p style={{ textAlign: "center" }}>Loading orders…</p>;
     if (error) return <p style={{ textAlign: "center", color: "red" }}>{error}</p>;
@@ -231,16 +275,13 @@ const SalesManagerOrders = () => {
                                     {order.refundStatus === "PENDING" && (
                                         <>
                                             <button
-                                                onClick={() => handleRefundDecision(order.id, "accept")}
-                                                style={buttonStyle("#28a745")}
+                                                onClick={() => {
+                                                    setSelectedOrder(order);
+                                                    setOpenRefundDialog(true);
+                                                }}
+                                                style={buttonStyle("#007bff")}
                                             >
-                                                Accept
-                                            </button>
-                                            <button
-                                                onClick={() => handleRefundDecision(order.id, "reject")}
-                                                style={buttonStyle("#dc3545")}
-                                            >
-                                                Reject
+                                                Respond
                                             </button>
                                         </>
                                     )}
@@ -256,6 +297,46 @@ const SalesManagerOrders = () => {
                     </div>
                 ))
             )}
+
+            <Dialog open={openRefundDialog} onClose={() => setOpenRefundDialog(false)}>
+                <DialogTitle>Respond to Refund Request</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Message to Customer"
+                        type="text"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={refundMessage}
+                        onChange={(e) => setRefundMessage(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenRefundDialog(false)}>Cancel</Button>
+                    <Button 
+                        onClick={() => {
+                            handleRefundResponse(selectedOrder?.id, true, refundMessage);
+                            setOpenRefundDialog(false);
+                            setRefundMessage('');
+                        }} 
+                        color="primary"
+                    >
+                        Accept Refund
+                    </Button>
+                    <Button 
+                        onClick={() => {
+                            handleRefundResponse(selectedOrder?.id, false, refundMessage);
+                            setOpenRefundDialog(false);
+                            setRefundMessage('');
+                        }} 
+                        color="error"
+                    >
+                        Reject Refund
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

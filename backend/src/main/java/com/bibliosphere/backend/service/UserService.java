@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -103,5 +104,9 @@ public class UserService {
             user.setShopping_cart(new ArrayList<>());
             userRepository.save(user);
         }
+    }
+
+    public List<User> getUsersWithProductInWishlist(String productId) {
+        return userRepository.findByWishlistContaining(productId);
     }
 }
