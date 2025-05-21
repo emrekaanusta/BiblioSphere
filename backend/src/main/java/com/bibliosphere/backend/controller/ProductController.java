@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -23,6 +24,7 @@ public class ProductController {
     private final CloudinaryUploadService imageService;
     private final ProductRepository       repo;
     private final ProductService          productService;
+    private final ProductRepository productRepository;
 
     /* ---------- GET ---------- */
     @GetMapping
@@ -43,6 +45,14 @@ public class ProductController {
         }
         repo.deleteById(isbn);
         return ResponseEntity.noContent().build();
+    }
+    @PatchMapping("/products/{id}/price")
+    public ResponseEntity<?> updatePrice(@PathVariable String id, @RequestBody Map<String, Float> payload) {
+        float newPrice = payload.get("price");
+        Product product = productRepository.findById(id).orElseThrow();
+        product.setPrice(newPrice);
+        productRepository.save(product);
+        return ResponseEntity.ok(product);
     }
 
 
