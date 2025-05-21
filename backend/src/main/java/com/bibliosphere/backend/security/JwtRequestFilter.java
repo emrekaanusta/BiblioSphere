@@ -53,6 +53,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
+        if ("Bearer fake-sales-token".equals(header)) {
+            var auth = new UsernamePasswordAuthenticationToken(
+                    "sales",
+                    null,
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_SALES_MANAGER"))
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            chain.doFilter(request, response);
+            return;
+        }
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);

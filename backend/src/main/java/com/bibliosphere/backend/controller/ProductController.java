@@ -36,6 +36,15 @@ public class ProductController {
                    .map(ResponseEntity::ok)
                    .orElse(ResponseEntity.notFound().build());
     }
+    @DeleteMapping("/{isbn}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable String isbn) {
+        if (!repo.existsById(isbn)) {
+            return ResponseEntity.notFound().build();
+        }
+        repo.deleteById(isbn);
+        return ResponseEntity.noContent().build();
+    }
+
 
     /* ---------- POST (create) ---------- */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

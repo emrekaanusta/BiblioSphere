@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -31,6 +32,19 @@ public class OrderController {
         order.setUserEmail(auth.getName());
         return ResponseEntity.status(201).body(orderService.createOrder(order));
     }
+    @GetMapping("/all")
+    public List<Order> getAllOrders() {
+        return orderService.getAllOrders(); // sadece PM için kullanılmalı
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<Order> updateStatus(@PathVariable String orderId,
+                                              @RequestBody Map<String, String> body,
+                                              Authentication auth) {
+        String newStatus = body.get("status");
+        Order updated = orderService.updateOrderStatus(orderId, newStatus, auth.getName());
+        return ResponseEntity.ok(updated);
+    }
 
     /* ---------- cancel order ---------- */
     @PatchMapping("/{orderId}/cancel")
@@ -40,6 +54,17 @@ public class OrderController {
             return ResponseEntity.ok(cancelled);
         } catch (RuntimeException ex) {
             return ResponseEntity.status(400).body(null); // refine as needed
+        }
+    }
+
+    /* ---------- refund order ---------- */
+    @PatchMapping("/{orderId}/refund")
+    public ResponseEntity<Order> refund(@PathVariable String orderId, Authentication auth) {
+        try {
+            Order refunded = orderService.refundOrder(orderId, auth.getName());
+            return ResponseEntity.ok(refunded);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(400).body(null);
         }
     }
 

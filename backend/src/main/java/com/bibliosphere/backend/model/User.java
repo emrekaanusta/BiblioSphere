@@ -23,5 +23,7 @@ public class User {
     private List<String> shopping_cart;
     private List<String> orders;
     private List<String> wishlist;
-
+    private String address;
+    private String ZipCode;
+    private String city;
 }

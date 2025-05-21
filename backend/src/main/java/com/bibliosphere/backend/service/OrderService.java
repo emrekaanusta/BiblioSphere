@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,50 @@ public class OrderService {
         return saved;
     }
 
+    @Transactional
+    public Order refundOrder(String id, String userEmail) {
+        Order order = orderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getUserEmail().equals(userEmail))
+            throw new RuntimeException("Forbidden");
+
+        if (order.getStatus() != OrderStatus.DELIVERED)
+            throw new RuntimeException("Only delivered orders can be refunded");
+
+        if (order.getCreatedAt() == null)
+            throw new RuntimeException("Order has no timestamp");
+
+        long daysSince = java.time.Duration.between(order.getCreatedAt(), Instant.now()).toDays();
+        if (daysSince > 30)
+            throw new RuntimeException("Refund period (30 days) has expired");
+
+        order.setStatus(OrderStatus.REFUNDED);
+        return orderRepo.save(order);
+    }
+
+    @Transactional
+    public Order updateOrderStatus(String id, String newStatus, String requesterEmail) {
+        Order order = orderRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        // Allow if requester is the order owner OR admin (fake-admin-token maps to "admin")
+        if (!order.getUserEmail().equals(requesterEmail) && !requesterEmail.equals("admin")) {
+            throw new RuntimeException("Forbidden");
+        }
+
+        try {
+            order.setStatus(OrderStatus.valueOf(newStatus));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status value");
+        }
+
+        return orderRepo.save(order);
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepo.findAll();
+    }
     /* ---------- cancel order & increment stock ---------- */
     @Transactional
     public Order cancelOrder(String id, String userEmail) {
