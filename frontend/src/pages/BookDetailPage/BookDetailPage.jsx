@@ -79,6 +79,7 @@ const BookDetailPage = () => {
 
     const handleToggleFavorite = () => {
         if (!isLoggedIn) {
+            alert('Please log in to add books to your favorites');
             navigate('/login');
             return;
         }

@@ -104,6 +104,7 @@ export default function CategoryPage() {
 
   const handleToggleFavorite = (book) => {
     if (!localStorage.getItem('token')) {
+      alert('Please log in to add books to your favorites');
       navigate('/login');
       return;
     }
