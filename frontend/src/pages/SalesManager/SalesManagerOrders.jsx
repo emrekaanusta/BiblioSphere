@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    CartesianGrid,
+    ResponsiveContainer
+} from "recharts";
 
 const loadImageAsBase64 = (url) =>
     fetch(url)
@@ -15,6 +23,33 @@ const loadImageAsBase64 = (url) =>
             reader.onerror = () => reject("Failed to read image as base64");
             reader.readAsDataURL(blob);
         }));
+
+const RevenueChart = ({ orders }) => {
+    const sortedOrders = [...orders].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    let cumulative = 0;
+    const data = sortedOrders.map(order => {
+        cumulative += order.total || 0;
+        return {
+            date: new Date(order.createdAt).toLocaleDateString(),
+            cumulativeRevenue: cumulative.toFixed(2),
+        };
+    });
+
+    return (
+        <div style={{ marginBottom: "3rem" }}>
+            <h3 style={{ textAlign: "center" }}>Cumulative Revenue Over Time</h3>
+            <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="cumulativeRevenue" stroke="#007bff" strokeWidth={2} />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
+};
 
 const SalesManagerOrders = () => {
     const isSales = localStorage.getItem("isSales") === "true";
@@ -54,7 +89,6 @@ const SalesManagerOrders = () => {
     const downloadInvoice = async (order) => {
         const doc = new jsPDF();
 
-        // Sabit logo (Cloudinary üzerinden optimize edilmiş)
         try {
             const logoBase64 = await loadImageAsBase64(
                 "https://res.cloudinary.com/xxx/image/upload/w_150,f_auto/logo.png"
@@ -81,10 +115,9 @@ const SalesManagerOrders = () => {
         for (let item of order.items || []) {
             const { title: productName, quantity, price, image } = item;
 
-            // Eğer sayfa sonuna yaklaştıysak, yeni sayfa ekle
             if (currentY > 270) {
                 doc.addPage();
-                currentY = 20; // Yeni sayfada boşluk bırak
+                currentY = 20;
             }
 
             try {
@@ -104,14 +137,11 @@ const SalesManagerOrders = () => {
             currentY += 35;
         }
 
-
         doc.setFontSize(13);
         doc.text(`Total Amount: $${order.total?.toFixed(2) ?? "N/A"}`, 14, currentY + 10);
 
         doc.save(`invoice-${order.id}.pdf`);
     };
-
-
 
     const handleRefundDecision = async (orderId, action) => {
         const confirmed = window.confirm(`Are you sure you want to ${action} the refund?`);
@@ -167,6 +197,8 @@ const SalesManagerOrders = () => {
                     }}
                 />
             </div>
+
+            {filteredOrders.length > 0 && <RevenueChart orders={filteredOrders} />}
 
             {filteredOrders.length === 0 ? (
                 <p style={{ textAlign: "center" }}>No orders found in selected range.</p>

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="270568ef-198c-4167-a81b-39047602cce4" name="Changes" comment="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan">
+    <list default="true" id="270568ef-198c-4167-a81b-39047602cce4" name="Changes" comment="Pdf invoice is downloadable by sales manager - Hüseyin Eren Yıldız - Ege Tan">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
@@ -154,7 +154,7 @@
       <workItem from="1743164927863" duration="11386000" />
       <workItem from="1743428620715" duration="2303000" />
       <workItem from="1744027223578" duration="3350000" />
-      <workItem from="1747801024829" duration="4185000" />
+      <workItem from="1747801024829" duration="4922000" />
     </task>
     <task id="LOCAL-00001" summary="Product Class">
       <option name="closed" value="true" />
@@ -212,7 +212,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747801498226</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Pdf invoice is downloadable by sales manager - Hüseyin Eren Yıldız - Ege Tan">
+      <option name="closed" value="true" />
+      <created>1747805240416</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1747805240416</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -248,6 +256,7 @@
     <MESSAGE value="last version of the backend project- Hüseyin Eren Yıldız - Ege Tan" />
     <MESSAGE value="Commented /wishlist/add endpoint - Hüseyin Eren Yıldız - Ege Tan" />
     <MESSAGE value="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan" />
-    <option name="LAST_COMMIT_MESSAGE" value="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan" />
+    <MESSAGE value="Pdf invoice is downloadable by sales manager - Hüseyin Eren Yıldız - Ege Tan" />
+    <option name="LAST_COMMIT_MESSAGE" value="Pdf invoice is downloadable by sales manager - Hüseyin Eren Yıldız - Ege Tan" />
   </component>
 </project>

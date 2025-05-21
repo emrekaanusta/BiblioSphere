@@ -3,8 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "jspdf": "^2.x.x",
-    "jspdf-autotable": "^3.x.x",
     "@emailjs/browser": "^4.4.1",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -18,6 +16,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.30.0",
     "react-scripts": "5.0.1",
+    "recharts": "^2.15.3",
     "swiper": "^9.4.1",
     "web-vitals": "^2.1.4"
   },
