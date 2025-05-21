@@ -1,6 +1,7 @@
 package com.bibliosphere.backend.repository;
 
 import com.bibliosphere.backend.model.Order;
+import com.bibliosphere.backend.model.OrderStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +12,6 @@ import java.util.List;
 public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findAllByUserEmailOrderByCreatedAtDesc(String userEmail);
     List<Order> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+    List<Order> findByStatus(OrderStatus status);
+
 }

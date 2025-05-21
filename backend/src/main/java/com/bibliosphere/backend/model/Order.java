@@ -28,7 +28,6 @@ public class Order {
     private double total;
 
     private OrderStatus status = OrderStatus.PROCESSED;
-    private String refundStatus;
 
     private Instant createdAt = Instant.now();
 

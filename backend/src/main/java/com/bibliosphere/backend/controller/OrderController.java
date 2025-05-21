@@ -47,6 +47,20 @@ public class OrderController {
         Order updated = orderService.updateOrderStatus(orderId, newStatus, auth.getName());
         return ResponseEntity.ok(updated);
     }
+    @GetMapping("/refunds/pending")
+    public List<Order> getPendingRefundsForSalesManager() {
+        return orderService.getPendingRefunds();
+    }
+    @PatchMapping("/refunds/{orderId}")
+    public ResponseEntity<?> processRefundDecision(@PathVariable String orderId,
+                                                   @RequestParam String action) {
+        try {
+            Order updated = orderService.handleRefund(orderId, action);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 
     /* ---------- cancel order ---------- */
     @PatchMapping("/{orderId}/cancel")

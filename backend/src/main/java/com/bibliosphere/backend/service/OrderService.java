@@ -67,7 +67,29 @@ public class OrderService {
         if (daysSince > 30)
             throw new RuntimeException("Refund period (30 days) has expired");
 
-        order.setStatus(OrderStatus.REFUNDED);
+        order.setStatus(OrderStatus.REFUND_PENDING);
+        return orderRepo.save(order);
+    }
+    public List<Order> getPendingRefunds() {
+        return orderRepo.findByStatus(OrderStatus.REFUND_PENDING);
+    }
+    @Transactional
+    public Order handleRefund(String orderId, String action) {
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getStatus() != OrderStatus.REFUND_PENDING) {
+            throw new RuntimeException("Order is not in REFUND_PENDING state.");
+        }
+
+        if (action.equalsIgnoreCase("accept")) {
+            order.setStatus(OrderStatus.REFUNDED);
+        } else if (action.equalsIgnoreCase("reject")) {
+            order.setStatus(OrderStatus.DELIVERED); // İstersen PROCESSED veya başka statüye döndürebilirsin
+        } else {
+            throw new RuntimeException("Invalid action: must be 'accept' or 'reject'");
+        }
+
         return orderRepo.save(order);
     }
 
