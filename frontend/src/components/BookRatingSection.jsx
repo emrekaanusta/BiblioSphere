@@ -164,13 +164,15 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         }
 
         if (ratingsRes.ok) {
-          const ratings = await ratingsRes.json();
-          // Handle ratings data
+          const text = await ratingsRes.text();
           let processedReviews = [];
-          if (Array.isArray(ratings)) {
-            processedReviews = ratings;
-          } else if (ratings && typeof ratings === 'object') {
-            processedReviews = [ratings];
+          if (text) {
+            const ratings = JSON.parse(text);
+            if (Array.isArray(ratings)) {
+              processedReviews = ratings;
+            } else if (ratings && typeof ratings === 'object') {
+              processedReviews = [ratings];
+            }
           }
           setReviews(processedReviews);
         }
@@ -272,12 +274,15 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         }
 
         if (ratingsRes.ok) {
-          const ratings = await ratingsRes.json();
+          const text = await ratingsRes.text();
           let processedReviews = [];
-          if (Array.isArray(ratings)) {
-            processedReviews = ratings;
-          } else if (ratings && typeof ratings === 'object') {
-            processedReviews = [ratings];
+          if (text) {
+            const ratings = JSON.parse(text);
+            if (Array.isArray(ratings)) {
+              processedReviews = ratings;
+            } else if (ratings && typeof ratings === 'object') {
+              processedReviews = [ratings];
+            }
           }
           setReviews(processedReviews);
         }
@@ -337,12 +342,15 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         }
 
         if (ratingsRes.ok) {
-          const ratings = await ratingsRes.json();
+          const text = await ratingsRes.text();
           let processedReviews = [];
-          if (Array.isArray(ratings)) {
-            processedReviews = ratings;
-          } else if (ratings && typeof ratings === 'object') {
-            processedReviews = [ratings];
+          if (text) {
+            const ratings = JSON.parse(text);
+            if (Array.isArray(ratings)) {
+              processedReviews = ratings;
+            } else if (ratings && typeof ratings === 'object') {
+              processedReviews = [ratings];
+            }
           }
           setReviews(processedReviews);
         }
@@ -394,12 +402,15 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         }
 
         if (ratingsRes.ok) {
-          const ratings = await ratingsRes.json();
+          const text = await ratingsRes.text();
           let processedReviews = [];
-          if (Array.isArray(ratings)) {
-            processedReviews = ratings;
-          } else if (ratings && typeof ratings === 'object') {
-            processedReviews = [ratings];
+          if (text) {
+            const ratings = JSON.parse(text);
+            if (Array.isArray(ratings)) {
+              processedReviews = ratings;
+            } else if (ratings && typeof ratings === 'object') {
+              processedReviews = [ratings];
+            }
           }
           setReviews(processedReviews);
         }

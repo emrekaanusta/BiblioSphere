@@ -127,16 +127,9 @@ public class OrderService {
         if (order.getStatus() != OrderStatus.PROCESSED)
             throw new RuntimeException("Cannot cancel after it is shipped");
 
-        order.setStatus(OrderStatus.CANCELLED);
-
-        // give stock back
-        for (OrderItem item : order.getItems()) {
-            productRepo.findById(item.getProductId()).ifPresent(p -> {
-                p.setStock(p.getStock() + item.getQuantity());
-                productRepo.save(p);
-            });
-        }
-
+        // Instead of cancelling immediately, set to REFUND_PENDING for manager approval
+        order.setStatus(OrderStatus.REFUND_PENDING);
+        // Do NOT update stock here; wait for manager approval
         return orderRepo.save(order);
     }
 

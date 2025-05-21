@@ -109,6 +109,21 @@ public class ProductService {
                           message + "\n\n" +
                           "If you have any questions, please contact our customer support.\n\n" +
                           "Best regards,\nBiblioSphere Team";
+
+        // Handle both DELIVERED and REFUND_PENDING
+        if (isAccepted) {
+            order.setStatus(com.bibliosphere.backend.model.OrderStatus.REFUNDED);
+            // Increment stock for each item
+            for (var item : order.getItems()) {
+                Product p = repo.findById(item.getProductId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                p.setStock(p.getStock() + item.getQuantity());
+                repo.save(p);
+            }
+        } else {
+            order.setStatus(com.bibliosphere.backend.model.OrderStatus.CANCELLED);
+        }
+        orderRepository.save(order);
         emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
     }
 
