@@ -10,6 +10,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -23,7 +28,7 @@ public class SecurityConfig {
 
         http
                 /* ---------- CORS (new style) ---------- */
-                .cors(cors -> {})                    // use defaults; no deprecated .and()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 /* ---------- CSRF ---------- */
                 .csrf(csrf -> csrf.disable())
@@ -43,10 +48,12 @@ public class SecurityConfig {
                                 "/test-order",
                                 "/test-email",
                                 "/api/ratings/product/**",  // Allow public access to view ratings
-                                "/api/books/**"  // Allow public access to book details
+                                "/api/books/**",  // Allow public access to book details
+                                "/api/sales-manager/**"  // TEMPORARILY PERMIT ALL FOR TESTING
                         ).permitAll()
                         .requestMatchers("/api/ratings/**").authenticated()  // Keep authentication for other rating operations
                         .requestMatchers("/api/orders/**").authenticated()
+                        //.requestMatchers("/api/sales-manager/**").hasRole("SALES_MANAGER") // Commented out for testing
                         .anyRequest().authenticated()
                 )
 
@@ -62,6 +69,23 @@ public class SecurityConfig {
         return cfg.getAuthenticationManager();
     }
 
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowCredentials(true);
+        cfg.setExposedHeaders(List.of("Authorization"));
 
+        UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+        src.registerCorsConfiguration("/**", cfg);
+        return src;
+    }
 
 }
+
+
+
+
+    

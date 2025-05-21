@@ -21,7 +21,7 @@ const Login = () => {
       password === process.env.REACT_APP_ADMIN_PASSWORD
     ) {
       localStorage.setItem("isPM", "true");               // flag them as product‐manager
-      localStorage.setItem("token", "fake-admin-token");  // so other code thinks “logged in”
+      localStorage.setItem("token", "fake-admin-token");  // so other code thinks "logged in"
       return navigate("/pm/home");
     }
     // ——— 1.5) Sales Manager bypass ———
@@ -49,6 +49,13 @@ const Login = () => {
       // store your real token & email
       localStorage.setItem("token", token);
       localStorage.setItem("userEmail", email);
+      // Optionally, decode the token to check for sales manager role
+      // For now, if the email matches the sales manager, set isSales
+      if (email === process.env.REACT_APP_SALES_USERNAME) {
+        localStorage.setItem("isSales", "true");
+      } else {
+        localStorage.removeItem("isSales");
+      }
 
       navigate("/");
       window.location.reload();
@@ -94,7 +101,7 @@ const Login = () => {
             </button>
 
             <p>
-              Don’t have an account? <Link to="/register">Sign up</Link>
+              Don't have an account? <Link to="/register">Sign up</Link>
             </p>
           </form>
         </div>

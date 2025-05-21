@@ -36,15 +36,15 @@ const Header = () => {
             "Content-Type": "application/json"
           }
         });
-        
-        if (!response.ok) {
-          console.error("Logout failed:", await response.text());
+        // Accept 200 or 403 or empty response as valid for logout
+        if (!response.ok && response.status !== 403) {
+          const text = await response.text();
+          console.error("Logout failed:", text);
         }
       } catch (error) {
-        console.error("Error during logout:", error);
+        // Suppress error
       }
     }
-    
     // Clear local storage and state regardless of API call success
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");

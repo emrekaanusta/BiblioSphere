@@ -21,8 +21,15 @@ const Receipt = () => {
     fetch(`http://localhost:8080/api/orders/${orderId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => res.json())
-      .then(data => setOrder(data))
+      .then(async res => {
+        const text = await res.text();
+        try {
+          const data = text ? JSON.parse(text) : {};
+          setOrder(data);
+        } catch (e) {
+          setOrder(null);
+        }
+      })
       .catch(err => console.error("Failed to fetch order:", err));
   }, [orderId, token]);
 
@@ -75,10 +82,13 @@ const Receipt = () => {
             })
           ]);
 
-          if (ratedRes.ok) results[item.productId] = await ratedRes.json();
+          if (ratedRes.ok) {
+            const text = await ratedRes.text();
+            results[item.productId] = text ? JSON.parse(text) : false;
+          }
           if (userRatingRes.ok) {
-            const rating = await userRatingRes.json();
-            if (rating) ratings[item.productId] = rating;
+            const text = await userRatingRes.text();
+            if (text) ratings[item.productId] = JSON.parse(text);
           }
         } catch (error) {
           console.error(error);
