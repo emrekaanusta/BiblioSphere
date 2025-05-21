@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="270568ef-198c-4167-a81b-39047602cce4" name="Changes" comment="Commented /wishlist/add endpoint - Hüseyin Eren Yıldız - Ege Tan">
-      <change beforePath="$PROJECT_DIR$/backend/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/backend/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/OrderController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/ProductController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/ProductController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/OrderStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/OrderStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/security/JwtRequestFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/security/JwtRequestFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/OrderService.java" afterDir="false" />
+    <list default="true" id="270568ef-198c-4167-a81b-39047602cce4" name="Changes" comment="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SalesManager/SalesManagerOrders.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SalesManager/SalesManagerOrders.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,19 +101,29 @@
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/egetan/Desktop/BiblioSphere/frontend",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "npm.start.executor": "Run",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
     "settings.editor.selected.configurable": "CPPToolchains",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\IntelliJ IDEA 2024.3.5\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "ts.external.directory.path": "/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/frontend" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/frontend" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="BackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="backend.main" />
@@ -148,7 +154,7 @@
       <workItem from="1743164927863" duration="11386000" />
       <workItem from="1743428620715" duration="2303000" />
       <workItem from="1744027223578" duration="3350000" />
-      <workItem from="1747801024829" duration="303000" />
+      <workItem from="1747801024829" duration="4185000" />
     </task>
     <task id="LOCAL-00001" summary="Product Class">
       <option name="closed" value="true" />
@@ -190,7 +196,23 @@
       <option name="project" value="LOCAL" />
       <updated>1743429457940</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan">
+      <option name="closed" value="true" />
+      <created>1747801366980</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1747801366980</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan">
+      <option name="closed" value="true" />
+      <created>1747801498226</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1747801498226</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -225,6 +247,7 @@
     <MESSAGE value="Product class has been edited , new endpoints have been added - Hüseyin Eren Yıldız - Ege Tan" />
     <MESSAGE value="last version of the backend project- Hüseyin Eren Yıldız - Ege Tan" />
     <MESSAGE value="Commented /wishlist/add endpoint - Hüseyin Eren Yıldız - Ege Tan" />
-    <option name="LAST_COMMIT_MESSAGE" value="Commented /wishlist/add endpoint - Hüseyin Eren Yıldız - Ege Tan" />
+    <MESSAGE value="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan" />
+    <option name="LAST_COMMIT_MESSAGE" value="Some functions for product manager and sales manager is added - Hüseyin Eren Yıldız - Ege Tan" />
   </component>
 </project>
