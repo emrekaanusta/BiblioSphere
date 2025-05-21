@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 
 const ProductManagerProductControl = () => {
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [formData, setFormData] = useState({
         isbn: "",
         title: "",
         author: "",
-        type: "",
+        category: "",
         price: "",
         stock: "",
         description: "",
@@ -14,13 +15,14 @@ const ProductManagerProductControl = () => {
         pages: "",
         language: "",
         publisher: "",
-        file: null
+        image: ""
     });
     const [loading, setLoading] = useState(true);
     const token = localStorage.getItem("token");
 
     useEffect(() => {
         fetchProducts();
+        fetchCategories();
     }, []);
 
     const fetchProducts = () => {
@@ -28,6 +30,13 @@ const ProductManagerProductControl = () => {
             .then(res => res.json())
             .then(setProducts)
             .finally(() => setLoading(false));
+    };
+
+    const fetchCategories = () => {
+        fetch("http://localhost:8080/api/categories")
+            .then(res => res.json())
+            .then(setCategories)
+            .catch(() => alert("Failed to load categories"));
     };
 
     const handleInputChange = (e) => {
@@ -71,14 +80,14 @@ const ProductManagerProductControl = () => {
 
     const handleAddProduct = async (e) => {
         e.preventDefault();
-        const form = new FormData();
-        Object.entries(formData).forEach(([key, val]) => form.append(key, val));
-
-        const res = await fetch("http://localhost:8080/api/products", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: form
-        });
+const res = await fetch("http://localhost:8080/api/products", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(formData)
+});
 
         if (res.ok) {
             alert("Product added successfully");
@@ -87,7 +96,7 @@ const ProductManagerProductControl = () => {
                 isbn: "",
                 title: "",
                 author: "",
-                type: "",
+                category: "",
                 price: "",
                 stock: "",
                 description: "",
@@ -123,7 +132,6 @@ const ProductManagerProductControl = () => {
                     "isbn",
                     "title",
                     "author",
-                    "type",
                     "price",
                     "stock",
                     "description",
@@ -148,14 +156,41 @@ const ProductManagerProductControl = () => {
                     />
                 ))}
 
-                <input
-                    type="file"
-                    name="file"
-                    accept="image/*"
+                {/* Dynamic Category Dropdown */}
+                <select
+                    name="category"
+                    value={formData.category}
                     onChange={handleInputChange}
-                    style={{ gridColumn: "1 / span 2" }}
                     required
-                />
+                    style={{
+                        gridColumn: "1 / span 2",
+                        padding: "0.5rem",
+                        borderRadius: "4px",
+                        border: "1px solid #ccc"
+                    }}
+                >
+                    <option value="" disabled>Select a Category</option>
+                    {categories.map((cat) => (
+                        <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                        </option>
+                    ))}
+                </select>
+
+                <input
+                    type="url"
+                    name="image"
+                    placeholder="Image URL"
+                    value={formData.image}
+                    onChange={handleInputChange}
+                    required
+                    style={{
+                        gridColumn: "1 / span 2",
+                        padding: "0.5rem",
+                        borderRadius: "4px",
+                        border: "1px solid #ccc"
+                    }}
+                    />
 
                 <button
                     type="submit"
@@ -178,7 +213,16 @@ const ProductManagerProductControl = () => {
                 {loading ? <p>Loading...</p> : (
                     <ul style={{ listStyle: "none", padding: 0 }}>
                         {products.map(p => (
-                            <li key={p.isbn} style={{ padding: "0.5rem 0", borderBottom: "1px solid #ddd", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <li
+                                key={p.isbn}
+                                style={{
+                                    padding: "0.5rem 0",
+                                    borderBottom: "1px solid #ddd",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center"
+                                }}
+                            >
                                 <span>{p.title} — Stock: {p.stock}</span>
                                 <div style={{ display: "flex", gap: "0.5rem" }}>
                                     <input
@@ -190,13 +234,27 @@ const ProductManagerProductControl = () => {
                                     />
                                     <button
                                         onClick={() => handleStockUpdate(p.isbn, p.newStock)}
-                                        style={{ background: "#ffc107", color: "black", border: "none", borderRadius: "4px", padding: "0.25rem 0.5rem", cursor: "pointer" }}
+                                        style={{
+                                            background: "#ffc107",
+                                            color: "black",
+                                            border: "none",
+                                            borderRadius: "4px",
+                                            padding: "0.25rem 0.5rem",
+                                            cursor: "pointer"
+                                        }}
                                     >
                                         Update
                                     </button>
                                     <button
                                         onClick={() => handleDelete(p.isbn)}
-                                        style={{ background: "#dc3545", color: "white", border: "none", borderRadius: "4px", padding: "0.25rem 0.75rem", cursor: "pointer" }}
+                                        style={{
+                                            background: "#dc3545",
+                                            color: "white",
+                                            border: "none",
+                                            borderRadius: "4px",
+                                            padding: "0.25rem 0.75rem",
+                                            cursor: "pointer"
+                                        }}
                                     >
                                         Delete
                                     </button>

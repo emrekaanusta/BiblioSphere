@@ -1,5 +1,9 @@
 package com.bibliosphere.backend.security;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,13 +15,28 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,18 +54,14 @@ public class SecurityConfig {
 
                 /* ---------- Authorisation rules ---------- */
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/register",
-                                "/login",
-                                "/favorites/**",
-                                "/api/products",
-                                "/api/products/**",
-                                "/test-order",
-                                "/test-email",
-                                "/api/ratings/product/**",  // Allow public access to view ratings
-                                "/api/books/**"  // Allow public access to book details
-                        ).permitAll()
-                        .requestMatchers("/api/ratings/**").authenticated()  // Keep authentication for other rating operations
+                        .requestMatchers("/register", "/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products").authenticated()
+                        .requestMatchers("/api/products/**").authenticated()
+                        .requestMatchers("/favorites/**").permitAll()
+                        .requestMatchers("/test-order", "/test-email").permitAll()
+                        .requestMatchers("/api/ratings/product/**").permitAll()
+                        .requestMatchers("/api/ratings/**").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/categories/**").permitAll()

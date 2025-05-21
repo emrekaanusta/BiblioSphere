@@ -32,13 +32,6 @@ public class ProductController {
     public List<Product> getAll() {
         List<Product> list = repo.findAll();
         // ensure category is populated on every document
-        list.forEach(p -> {
-            if (p.getCategory() == null) {
-                // if old docs somehow didn’t map, set it from type field:
-                // (you can skip this if @Field("type") already works)
-                p.setCategory(p.getCategory());
-            }
-        });
         return list;
     }
 
@@ -107,4 +100,7 @@ public class ProductController {
                                          @PathVariable int qty) {
         return ResponseEntity.ok(productService.resetStock(isbn, qty));
     }
+
+
+
 }

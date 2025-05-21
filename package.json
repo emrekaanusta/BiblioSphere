@@ -5,6 +5,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^7.1.0",
     "axios": "^1.8.4",
+    "cors": "^2.8.5",
     "jspdf": "^3.0.1",
     "react-router-dom": "^7.3.0",
     "recharts": "^2.15.3",

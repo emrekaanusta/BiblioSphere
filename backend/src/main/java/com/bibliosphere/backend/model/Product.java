@@ -23,7 +23,6 @@ public class Product {
     private String title;
     private String author;
 
-    // Maps the existing "type" field in Mongo into this property
     @Field("category")
     private String category;
 

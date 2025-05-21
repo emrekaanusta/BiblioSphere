@@ -9,9 +9,12 @@ import com.bibliosphere.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.*;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 @Service
@@ -19,7 +22,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository repo;
-    private final MongoTemplate     mongo;
+    private final MongoTemplate mongo;
 
     @Autowired
     private EmailService emailService;
@@ -35,37 +38,86 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
     }
 
-    /** Atomically decrement stock (-1) **only if** current stock > 0. */
+    /**
+     * Atomically decrement stock (-1) **only if** current stock > 0 using partial update.
+     */
     public Product decrementStock(String isbn) {
-        Query  q  = Query.query(Criteria.where("_id").is(isbn).and("stock").gt(0));
-        Update up = new Update().inc("stock", -1);
+        Query q = Query.query(Criteria.where("_id").is(isbn).and("stock").gt(0));
+        Update u = new Update().inc("stock", -1);
 
-        return mongo.findAndModify(
-                q, up,
+        Product updated = mongo.findAndModify(
+                q, u,
                 FindAndModifyOptions.options().returnNew(true),
-                Product.class);
+                Product.class
+        );
+
+        if (updated == null) {
+            throw new ResourceNotFoundException("Product not found or out of stock: " + isbn);
+        }
+        return updated;
     }
 
-    /** Helper to reset stock to a specific quantity (dev/testing). */
+    /**
+     * Helper to reset stock to a specific quantity (dev/testing) using partial update to avoid wipe.
+     */
     public Product resetStock(String isbn, int qty) {
-        Product p = repo.findById(isbn)
-                        .orElseThrow(() -> new RuntimeException("Product not found"));
-        p.setStock(qty);
-        return repo.save(p);
+        Query q = Query.query(Criteria.where("_id").is(isbn));
+        Update u = new Update().set("stock", qty);
+
+        Product updated = mongo.findAndModify(
+                q, u,
+                FindAndModifyOptions.options().returnNew(true),
+                Product.class
+        );
+
+        if (updated == null) {
+            throw new ResourceNotFoundException("Product not found with id: " + isbn);
+        }
+        return updated;
     }
 
-    public Product updateProductPrice(String productId, Double newPrice) {
-        Product product = getProductById(productId);
-        product.setPrice(newPrice);
-        return repo.save(product);
+    /**
+     * Atomically update only the price field. Partial update to preserve unmapped fields.
+     */
+    public Product updateProductPrice(String isbn, double newPrice) {
+        Query q = Query.query(Criteria.where("_id").is(isbn));
+        Update u = new Update().set("price", newPrice);
+
+        Product updated = mongo.findAndModify(
+                q, u,
+                FindAndModifyOptions.options().returnNew(true),
+                Product.class
+        );
+
+        if (updated == null) {
+            throw new ResourceNotFoundException("Product not found with id: " + isbn);
+        }
+        return updated;
     }
 
-    public Product updateProductDiscount(String productId, Double discountPercentage) {
-        Product product = getProductById(productId);
-        product.setDiscountPercentage(discountPercentage);
-        double discountedPrice = product.getPrice() * (1 - discountPercentage / 100);
-        product.setDiscountedPrice(discountedPrice);
-        return repo.save(product);
+    /**
+     * Atomically update discountPercentage and discountedPrice. Partial update.
+     */
+    public Product updateProductDiscount(String isbn, double discountPct) {
+        // Compute the new discounted price based on current price
+        Product current = getProductById(isbn);
+        double discountedPrice = current.getPrice() * (1 - discountPct / 100);
+
+        Query q = Query.query(Criteria.where("_id").is(isbn));
+        Update u = new Update()
+                .set("discountPercentage", discountPct)
+                .set("discountedPrice", discountedPrice);
+
+        Product updated = mongo.findAndModify(
+                q, u,
+                FindAndModifyOptions.options().returnNew(true),
+                Product.class
+        );
+
+        if (updated == null) {
+            throw new ResourceNotFoundException("Product not found with id: " + isbn);
+        }
+        return updated;
     }
 
     public void sendWishlistNotifications(String productId, String message) {
@@ -74,13 +126,13 @@ public class ProductService {
         for (User user : usersWithWishlist) {
             String emailSubject = "Update about your wishlisted item: " + product.getTitle();
             String emailBody = "Dear " + user.getUsername() + ",\n\n" +
-                             message + "\n\n" +
-                             "Product: " + product.getTitle() + "\n" +
-                             "Current Price: $" + product.getPrice() + "\n" +
-                             (product.getDiscountPercentage() > 0 ? 
-                             "Discount: " + product.getDiscountPercentage() + "%\n" +
-                             "Discounted Price: $" + product.getDiscountedPrice() + "\n" : "") +
-                             "\nBest regards,\nBiblioSphere Team";
+                    message + "\n\n" +
+                    "Product: " + product.getTitle() + "\n" +
+                    "Current Price: $" + product.getPrice() + "\n" +
+                    (product.getDiscountPercentage() > 0 ?
+                            "Discount: " + product.getDiscountPercentage() + "%\n" +
+                                    "Discounted Price: $" + product.getDiscountedPrice() + "\n" : "") +
+                    "\nBest regards,\nBiblioSphere Team";
             emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
         }
     }
@@ -92,10 +144,10 @@ public class ProductService {
         String emailSubject = "Update on your refund request for Order #" + orderId;
         String status = isAccepted ? "Accepted" : "Rejected";
         String emailBody = "Dear " + user.getUsername() + ",\n\n" +
-                          "Your refund request for Order #" + orderId + " has been " + status + ".\n\n" +
-                          message + "\n\n" +
-                          "If you have any questions, please contact our customer support.\n\n" +
-                          "Best regards,\nBiblioSphere Team";
+                "Your refund request for Order #" + orderId + " has been " + status + ".\n\n" +
+                message + "\n\n" +
+                "If you have any questions, please contact our customer support.\n\n" +
+                "Best regards,\nBiblioSphere Team";
         emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
     }
 }
