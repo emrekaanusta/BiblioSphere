@@ -169,7 +169,7 @@ const BookDetailPage = () => {
                     </div>
                     <div className="book-meta">
                         <span>
-                            <i className="fas fa-bookmark"></i> {book.type}
+                            <i className="fas fa-bookmark"></i> {book.category}
                         </span>
                         <span>
                             <i className="fas fa-calendar"></i> {book.publisYear}

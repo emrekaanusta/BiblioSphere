@@ -5,34 +5,42 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "products") // Make sure this matches your actual collection name
+@Document(collection = "products")
 public class Product {
 
     @Id
-    private String isbn;      // Using ISBN as the primary key (_id)
+    private String isbn;       // Using ISBN as the primary key (_id)
+
     private String title;
     private String author;
-    private String type;
+
+    // Maps the existing "type" field in Mongo into this property
+    @Field("category")
+    private String category;
+
+
+
+
     private float price;
     private String image;
     private String description;
     private String publisYear;
     private int pages;
-    private int    stock;
+    private int stock;
     private String language;
     private String publisher;
     private float rating;
     private List<String> review = new ArrayList<>();
-    private List<Map<String, Object>> ratingList = new ArrayList<>(); // Changed to List<Map>
+    private List<Map<String, Object>> ratingList = new ArrayList<>();
     private Double discountPercentage;
     private Double discountedPrice;
 
@@ -47,18 +55,19 @@ public class Product {
             return 0;
         }
         return (float) ratingList.stream()
-            .mapToInt(rating -> (int) rating.get("score"))
-            .average()
-            .orElse(0);
+                .mapToInt(r -> (int) r.get("score"))
+                .average()
+                .orElse(0);
     }
 
-    // Getters and setters
+    // Price setter for Double
     public void setPrice(Double price) {
         if (price != null) {
             this.price = price.floatValue();
         }
     }
 
+    // Price setter for float
     public void setPrice(float price) {
         this.price = price;
     }
