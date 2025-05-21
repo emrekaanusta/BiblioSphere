@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,5 +125,9 @@ public class OrderService {
 
     public Optional<Order> getOrderById(String id) {
         return orderRepo.findById(id);
+    }
+
+    public List<Order> getOrdersInRange(LocalDateTime start, LocalDateTime end) {
+        return orderRepo.findByCreatedAtBetween(start, end);
     }
 }

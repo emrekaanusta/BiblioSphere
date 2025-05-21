@@ -57,7 +57,10 @@ public class ProductService {
     public Product updateProductPrice(String productId, Double newPrice) {
         Product product = getProductById(productId);
         product.setPrice(newPrice);
-        return repo.save(product);
+        Product updated = repo.save(product);
+        // Notify users about price change
+        notifyWishlistUsersAboutChange(product, "price");
+        return updated;
     }
 
     public Product updateProductDiscount(String productId, Double discountPercentage) {
@@ -65,23 +68,33 @@ public class ProductService {
         product.setDiscountPercentage(discountPercentage);
         double discountedPrice = product.getPrice() * (1 - discountPercentage / 100);
         product.setDiscountedPrice(discountedPrice);
-        return repo.save(product);
+        Product updated = repo.save(product);
+        // Notify users about discount change
+        notifyWishlistUsersAboutChange(product, "discount");
+        return updated;
     }
 
-    public void sendWishlistNotifications(String productId, String message) {
-        Product product = getProductById(productId);
-        List<User> usersWithWishlist = userService.getUsersWithProductInWishlist(productId);
+    private void notifyWishlistUsersAboutChange(Product product, String changeType) {
+        List<User> usersWithWishlist = userService.getUsersWithProductInWishlist(product.getIsbn());
+        String subject = "Update about your wishlisted item: " + product.getTitle();
+        String message;
+        if ("price".equals(changeType)) {
+            message = "The price of a book in your wishlist has changed!\n\n" +
+                      "Product: " + product.getTitle() + "\n" +
+                      "New Price: $" + product.getPrice() + "\n" +
+                      (product.getDiscountPercentage() > 0 ?
+                      "Discount: " + product.getDiscountPercentage() + "%\n" +
+                      "Discounted Price: $" + product.getDiscountedPrice() + "\n" : "") +
+                      "\nBest regards,\nBiblioSphere Team";
+        } else {
+            message = "A discount has been applied to a book in your wishlist!\n\n" +
+                      "Product: " + product.getTitle() + "\n" +
+                      "Discount: " + product.getDiscountPercentage() + "%\n" +
+                      "Discounted Price: $" + product.getDiscountedPrice() + "\n" +
+                      "\nBest regards,\nBiblioSphere Team";
+        }
         for (User user : usersWithWishlist) {
-            String emailSubject = "Update about your wishlisted item: " + product.getTitle();
-            String emailBody = "Dear " + user.getUsername() + ",\n\n" +
-                             message + "\n\n" +
-                             "Product: " + product.getTitle() + "\n" +
-                             "Current Price: $" + product.getPrice() + "\n" +
-                             (product.getDiscountPercentage() > 0 ? 
-                             "Discount: " + product.getDiscountPercentage() + "%\n" +
-                             "Discounted Price: $" + product.getDiscountedPrice() + "\n" : "") +
-                             "\nBest regards,\nBiblioSphere Team";
-            emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
+            emailService.sendEmail(user.getEmail(), subject, message);
         }
     }
 
@@ -97,5 +110,22 @@ public class ProductService {
                           "If you have any questions, please contact our customer support.\n\n" +
                           "Best regards,\nBiblioSphere Team";
         emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
+    }
+
+    public void sendWishlistNotifications(String productId, String message) {
+        Product product = getProductById(productId);
+        List<User> usersWithWishlist = userService.getUsersWithProductInWishlist(productId);
+        for (User user : usersWithWishlist) {
+            String emailSubject = "Update about your wishlisted item: " + product.getTitle();
+            String emailBody = "Dear " + user.getUsername() + ",\n\n" +
+                             message + "\n\n" +
+                             "Product: " + product.getTitle() + "\n" +
+                             "Current Price: $" + product.getPrice() + "\n" +
+                             (product.getDiscountPercentage() > 0 ?
+                             "Discount: " + product.getDiscountPercentage() + "%\n" +
+                             "Discounted Price: $" + product.getDiscountedPrice() + "\n" : "") +
+                             "\nBest regards,\nBiblioSphere Team";
+            emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
+        }
     }
 }

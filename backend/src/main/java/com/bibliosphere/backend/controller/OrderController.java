@@ -7,10 +7,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -81,5 +83,13 @@ public class OrderController {
     @GetMapping
     public List<Order> myOrders(Authentication auth) {
         return orderService.getOrdersForUser(auth.getName());
+    }
+
+    @GetMapping("/range")
+    public ResponseEntity<List<Order>> getOrdersInRange(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        List<Order> orders = orderService.getOrdersInRange(start.atStartOfDay(), end.plusDays(1).atStartOfDay());
+        return ResponseEntity.ok(orders);
     }
 }

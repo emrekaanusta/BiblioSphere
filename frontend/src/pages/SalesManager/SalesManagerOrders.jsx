@@ -77,6 +77,11 @@ const SalesManagerOrders = () => {
         message: '',
         severity: 'success'
     });
+    const [invoiceStartDate, setInvoiceStartDate] = useState('');
+    const [invoiceEndDate, setInvoiceEndDate] = useState('');
+    const [invoices, setInvoices] = useState([]);
+    const [showInvoices, setShowInvoices] = useState(false);
+    const [showOnlyPendingRefunds, setShowOnlyPendingRefunds] = useState(false);
 
     const fetchOrders = async () => {
         try {
@@ -100,12 +105,11 @@ const SalesManagerOrders = () => {
     }, [isSales, token]);
 
     const filteredOrders = orders.filter(order => {
+        if (showOnlyPendingRefunds && order.refundStatus !== "PENDING") return false;
         if (!startDate && !endDate) return true;
-
         const created = new Date(order.createdAt);
         const start = startDate ? new Date(startDate + "T00:00:00") : new Date("0000-01-01");
         const end = endDate ? new Date(endDate + "T23:59:59") : new Date("9999-12-31");
-
         return created >= start && created <= end;
     });
 
@@ -195,7 +199,7 @@ const SalesManagerOrders = () => {
             });
             setSnackbar({
                 open: true,
-                message: 'Refund response sent successfully',
+                message: 'Refund response sent successfully. Customer has been notified.',
                 severity: 'success'
             });
             fetchOrders(); // Refresh the orders list
@@ -206,6 +210,37 @@ const SalesManagerOrders = () => {
                 severity: 'error'
             });
         }
+    };
+
+    const fetchInvoicesInRange = async () => {
+        if (!invoiceStartDate || !invoiceEndDate) return;
+        try {
+            const res = await fetch(`http://localhost:8080/api/orders/range?start=${invoiceStartDate}&end=${invoiceEndDate}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Failed to fetch invoices');
+            const data = await res.json();
+            setInvoices(data);
+            setShowInvoices(true);
+        } catch (err) {
+            setInvoices([]);
+            setShowInvoices(true);
+        }
+    };
+
+    const getRevenueChartData = () => {
+        if (!invoices.length) return [];
+        // Group by date
+        const dateMap = {};
+        invoices.forEach(order => {
+            const date = new Date(order.createdAt).toLocaleDateString();
+            if (!dateMap[date]) dateMap[date] = 0;
+            dateMap[date] += order.total || 0;
+        });
+        // Convert to array and sort by date
+        return Object.entries(dateMap)
+            .map(([date, revenue]) => ({ date, revenue }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
     };
 
     if (!isSales) return <Navigate to="/login" replace />;
@@ -240,6 +275,14 @@ const SalesManagerOrders = () => {
                         fontSize: "1rem"
                     }}
                 />
+                <Button
+                    variant={showOnlyPendingRefunds ? "contained" : "outlined"}
+                    color="secondary"
+                    style={{ marginLeft: 16 }}
+                    onClick={() => setShowOnlyPendingRefunds(v => !v)}
+                >
+                    {showOnlyPendingRefunds ? "Show All Orders" : "Show Only Pending Refunds"}
+                </Button>
             </div>
 
             {filteredOrders.length > 0 && <RevenueChart orders={filteredOrders} />}
@@ -251,7 +294,8 @@ const SalesManagerOrders = () => {
                     <div
                         key={order.id}
                         style={{
-                            background: "#f9f9f9",
+                            background: order.refundStatus === "PENDING" ? "#fffbe6" : "#f9f9f9",
+                            border: order.refundStatus === "PENDING" ? "2px solid #ff9800" : "none",
                             padding: "1rem",
                             marginBottom: "1rem",
                             borderRadius: "10px",
@@ -262,8 +306,17 @@ const SalesManagerOrders = () => {
                             <div style={{ flex: "1 1 60%" }}>
                                 <h4 style={{ margin: 0 }}>Order ID: {order.id}</h4>
                                 <p style={{ margin: "0.5rem 0", fontSize: "0.9rem", color: "#555" }}>
-                                    {order.userEmail}
+                                    {order.shippingInfo && (order.shippingInfo.firstName || order.shippingInfo.lastName)
+                                        ? `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim()
+                                        : (order.userEmail || '')}
                                 </p>
+                                <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '0.95rem', color: '#333' }}>
+                                    {order.items && order.items.map(item => (
+                                        <li key={item.productId}>
+                                            {item.title} x{item.quantity} (${item.price.toFixed(2)} each)
+                                        </li>
+                                    ))}
+                                </ul>
                                 <p style={{ margin: "0.5rem 0", fontSize: "0.9rem", color: "#777" }}>
                                     {new Date(order.createdAt).toLocaleDateString()} — ${order.total?.toFixed(2) ?? "N/A"}
                                 </p>
@@ -337,6 +390,97 @@ const SalesManagerOrders = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Date range for invoices */}
+            <div style={{ margin: '2rem 0', textAlign: 'center' }}>
+                <TextField
+                    label="Start Date"
+                    type="date"
+                    value={invoiceStartDate}
+                    onChange={e => setInvoiceStartDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    style={{ marginRight: 16 }}
+                />
+                <TextField
+                    label="End Date"
+                    type="date"
+                    value={invoiceEndDate}
+                    onChange={e => setInvoiceEndDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    style={{ marginRight: 16 }}
+                />
+                <Button variant="contained" onClick={fetchInvoicesInRange} disabled={!invoiceStartDate || !invoiceEndDate}>
+                    Show Invoices
+                </Button>
+            </div>
+            {showInvoices && (
+                <div style={{ margin: '2rem 0' }}>
+                    <h3>Invoices from {invoiceStartDate} to {invoiceEndDate}</h3>
+                    {invoices.length === 0 ? (
+                        <p>No invoices found in this range.</p>
+                    ) : (
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr>
+                                    <th style={{ border: '1px solid #ccc', padding: 8 }}>Order ID</th>
+                                    <th style={{ border: '1px solid #ccc', padding: 8 }}>Customer</th>
+                                    <th style={{ border: '1px solid #ccc', padding: 8 }}>Email</th>
+                                    <th style={{ border: '1px solid #ccc', padding: 8 }}>Items</th>
+                                    <th style={{ border: '1px solid #ccc', padding: 8 }}>Date</th>
+                                    <th style={{ border: '1px solid #ccc', padding: 8 }}>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {invoices.map(order => (
+                                    <tr key={order.id}>
+                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>{order.id}</td>
+                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>{order.shippingInfo ? `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim() : ''}</td>
+                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>{order.userEmail || (order.shippingInfo && order.shippingInfo.email) || ''}</td>
+                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>
+                                            <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+                                                {order.items && order.items.map(item => (
+                                                    <li key={item.productId}>
+                                                        {item.title} x{item.quantity} (${item.price.toFixed(2)} each)
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </td>
+                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>{new Date(order.createdAt).toLocaleDateString()}</td>
+                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>${order.total?.toFixed(2) ?? 'N/A'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            )}
+
+            {showInvoices && invoices.length > 0 && (
+                <div style={{ margin: '2rem 0' }}>
+                    <h3>Revenue Chart</h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={getRevenueChartData()}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis />
+                            <Tooltip />
+                            <Line type="monotone" dataKey="revenue" stroke="#007bff" strokeWidth={2} />
+                        </LineChart>
+                    </ResponsiveContainer>
+                    <div style={{ marginTop: 16, fontWeight: 'bold' }}>
+                        Total Revenue: ${invoices.reduce((sum, o) => sum + (o.total || 0), 0).toFixed(2)}
+                    </div>
+                </div>
+            )}
+
+            {snackbar.open && (
+                <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999 }}>
+                    <div style={{ background: snackbar.severity === 'success' ? '#4caf50' : '#f44336', color: 'white', padding: '12px 24px', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+                        {snackbar.message}
+                        <Button style={{ color: 'white', marginLeft: 16 }} onClick={() => setSnackbar({ ...snackbar, open: false })}>Close</Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

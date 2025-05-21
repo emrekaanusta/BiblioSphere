@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, Card, CardContent, TextField, Button, Snackbar, Alert } from '@mui/material';
 import axios from 'axios';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import { useNavigate } from 'react-router-dom';
 
 const SalesManagerHome = () => {
     const [products, setProducts] = useState([]);
@@ -8,8 +13,14 @@ const SalesManagerHome = () => {
     const [newDiscount, setNewDiscount] = useState({});
     const [notificationMessage, setNotificationMessage] = useState({});
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+    const [openDialog, setOpenDialog] = useState(false);
+    const [usersToNotify, setUsersToNotify] = useState([]);
+    const [currentProductId, setCurrentProductId] = useState(null);
+    const [notifiedUsers, setNotifiedUsers] = useState([]);
+    const [openNotifiedDialog, setOpenNotifiedDialog] = useState(false);
 
     const token = localStorage.getItem('token');
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchProducts();
@@ -26,11 +37,18 @@ const SalesManagerHome = () => {
 
     const handlePriceUpdate = async (productId) => {
         try {
-            await axios.put(
+            const res = await axios.put(
                 `http://localhost:8080/api/sales-manager/product/${productId}/price`,
                 { price: parseFloat(newPrice[productId]) },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            // Fetch users who were notified
+            const usersRes = await axios.get(
+                `http://localhost:8080/api/sales-manager/wishlist-users/${productId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setNotifiedUsers(usersRes.data);
+            setOpenNotifiedDialog(true);
             showSnackbar('Price updated successfully', 'success');
             fetchProducts();
             setNewPrice((prev) => ({ ...prev, [productId]: '' }));
@@ -41,11 +59,18 @@ const SalesManagerHome = () => {
 
     const handleDiscountUpdate = async (productId) => {
         try {
-            await axios.put(
+            const res = await axios.put(
                 `http://localhost:8080/api/sales-manager/product/${productId}/discount`,
                 { discount: parseFloat(newDiscount[productId]) },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
+            // Fetch users who were notified
+            const usersRes = await axios.get(
+                `http://localhost:8080/api/sales-manager/wishlist-users/${productId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setNotifiedUsers(usersRes.data);
+            setOpenNotifiedDialog(true);
             showSnackbar('Discount updated successfully', 'success');
             fetchProducts();
             setNewDiscount((prev) => ({ ...prev, [productId]: '' }));
@@ -54,15 +79,29 @@ const SalesManagerHome = () => {
         }
     };
 
-    const handleWishlistNotification = async (productId) => {
+    const handleOpenNotificationDialog = async (productId) => {
+        setCurrentProductId(productId);
+        try {
+            const res = await axios.get(`http://localhost:8080/api/sales-manager/wishlist-users/${productId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUsersToNotify(res.data);
+            setOpenDialog(true);
+        } catch (error) {
+            showSnackbar('Error fetching users to notify', 'error');
+        }
+    };
+
+    const handleSendNotification = async () => {
         try {
             await axios.post(
-                `http://localhost:8080/api/sales-manager/wishlist-notification/${productId}`,
-                { message: notificationMessage[productId] },
+                `http://localhost:8080/api/sales-manager/wishlist-notification/${currentProductId}`,
+                { message: notificationMessage[currentProductId] },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             showSnackbar('Notifications sent successfully', 'success');
-            setNotificationMessage((prev) => ({ ...prev, [productId]: '' }));
+            setNotificationMessage((prev) => ({ ...prev, [currentProductId]: '' }));
+            setOpenDialog(false);
         } catch (error) {
             showSnackbar('Error sending notifications', 'error');
         }
@@ -78,6 +117,11 @@ const SalesManagerHome = () => {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                <Button variant="outlined" onClick={() => navigate('/sm/orders')}>
+                    Go to Orders / Invoices
+                </Button>
+            </div>
             <Typography variant="h4" gutterBottom>
                 Sales Manager Dashboard
             </Typography>
@@ -161,7 +205,7 @@ const SalesManagerHome = () => {
                                         <Button
                                             variant="contained"
                                             color="secondary"
-                                            onClick={() => handleWishlistNotification(product.isbn)}
+                                            onClick={() => handleOpenNotificationDialog(product.isbn)}
                                             sx={{ mt: 1 }}
                                             fullWidth
                                         >
@@ -174,6 +218,46 @@ const SalesManagerHome = () => {
                     </Grid>
                 ))}
             </Grid>
+
+            <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                <DialogTitle>Users to be Notified</DialogTitle>
+                <DialogContent>
+                    {usersToNotify.length === 0 ? (
+                        <p>No users have this product in their wishlist.</p>
+                    ) : (
+                        <ul>
+                            {usersToNotify.map((user) => (
+                                <li key={user.email}>{user.username} ({user.email})</li>
+                            ))}
+                        </ul>
+                    )}
+                    <p style={{ marginTop: 16 }}><b>Message:</b> {notificationMessage[currentProductId]}</p>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+                    <Button onClick={handleSendNotification} variant="contained" color="primary" disabled={usersToNotify.length === 0}>
+                        Send Notification
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={openNotifiedDialog} onClose={() => setOpenNotifiedDialog(false)}>
+                <DialogTitle>Users Notified</DialogTitle>
+                <DialogContent>
+                    {notifiedUsers.length === 0 ? (
+                        <p>No users had this product in their wishlist.</p>
+                    ) : (
+                        <ul>
+                            {notifiedUsers.map((user) => (
+                                <li key={user.email}>{user.username} ({user.email})</li>
+                            ))}
+                        </ul>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenNotifiedDialog(false)}>OK</Button>
+                </DialogActions>
+            </Dialog>
 
             <Snackbar
                 open={snackbar.open}

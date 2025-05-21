@@ -52,4 +52,9 @@ public class SalesManagerController {
         productService.sendRefundStatusNotification(orderId, isAccepted, message);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/wishlist-users/{productId}")
+    public ResponseEntity<?> getUsersWithProductInWishlist(@PathVariable String productId) {
+        return ResponseEntity.ok(userService.getUsersWithProductInWishlist(productId));
+    }
 } 
