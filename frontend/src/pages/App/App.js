@@ -17,6 +17,12 @@ import ShoppingCart from "../../components/ShoppingCart";
 import FavoritesList from "../../components/FavoritesList";
 import ProductManagerCommentsPage from '../ProductManager/ProductManagerCommentsPage';
 import "./App.css";
+import ProductManagerHome from "../ProductManager/ProductManagerHome";
+import ProductManagerProductControl from "../ProductManager/ProductManagerProductControl";
+import ProductManagerCategories from "../ProductManager/ProductManagerCategories";
+import ProductManagerOrderControl from "../ProductManager/ProductManagerOrderControl";
+import SalesManagerHome from "../SalesManager/SalesManagerHome";
+import SalesManagerOrders from "../SalesManager/SalesManagerOrders";
 
 function App() {
     return (
@@ -56,7 +62,12 @@ function App() {
                                 <Route path="/receipt/:orderId" element={<Receipt />} />
 
                                 <Route path="/pm/comments" element={<ProductManagerCommentsPage />} />
-
+                                <Route path="/pm/home" element={<ProductManagerHome />} />
+                                <Route path="/pm/pcontrol" element={<ProductManagerProductControl />} />
+                                <Route path="/pm/categories" element={<ProductManagerCategories />} />
+                                <Route path="/pm/orders" element={<ProductManagerOrderControl />} />
+                                <Route path="/sm/home" element={<SalesManagerHome/>} />
+                                <Route path="/sm/orders" element={<SalesManagerOrders/>} />
                             </Routes>
                         </main>
                     </Router>

@@ -22,9 +22,17 @@ const Login = () => {
     ) {
       localStorage.setItem("isPM", "true");               // flag them as product‐manager
       localStorage.setItem("token", "fake-admin-token");  // so other code thinks “logged in”
-      return navigate("/pm/comments");
+      return navigate("/pm/home");
     }
-
+    // ——— 1.5) Sales Manager bypass ———
+    if (
+        email === process.env.REACT_APP_SALES_USERNAME &&
+        password === process.env.REACT_APP_SALES_PASSWORD
+    ) {
+      localStorage.setItem("isSales", "true");
+      localStorage.setItem("token", "fake-sales-token");
+      return navigate("/sm/home"); 
+    }
     // ——— 2) Normal login flow ———
     try {
       const res = await fetch("http://localhost:8080/login", {
