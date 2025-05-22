@@ -1,10 +1,14 @@
 package com.bibliosphere.backend.controller;
-
+import com.bibliosphere.backend.dto.UserProfileDto;
 import com.bibliosphere.backend.config.CloudinaryUploadService;
 import com.bibliosphere.backend.model.Product;
+import com.bibliosphere.backend.model.User;
 import com.bibliosphere.backend.repository.ProductRepository;
 import com.bibliosphere.backend.service.ProductService;
+import com.bibliosphere.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -21,6 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductController {
 
+    private final UserService userService;
     private final CloudinaryUploadService imageService;
     private final ProductRepository       repo;
     private final ProductService          productService;
@@ -33,6 +39,41 @@ public class ProductController {
         List<Product> list = repo.findAll();
         // ensure category is populated on every document
         return list;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileDto> getMyProfile(Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = userService.loadUserByEmail(auth.getName());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        // Make sure these are typed as List<Product>, not List<?>
+        List<Product> wishlist   = userService.loadProducts(user.getWishlist());
+        List<Product> shoppingCart = userService.loadProducts(user.getShopping_cart());
+
+        UserProfileDto dto = new UserProfileDto(
+                user.getEmail(),
+                user.getName(),
+                user.getSurname(),
+                user.getTaxid(),
+                user.getAddress(),
+                user.getCity(),
+                user.getZipCode(),
+                wishlist,
+                shoppingCart   // matches the DTO’s field name exactly
+        );
+
+        return ResponseEntity.ok(dto);
+    }
+
+
+    public Product getProductById(String isbn) {
+        Optional<Product> opt = productRepository.findById(isbn);
+        return opt.orElse(null);
     }
 
     @GetMapping("/{isbn}")

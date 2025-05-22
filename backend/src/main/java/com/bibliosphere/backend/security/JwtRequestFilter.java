@@ -83,17 +83,22 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User user = userService.loadUserByEmail(email);
                 if (user != null && jwtUtil.validateToken(token, user.getEmail())) {
-                    // Create authorities list based on user's role
+                    // Build authorities based on the user's role
                     List<SimpleGrantedAuthority> authorities = Collections.emptyList();
                     if (user.getRole() != null && !user.getRole().isEmpty()) {
-                        authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase()));
+                        authorities = Collections.singletonList(
+                                new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase())
+                        );
                     }
 
-                    var auth = new UsernamePasswordAuthenticationToken(
-                            user, // Use the full User object as principal
-                            null,
-                            authorities // Use the dynamically created authorities
-                    );
+                    // Use the raw email String as the principal (so auth.getName() == email)
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    user.getEmail(),    // principal = email
+                                    null,               // credentials = none
+                                    authorities         // granted authorities
+                            );
+
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }

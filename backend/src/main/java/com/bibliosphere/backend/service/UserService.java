@@ -1,5 +1,6 @@
 package com.bibliosphere.backend.service;
 
+import com.bibliosphere.backend.model.Product;
 import com.bibliosphere.backend.model.User;
 import com.bibliosphere.backend.model.WishlistCluster;
 import com.bibliosphere.backend.repository.UserRepository;
@@ -14,7 +15,15 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+
+import org.springframework.context.annotation.Lazy;
+
+
 
 @Service
 public class UserService {
@@ -256,6 +265,19 @@ public class UserService {
     public User update(User user) {
         return userRepository.save(user);
     }
+
+
+    public List<Product> loadProducts(List<String> ids) {
+        if (ids == null) return Collections.emptyList();
+        return ids.stream()
+                .map(productService::getProductById)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Autowired
+    @Lazy
+    private ProductService productService;
 
 
 

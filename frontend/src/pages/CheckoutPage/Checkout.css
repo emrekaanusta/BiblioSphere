@@ -416,3 +416,51 @@ input[type="email"]:focus {
 .save-email-btn:hover {
   background-color: #45a049;
 }
+
+
+/* Make all checkout-form inputs look uniform */
+.checkout-form input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  background-color: #fafafa;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.checkout-form input:focus {
+  border-color: #8b5cf6;    /* purple-500 */
+  outline: none;
+  background-color: #fff;
+}
+
+/* If you want the two-per-row layout to stay compact */
+.checkout-form .form-row input {
+  width: calc(50% - 0.5rem);
+  margin-right: 1rem;
+}
+.checkout-form .form-row input:last-child {
+  margin-right: 0;
+}
+
+/* Style the “disabled” look nicely */
+.checkout-form input[readonly] {
+  background-color: #f0f0f0;
+  color: #555;
+  cursor: not-allowed;
+}
+
+/* Tweak the email edit button positioning */
+.email-input-group {
+  display: flex;
+  align-items: center;
+}
+.email-input-group input {
+  flex: 1;
+}
+.email-input-group button {
+  margin-left: 0.5rem;
+}
