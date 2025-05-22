@@ -11,6 +11,11 @@ export const useFavorites = () => {
     return context;
 };
 
+// Helper function to get the book ID consistently
+const getBookId = (book) => {
+    return book.id || book.isbn || book._id;
+};
+
 export const FavoritesProvider = ({ children }) => {
     const [favorites, setFavorites] = useState(() => {
         const savedFavorites = localStorage.getItem('favorites');
@@ -65,10 +70,11 @@ export const FavoritesProvider = ({ children }) => {
         const userEmail = localStorage.getItem('userEmail');
         if (token && userEmail) {
             favorites.forEach(book => {
+                const bookId = getBookId(book);
                 axios.post('http://localhost:8080/api/wishlist-cluster/update', null, {
                     params: {
                         userEmail: userEmail,
-                        bookId: book.id,
+                        bookId: bookId,
                         isAdding: true
                     },
                     headers: {
@@ -85,13 +91,14 @@ export const FavoritesProvider = ({ children }) => {
     const addToFavorites = async (book) => {
         const token = localStorage.getItem('token');
         const userEmail = localStorage.getItem('userEmail');
+        const bookId = getBookId(book);
 
         if (token && userEmail) {
             try {
                 await axios.post('http://localhost:8080/api/wishlist-cluster/update', null, {
                     params: {
                         userEmail: userEmail,
-                        bookId: book.id,
+                        bookId: bookId,
                         isAdding: true
                     },
                     headers: {
@@ -104,7 +111,7 @@ export const FavoritesProvider = ({ children }) => {
         }
 
         setFavorites(currentFavorites => {
-            if (!currentFavorites.some(item => item.id === book.id)) {
+            if (!currentFavorites.some(item => getBookId(item) === bookId)) {
                 return [...currentFavorites, book];
             }
             return currentFavorites;
@@ -134,7 +141,7 @@ export const FavoritesProvider = ({ children }) => {
         }
 
         setFavorites(currentFavorites => 
-            currentFavorites.filter(item => item.id !== bookId)
+            currentFavorites.filter(item => getBookId(item) !== bookId)
         );
     };
 
@@ -145,7 +152,7 @@ export const FavoritesProvider = ({ children }) => {
 
     // Check if a book is in favorites
     const isBookFavorite = (bookId) => {
-        return favorites.some(item => item.id === bookId);
+        return favorites.some(item => getBookId(item) === bookId);
     };
 
     // Overwrite favorites with a new list from the backend
