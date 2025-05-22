@@ -9,9 +9,12 @@ import com.bibliosphere.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.*;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 @Service
@@ -19,7 +22,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository repo;
-    private final MongoTemplate     mongo;
+    private final MongoTemplate mongo;
 
     @Autowired
     private EmailService emailService;
@@ -35,28 +38,51 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
     }
 
-    /** Atomically decrement stock (-1) **only if** current stock > 0. */
+    /**
+     * Atomically decrement stock (-1) **only if** current stock > 0 using partial update.
+     */
     public Product decrementStock(String isbn) {
-        Query  q  = Query.query(Criteria.where("_id").is(isbn).and("stock").gt(0));
-        Update up = new Update().inc("stock", -1);
+        Query q = Query.query(Criteria.where("_id").is(isbn).and("stock").gt(0));
+        Update u = new Update().inc("stock", -1);
 
-        return mongo.findAndModify(
-                q, up,
+        Product updated = mongo.findAndModify(
+                q, u,
                 FindAndModifyOptions.options().returnNew(true),
-                Product.class);
+                Product.class
+        );
+
+        if (updated == null) {
+            throw new ResourceNotFoundException("Product not found or out of stock: " + isbn);
+        }
+        return updated;
     }
 
-    /** Helper to reset stock to a specific quantity (dev/testing). */
+    /**
+     * Helper to reset stock to a specific quantity (dev/testing) using partial update to avoid wipe.
+     */
     public Product resetStock(String isbn, int qty) {
-        Product p = repo.findById(isbn)
-                        .orElseThrow(() -> new RuntimeException("Product not found"));
-        p.setStock(qty);
-        return repo.save(p);
+        Query q = Query.query(Criteria.where("_id").is(isbn));
+        Update u = new Update().set("stock", qty);
+
+        Product updated = mongo.findAndModify(
+                q, u,
+                FindAndModifyOptions.options().returnNew(true),
+                Product.class
+        );
+
+        if (updated == null) {
+            throw new ResourceNotFoundException("Product not found with id: " + isbn);
+        }
+        return updated;
     }
 
+    /**
+     * Update product price and calculate discounted price if discount percentage exists
+     */
     public Product updateProductPrice(String productId, Double newPrice) {
         Product product = getProductById(productId);
         product.setPrice(newPrice);
+        
         // Update the discounted price if there's a discount percentage
         if (product.getDiscountPercentage() > 0) {
             double discountedPrice = newPrice * (1 - product.getDiscountPercentage() / 100);
@@ -66,20 +92,28 @@ public class ProductService {
         } else {
             product.setDiscountedPrice(newPrice);
         }
+        
         Product updated = repo.save(product);
+        
         // Notify users about price change
         notifyWishlistUsersAboutChange(product, "price");
         return updated;
     }
 
+    /**
+     * Update discount percentage and calculate discounted price
+     */
     public Product updateProductDiscount(String productId, Double discountPercentage) {
         Product product = getProductById(productId);
         product.setDiscountPercentage(discountPercentage);
+        
         double discountedPrice = product.getPrice() * (1 - discountPercentage / 100);
         // Round to 2 decimal places
         discountedPrice = Math.round(discountedPrice * 100.0) / 100.0;
         product.setDiscountedPrice(discountedPrice);
+        
         Product updated = repo.save(product);
+        
         // Notify users about discount change
         notifyWishlistUsersAboutChange(product, "discount");
         return updated;
@@ -104,6 +138,7 @@ public class ProductService {
                       "Discounted Price: $" + String.format("%.2f", product.getDiscountedPrice()) + "\n" +
                       "\nBest regards,\nBiblioSphere Team";
         }
+        
         for (User user : usersWithWishlist) {
             emailService.sendEmail(user.getEmail(), subject, message);
         }
@@ -120,21 +155,6 @@ public class ProductService {
                           message + "\n\n" +
                           "If you have any questions, please contact our customer support.\n\n" +
                           "Best regards,\nBiblioSphere Team";
-
-        // Handle both DELIVERED and REFUND_PENDING
-        if (isAccepted) {
-            order.setStatus(com.bibliosphere.backend.model.OrderStatus.REFUNDED);
-            // Increment stock for each item
-            for (var item : order.getItems()) {
-                Product p = repo.findById(item.getProductId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-                p.setStock(p.getStock() + item.getQuantity());
-                repo.save(p);
-            }
-        } else {
-            order.setStatus(com.bibliosphere.backend.model.OrderStatus.CANCELLED);
-        }
-        orderRepository.save(order);
         emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
     }
 

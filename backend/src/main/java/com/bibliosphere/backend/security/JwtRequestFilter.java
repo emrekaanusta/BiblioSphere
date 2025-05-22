@@ -2,11 +2,10 @@ package com.bibliosphere.backend.security;
 
 import com.bibliosphere.backend.model.User;
 import com.bibliosphere.backend.service.UserService;
-import jakarta.servlet.FilterChain;          // OK to use jakarta here
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,36 +34,45 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             FilterChain chain
     ) throws ServletException, IOException {
 
-        String path = request.getRequestURI();
-        if (path.equals("/register") || path.equals("/login")
-                || path.startsWith("/favorites") || path.startsWith("/test")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
         String header = request.getHeader("Authorization");
 
+        // 1) ADMIN bypass
         if ("Bearer fake-admin-token".equals(header)) {
-            var auth = new UsernamePasswordAuthenticationToken(
-                    "admin",
-                    null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_PRODUCT_MANAGER"))
-            );
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            chain.doFilter(request, response);
-            return;
-        }
-        if ("Bearer fake-sales-token".equals(header)) {
-            var auth = new UsernamePasswordAuthenticationToken(
-                    "sales",
-                    null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_SALES_MANAGER"))
-            );
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            "admin",
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_PRODUCT_MANAGER"))
+                    );
             SecurityContextHolder.getContext().setAuthentication(auth);
             chain.doFilter(request, response);
             return;
         }
 
+        // 2) SALES bypass
+        if ("Bearer fake-sales-token".equals(header)) {
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                            "sales",
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_SALES_MANAGER"))
+                    );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 3) Public endpoints
+        String path = request.getRequestURI();
+        if (path.equals("/register") || path.equals("/login")
+                || path.startsWith("/api/categories")   // allow public read of categories
+                || path.startsWith("/favorites")
+                || path.startsWith("/test")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 4) Normal JWT flow
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             String email = null;
@@ -94,4 +102,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         chain.doFilter(request, response);
     }
+
+
+
 }

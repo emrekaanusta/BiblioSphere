@@ -27,17 +27,27 @@ public class ProductController {
     private final ProductRepository productRepository;
 
     /* ---------- GET ---------- */
+    /* ---------- GET ---------- */
     @GetMapping
     public List<Product> getAll() {
-        return repo.findAll();
+        List<Product> list = repo.findAll();
+        // ensure category is populated on every document
+        return list;
     }
 
     @GetMapping("/{isbn}")
     public ResponseEntity<Product> getByIsbn(@PathVariable String isbn) {
         return repo.findById(isbn)
-                   .map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+                .map(p -> {
+                    if (p.getCategory() == null) {
+                        p.setCategory(p.getCategory());
+                    }
+                    return ResponseEntity.ok(p);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
+
+
     @DeleteMapping("/{isbn}")
     public ResponseEntity<Void> deleteProduct(@PathVariable String isbn) {
         if (!repo.existsById(isbn)) {
@@ -61,7 +71,7 @@ public class ProductController {
         p.setIsbn(product.getIsbn());
         p.setTitle(product.getTitle());
         p.setAuthor(product.getAuthor());
-        p.setType(product.getType());
+        p.setCategory(product.getCategory());
         p.setPrice(product.getPrice());
         p.setImage(product.getImage());
         p.setDescription(product.getDescription());
@@ -90,4 +100,7 @@ public class ProductController {
                                          @PathVariable int qty) {
         return ResponseEntity.ok(productService.resetStock(isbn, qty));
     }
+
+
+
 }

@@ -1,2 +1,5 @@
 # MongoDB backups
-mongodb_backups/ 
+mongodb_backups/
+
+# Node.js
+node_modules/
