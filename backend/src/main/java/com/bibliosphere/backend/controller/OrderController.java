@@ -102,7 +102,8 @@ public class OrderController {
     @GetMapping("/range")
     public ResponseEntity<List<Order>> getOrdersInRange(
             @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
-            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
+            @RequestHeader("Authorization") String token) {
         List<Order> orders = orderService.getOrdersInRange(start.atStartOfDay(), end.plusDays(1).atStartOfDay());
         return ResponseEntity.ok(orders);
     }

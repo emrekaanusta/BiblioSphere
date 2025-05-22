@@ -150,6 +150,7 @@ public class UserService {
     public User addToWishlist(User user, String productId) {
         logger.debug("Adding product {} to wishlist for user: {}", productId, user.getEmail());
         
+        // Update User model wishlist
         if (user.getWishlist() == null) {
             logger.debug("Creating new wishlist array for user: {}", user.getEmail());
             user.setWishlist(new ArrayList<>());
@@ -161,6 +162,27 @@ public class UserService {
             try {
                 User savedUser = userRepository.save(user);
                 logger.debug("Updated user document in MongoDB: {}", savedUser);
+                
+                // Also update WishlistCluster
+                WishlistCluster cluster = wishlistClusterRepository.findByUserEmail(user.getEmail())
+                    .orElse(new WishlistCluster());
+                
+                if (cluster.getUserEmail() == null) {
+                    cluster.setUserEmail(user.getEmail());
+                    cluster.setName(user.getName());
+                    cluster.setSurname(user.getSurname());
+                }
+                
+                if (cluster.getWishlist() == null) {
+                    cluster.setWishlist(new ArrayList<>());
+                }
+                
+                if (!cluster.getWishlist().contains(productId)) {
+                    cluster.getWishlist().add(productId);
+                    wishlistClusterRepository.save(cluster);
+                    logger.debug("Updated wishlist cluster for user: {}", user.getEmail());
+                }
+                
                 return savedUser;
             } catch (Exception e) {
                 logger.error("Error saving wishlist update to MongoDB: {}", e.getMessage(), e);
@@ -177,6 +199,15 @@ public class UserService {
         if (user.getWishlist() != null) {
             user.getWishlist().remove(productId);
         }
+        
+        // Also update WishlistCluster
+        WishlistCluster cluster = wishlistClusterRepository.findByUserEmail(user.getEmail()).orElse(null);
+        if (cluster != null && cluster.getWishlist() != null) {
+            cluster.getWishlist().remove(productId);
+            wishlistClusterRepository.save(cluster);
+            logger.debug("Removed product {} from wishlist cluster for user: {}", productId, user.getEmail());
+        }
+        
         return userRepository.save(user);
     }
 
@@ -189,6 +220,34 @@ public class UserService {
     }
 
     public List<User> getUsersWithProductInWishlist(String productId) {
-        return userRepository.findByWishlistContaining(productId);
+        logger.debug("Looking for users with product {} in wishlist", productId);
+        
+        // Check direct user wishlists
+        List<User> usersWithWishlist = userRepository.findByWishlistContaining(productId);
+        logger.debug("Found {} users with product in direct wishlist", usersWithWishlist.size());
+        
+        // Also check wishlist clusters
+        List<WishlistCluster> clusters = wishlistClusterRepository.findAll();
+        for (WishlistCluster cluster : clusters) {
+            if (cluster.getWishlist() != null && cluster.getWishlist().contains(productId)) {
+                String userEmail = cluster.getUserEmail();
+                logger.debug("Found product in cluster for user: {}", userEmail);
+                
+                // Check if user already exists in the list
+                boolean userExists = usersWithWishlist.stream()
+                    .anyMatch(u -> u.getEmail().equals(userEmail));
+                
+                if (!userExists) {
+                    User user = loadUserByEmail(userEmail);
+                    if (user != null) {
+                        logger.debug("Adding user from cluster: {}", userEmail);
+                        usersWithWishlist.add(user);
+                    }
+                }
+            }
+        }
+        
+        logger.debug("Total users with product in wishlist: {}", usersWithWishlist.size());
+        return usersWithWishlist;
     }
 }
