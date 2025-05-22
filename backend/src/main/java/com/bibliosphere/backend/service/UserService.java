@@ -1,7 +1,9 @@
 package com.bibliosphere.backend.service;
 
 import com.bibliosphere.backend.model.User;
+import com.bibliosphere.backend.model.WishlistCluster;
 import com.bibliosphere.backend.repository.UserRepository;
+import com.bibliosphere.backend.repository.WishlistClusterRepository;
 import com.bibliosphere.backend.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private WishlistClusterRepository wishlistClusterRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -94,6 +99,19 @@ public class UserService {
             User savedUser = userRepository.save(user);
             logger.debug("User registered successfully: {}", savedUser.getEmail());
             logger.debug("User document in MongoDB: {}", savedUser);
+
+            // Create wishlist cluster for the new user
+            WishlistCluster wishlistCluster = new WishlistCluster();
+            wishlistCluster.setUserEmail(user.getEmail());
+            wishlistCluster.setName(user.getName());
+            wishlistCluster.setSurname(user.getSurname());
+            wishlistCluster.setWishlist(new ArrayList<>());
+            wishlistCluster.setAddress("");
+            wishlistCluster.setZipCode("");
+            wishlistCluster.setCity("");
+
+            wishlistClusterRepository.save(wishlistCluster);
+            logger.debug("Wishlist cluster created for user: {}", user.getEmail());
         } catch (Exception e) {
             logger.error("Error saving user to MongoDB: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to register user: " + e.getMessage());
