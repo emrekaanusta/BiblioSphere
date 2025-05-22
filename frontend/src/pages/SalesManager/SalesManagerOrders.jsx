@@ -82,6 +82,45 @@ const SalesManagerOrders = () => {
     const [showInvoices, setShowInvoices] = useState(false);
     const [showOnlyPendingRefunds, setShowOnlyPendingRefunds] = useState(false);
 
+    // Utility function to extract email from various formats
+    const extractEmail = (emailData) => {
+        if (!emailData) return '';
+        
+        if (typeof emailData === 'string') {
+            // If it's a User object string representation
+            if (emailData.startsWith('User(')) {
+                const emailMatch = emailData.match(/email=([^,)]+)/);
+                if (emailMatch && emailMatch[1]) {
+                    return emailMatch[1];
+                }
+            }
+            // If it's already a simple email string
+            return emailData;
+        } 
+        
+        // If it's an object
+        if (typeof emailData === 'object') {
+            // Check if it's a User object with email property
+            if (emailData.email) {
+                return emailData.email;
+            }
+            
+            // Try to convert to string and extract
+            try {
+                const emailStr = String(emailData);
+                const emailMatch = emailStr.match(/email=([^,)]+)/);
+                if (emailMatch && emailMatch[1]) {
+                    return emailMatch[1];
+                }
+            } catch (err) {
+                console.error("Failed to extract email:", err);
+            }
+        }
+        
+        // If shipping info contains email, use that as fallback
+        return '';
+    };
+
     const fetchOrders = async () => {
         try {
             // First fetch all orders
@@ -120,7 +159,10 @@ const SalesManagerOrders = () => {
         fetchOrders();
     }, [isSales, token]);
 
-    const filteredOrders = orders.filter(order => {
+    // Sort orders from newest to oldest
+    const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const filteredOrders = sortedOrders.filter(order => {
         const isPendingRefund = order.refundStatus === "PENDING" || order.status === "REFUND_PENDING";
         
         // If we're showing only pending refunds, exclude them from the main list
@@ -152,7 +194,7 @@ const SalesManagerOrders = () => {
 
         doc.setFontSize(12);
         doc.text(`Order ID: ${order.id}`, 14, 35);
-        doc.text(`Email: ${order.userEmail}`, 14, 42);
+        doc.text(`Email: ${extractEmail(order.userEmail)}`, 14, 42);
         doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 14, 49);
 
         let currentY = 60;
@@ -251,34 +293,85 @@ const SalesManagerOrders = () => {
     };
 
     const fetchInvoicesInRange = async () => {
-        if (!invoiceStartDate || !invoiceEndDate) return;
+        if (!startDate || !endDate) {
+            alert("Please select start and end dates");
+            return;
+        }
+        
+        // Log for debugging
+        console.log("Fetching invoices for date range:", startDate, "to", endDate);
+        console.log("Using token:", token);
+        
         try {
-            const res = await fetch(`http://localhost:8080/api/orders/range?start=${invoiceStartDate}&end=${invoiceEndDate}`, {
-                headers: { Authorization: `Bearer ${token}` }
+            // Using normal fetch API which is more compatible
+            const res = await fetch(`http://localhost:8080/api/orders/range?start=${startDate}&end=${endDate}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
             });
-            if (!res.ok) throw new Error('Failed to fetch invoices');
+            
+            if (!res.ok) {
+                throw new Error(`Server responded with status: ${res.status}`);
+            }
+            
             const data = await res.json();
-            setInvoices(data);
-            setShowInvoices(true);
+            console.log("Invoice data received:", data);
+            
+            if (Array.isArray(data)) {
+                // Sort from newest to oldest
+                const sortedData = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                setInvoices(sortedData);
+                setInvoiceStartDate(startDate);
+                setInvoiceEndDate(endDate);
+                setShowInvoices(true);
+            } else {
+                console.error("Invalid invoice data format received:", data);
+                setInvoices([]);
+                setShowInvoices(true);
+                alert("Error: Invalid data format received from server");
+            }
         } catch (err) {
+            console.error("Failed to fetch invoices:", err.message);
             setInvoices([]);
             setShowInvoices(true);
+            alert("Failed to fetch invoice data: " + err.message);
         }
     };
 
     const getRevenueChartData = () => {
         if (!invoices.length) return [];
+        
         // Group by date
         const dateMap = {};
+        const dateObjects = []; // Keep track of actual date objects for sorting
+        
         invoices.forEach(order => {
-            const date = new Date(order.createdAt).toLocaleDateString();
-            if (!dateMap[date]) dateMap[date] = 0;
-            dateMap[date] += order.total || 0;
+            // Skip refunded orders for revenue calculation
+            if (order.refundStatus === "APPROVED" || order.status === "REFUNDED") {
+                return; // Skip this order
+            }
+            
+            const orderDate = new Date(order.createdAt);
+            const dateStr = orderDate.toLocaleDateString();
+            
+            // Store the date object for proper sorting
+            if (!dateMap[dateStr]) {
+                dateMap[dateStr] = 0;
+                dateObjects.push({ dateStr, date: orderDate });
+            }
+            dateMap[dateStr] += order.total || 0;
         });
-        // Convert to array and sort by date
-        return Object.entries(dateMap)
-            .map(([date, revenue]) => ({ date, revenue }))
-            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Sort the date objects chronologically (oldest to newest)
+        dateObjects.sort((a, b) => a.date - b.date);
+        
+        // Map to the format needed for the chart
+        return dateObjects.map(({ dateStr }) => ({
+            date: dateStr,
+            revenue: dateMap[dateStr]
+        }));
     };
 
     if (!isSales) return <Navigate to="/login" replace />;
@@ -337,7 +430,7 @@ const SalesManagerOrders = () => {
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
                                 <div>
                                     <strong>Order ID:</strong> {order.id}<br />
-                                    <strong>User:</strong> {order.userEmail}<br />
+                                    <strong>User:</strong> {extractEmail(order.userEmail)}<br />
                                     <strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}<br />
                                     <strong>Status:</strong> {order.status}
                                 </div>
@@ -387,7 +480,7 @@ const SalesManagerOrders = () => {
                                 <p style={{ margin: "0.5rem 0", fontSize: "0.9rem", color: "#555" }}>
                                     {order.shippingInfo && (order.shippingInfo.firstName || order.shippingInfo.lastName)
                                         ? `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim()
-                                        : (order.userEmail || '')}
+                                        : extractEmail(order.userEmail)}
                                 </p>
                                 <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '0.95rem', color: '#333' }}>
                                     {order.items && order.items.map(item => (
@@ -402,7 +495,11 @@ const SalesManagerOrders = () => {
                             </div>
                             <div style={{ flex: "1 1 35%", textAlign: "right" }}>
                                 <p>Status: <strong>{order.status}</strong></p>
-                                <p>Refund: {order.refundStatus || (order.status === "REFUND_PENDING" ? "PENDING" : "N/A")}</p>
+                                <p>Refund: {
+                                    order.refundStatus || 
+                                    (order.status === "REFUND_PENDING" ? "PENDING" : 
+                                     order.status === "REFUNDED" ? "APPROVED" : "N/A")
+                                }</p>
                                 <div style={{ marginTop: "0.5rem" }}>
                                     {(order.refundStatus === "PENDING" || order.status === "REFUND_PENDING") && (
                                         <>
@@ -433,28 +530,19 @@ const SalesManagerOrders = () => {
                 ))
             )}
 
-            {/* Date range for invoices */}
+            {/* Use the date range from above for invoices */}
             <div style={{ margin: '2rem 0', textAlign: 'center' }}>
-                <TextField
-                    label="Start Date"
-                    type="date"
-                    value={invoiceStartDate}
-                    onChange={e => setInvoiceStartDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    style={{ marginRight: 16 }}
-                />
-                <TextField
-                    label="End Date"
-                    type="date"
-                    value={invoiceEndDate}
-                    onChange={e => setInvoiceEndDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    style={{ marginRight: 16 }}
-                />
-                <Button variant="contained" onClick={fetchInvoicesInRange} disabled={!invoiceStartDate || !invoiceEndDate}>
-                    Show Invoices
+                <Button 
+                    variant="contained"
+                    color="primary"
+                    onClick={fetchInvoicesInRange} 
+                    disabled={!startDate || !endDate}
+                    style={{ fontSize: '1rem', padding: '10px 20px' }}
+                >
+                    Generate Invoice Report for Selected Dates
                 </Button>
             </div>
+            
             {showInvoices && (
                 <div style={{ margin: '2rem 0' }}>
                     <h3>Invoices from {invoiceStartDate} to {invoiceEndDate}</h3>
@@ -470,6 +558,7 @@ const SalesManagerOrders = () => {
                                     <th style={{ border: '1px solid #ccc', padding: 8 }}>Items</th>
                                     <th style={{ border: '1px solid #ccc', padding: 8 }}>Date</th>
                                     <th style={{ border: '1px solid #ccc', padding: 8 }}>Total</th>
+                                    <th style={{ border: '1px solid #ccc', padding: 8 }}>Refund Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -477,7 +566,9 @@ const SalesManagerOrders = () => {
                                     <tr key={order.id}>
                                         <td style={{ border: '1px solid #ccc', padding: 8 }}>{order.id}</td>
                                         <td style={{ border: '1px solid #ccc', padding: 8 }}>{order.shippingInfo ? `${order.shippingInfo.firstName || ''} ${order.shippingInfo.lastName || ''}`.trim() : ''}</td>
-                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>{order.userEmail || (order.shippingInfo && order.shippingInfo.email) || ''}</td>
+                                        <td style={{ border: '1px solid #ccc', padding: 8 }}>
+                                            {extractEmail(order.userEmail)}
+                                        </td>
                                         <td style={{ border: '1px solid #ccc', padding: 8 }}>
                                             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                                                 {order.items && order.items.map(item => (
@@ -489,6 +580,15 @@ const SalesManagerOrders = () => {
                                         </td>
                                         <td style={{ border: '1px solid #ccc', padding: 8 }}>{new Date(order.createdAt).toLocaleDateString()}</td>
                                         <td style={{ border: '1px solid #ccc', padding: 8 }}>${order.total?.toFixed(2) ?? 'N/A'}</td>
+                                        <td style={{ 
+                                            border: '1px solid #ccc', 
+                                            padding: 8,
+                                            backgroundColor: (order.refundStatus === "APPROVED" || order.status === "REFUNDED") ? '#ffeeee' : 'transparent'
+                                        }}>
+                                            {order.refundStatus || 
+                                            (order.status === "REFUND_PENDING" ? "PENDING" : 
+                                             order.status === "REFUNDED" ? "APPROVED" : "N/A")}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -510,7 +610,13 @@ const SalesManagerOrders = () => {
                         </LineChart>
                     </ResponsiveContainer>
                     <div style={{ marginTop: 16, fontWeight: 'bold' }}>
-                        Total Revenue: ${invoices.reduce((sum, o) => sum + (o.total || 0), 0).toFixed(2)}
+                        Total Revenue: ${invoices
+                            .filter(o => o.refundStatus !== "APPROVED" && o.status !== "REFUNDED")
+                            .reduce((sum, o) => sum + (o.total || 0), 0)
+                            .toFixed(2)} 
+                        <span style={{ fontSize: '0.9rem', marginLeft: 10, color: '#666' }}>
+                            (Refunded orders excluded)
+                        </span>
                     </div>
                 </div>
             )}
