@@ -18,6 +18,43 @@ export const FavoritesProvider = ({ children }) => {
     });
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
+    // Load favorites from backend when user logs in
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const userEmail = localStorage.getItem('userEmail');
+
+        if (token && userEmail) {
+            // First get the wishlist cluster from backend
+            axios.get(`http://localhost:8080/api/wishlist-cluster/${userEmail}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                const wishlistCluster = response.data;
+                if (wishlistCluster && wishlistCluster.wishlist && wishlistCluster.wishlist.length > 0) {
+                    // For each book ID in the wishlist, fetch the book details
+                    const bookPromises = wishlistCluster.wishlist.map(bookId =>
+                        axios.get(`http://localhost:8080/api/products/${bookId}`)
+                    );
+
+                    Promise.all(bookPromises)
+                        .then(bookResponses => {
+                            const books = bookResponses.map(response => response.data);
+                            setFavorites(books);
+                            localStorage.setItem('favorites', JSON.stringify(books));
+                        })
+                        .catch(error => {
+                            console.error('Error fetching book details:', error);
+                        });
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching wishlist cluster:', error);
+            });
+        }
+    }, []); // Empty dependency array means this runs once when component mounts
+
     // Save favorites to localStorage and sync with backend whenever they change
     useEffect(() => {
         localStorage.setItem('favorites', JSON.stringify(favorites));
