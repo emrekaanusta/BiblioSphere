@@ -51,8 +51,8 @@ export default function CategoryPage() {
 
     /* 1 – category filter */
     let list = books.filter((b) => {
-      if (!b.type) return false;
-      const pieces = b.type
+      if (!b.category) return false;
+      const pieces = b.category
         .split(/[\/&,+]/)
         .map((s) => s.trim().toLowerCase());
       return pieces.includes(cat);

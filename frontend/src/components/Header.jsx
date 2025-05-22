@@ -1,7 +1,10 @@
+// frontend/src/components/Header.jsx
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useFavorites } from "../contexts/FavoritesContext";
+import axios from "axios";
 import "./Header.css";
 
 const Header = () => {
@@ -11,7 +14,8 @@ const Header = () => {
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
+  const [categories, setCategories] = useState([]); // fetched from backend
 
   const navigate = useNavigate();
 
@@ -21,7 +25,7 @@ const Header = () => {
     const userEmail = localStorage.getItem("userEmail");
     setIsLoggedIn(!!token);
     if (userEmail) {
-      setUsername(userEmail.split('@')[0]);
+      setUsername(userEmail.split("@")[0]);
     }
   }, []);
 
@@ -32,9 +36,9 @@ const Header = () => {
         const response = await fetch("http://localhost:8080/logout", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
         // Accept 200 or 403 or empty response as valid for logout
         if (!response.ok && response.status !== 403) {
@@ -49,14 +53,14 @@ const Header = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     setIsLoggedIn(false);
-    clearFavorites();                 // wipe client‑side data
-    clearCart();                      // clear the cart when logging out
+    clearFavorites();
+    clearCart();
     setShowAuthDropdown(false);
     navigate("/");
   };
 
-  const handleAuthClick   = () => setShowAuthDropdown(!showAuthDropdown);
-  const handleCartClick   = (e) => { e.preventDefault(); toggleCart(); };
+  const handleAuthClick = () => setShowAuthDropdown(!showAuthDropdown);
+  const handleCartClick = (e) => { e.preventDefault(); toggleCart(); };
   const handleFavoritesClick = (e) => { 
     e.preventDefault(); 
     if (!isLoggedIn) {
@@ -72,49 +76,53 @@ const Header = () => {
     navigate(path);
   };
 
-  /* ------------------------ categories --------------------------- */
-  const handleCategoryClick = (category) => {
+  /* ------------------------ fetch categories ---------------------- */
+  useEffect(() => {
+    axios
+      .get("http://localhost:8080/api/categories")
+      .then(res => {
+        // res.data is [{ id, name }, …]
+        setCategories(res.data.map(c => c.name));
+      })
+      .catch(err => {
+        console.error("Failed to load nav categories:", err);
+      });
+  }, []);
+
+  const handleCategoryClick = (cat) => {
     setShowCategoriesDropdown(false);
-    navigate(`/category/${category.toLowerCase()}`);
+    navigate(`/category/${cat.toLowerCase()}`);
   };
 
-  const categories = [
-    { name: "Fiction",          icon: "fas fa-book" },
-    { name: "Drama",            icon: "fas fa-theater-masks" },
-    { name: "Mystery",          icon: "fas fa-search" },
-    { name: "Romance",          icon: "fas fa-heart" },
-    { name: "Science Fiction",  icon: "fas fa-rocket" },
-    { name: "Fantasy",          icon: "fas fa-dragon" },
-  ];
-
   /* ------------------------ counts ------------------------------- */
-  const cartItemCount     = cart ? cart.reduce((t, i) => t + i.quantity, 0) : 0;
-  const favoritesCount    = favorites ? favorites.length : 0;
+  const cartItemCount = cart?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const favoritesCount = favorites?.length || 0;
 
   /* ----------------- close dropdowns on outside click ----------- */
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const onClick = (e) => {
       if (!e.target.closest(".auth-container"))       setShowAuthDropdown(false);
       if (!e.target.closest(".categories-container")) setShowCategoriesDropdown(false);
     };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
   }, []);
 
   /* ------------------------------ UI ----------------------------- */
   return (
     <header className="header">
       <div className="header-content">
-        {/* logo */}
+        {/* Logo */}
         <div className="logo">
           <Link to="/">BiblioSphere</Link>
         </div>
 
-        {/* nav links */}
+        {/* Nav links */}
         <nav className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/products">Books</Link>
 
+          {/* Categories dropdown */}
           <div className="categories-container">
             <button
               className="nav-link categories-button"
@@ -122,17 +130,17 @@ const Header = () => {
             >
               Categories
             </button>
-
             {showCategoriesDropdown && (
               <div className="categories-dropdown">
-                {categories.map((c) => (
+                {categories.map(name => (
                   <button
-                    key={c.name}
+                    key={name}
                     className="category-item"
-                    onClick={() => handleCategoryClick(c.name)}
+                    onClick={() => handleCategoryClick(name)}
                   >
-                    <i className={c.icon}></i>
-                    {c.name}
+                    {/* you can swap icons per category if desired */}
+                    <i className="fas fa-book"></i>  
+                    {name}
                   </button>
                 ))}
               </div>
@@ -140,39 +148,32 @@ const Header = () => {
           </div>
         </nav>
 
-        {/* right‑hand icons */}
+        {/* Right-hand icons */}
         <div className="header-actions">
-          {/* user / auth */}
+          {/* User / Auth */}
           <div className="auth-container">
             <button className="icon-button" onClick={handleAuthClick}>
               <i className="fas fa-user"></i>
-              {isLoggedIn && username && <span className="user-email">{username}</span>}
+              {isLoggedIn && <span className="user-email">{username}</span>}
             </button>
-
             {showAuthDropdown && (
               <div className="auth-dropdown">
                 {isLoggedIn ? (
                   <>
-                    {/* NEW Orders link (signed‑in only) */}
                     <button onClick={() => handleAuthOption("/orders")}>
-                      <i className="fas fa-box"></i>
-                      Orders
+                      <i className="fas fa-box"></i> Orders
                     </button>
-
                     <button onClick={handleSignOut}>
-                      <i className="fas fa-sign-out-alt"></i>
-                      Sign Out
+                      <i className="fas fa-sign-out-alt"></i> Sign Out
                     </button>
                   </>
                 ) : (
                   <>
                     <button onClick={() => handleAuthOption("/login")}>
-                      <i className="fas fa-sign-in-alt"></i>
-                      Login
+                      <i className="fas fa-sign-in-alt"></i> Login
                     </button>
                     <button onClick={() => handleAuthOption("/register")}>
-                      <i className="fas fa-user-plus"></i>
-                      Register
+                      <i className="fas fa-user-plus"></i> Register
                     </button>
                   </>
                 )}
@@ -180,13 +181,13 @@ const Header = () => {
             )}
           </div>
 
-          {/* favorites */}
+          {/* Favorites */}
           <button className="icon-button" onClick={handleFavoritesClick} aria-label="Favorites">
             <i className="fas fa-heart"></i>
             {favoritesCount > 0 && <span className="count-badge">{favoritesCount}</span>}
           </button>
 
-          {/* cart */}
+          {/* Cart */}
           <button className="cart-button" onClick={handleCartClick} aria-label="Shopping Cart">
             <i className="fas fa-shopping-cart"></i>
             {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}

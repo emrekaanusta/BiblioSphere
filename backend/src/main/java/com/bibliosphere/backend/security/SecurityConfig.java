@@ -3,6 +3,7 @@ package com.bibliosphere.backend.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,21 +40,37 @@ public class SecurityConfig {
 
                 /* ---------- Authorisation rules ---------- */
                 .authorizeHttpRequests(auth -> auth
+                        // Permit all endpoints
                         .requestMatchers(
                                 "/register",
                                 "/login",
                                 "/favorites/**",
-                                "/api/products",
-                                "/api/products/**",
                                 "/test-order",
-                                "/test-email",
-                                "/api/ratings/product/**",  // Allow public access to view ratings
-                                "/api/books/**",  // Allow public access to book details
-                                "/api/sales-manager/**"  // TEMPORARILY PERMIT ALL FOR TESTING
+                                "/test-email"
                         ).permitAll()
-                        .requestMatchers("/api/ratings/**").authenticated()  // Keep authentication for other rating operations
+                        
+                        // Product endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products").authenticated()
+                        .requestMatchers("/api/products/**").authenticated()
+                        
+                        // Categories endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        
+                        // Ratings endpoints
+                        .requestMatchers("/api/ratings/product/**").permitAll() // Allow public access to view ratings  
+                        .requestMatchers("/api/ratings/**").authenticated() // Keep authentication for other rating operations
+                        
+                        // Books endpoints  
+                        .requestMatchers("/api/books/**").permitAll() // Allow public access to book details
+                        
+                        // Orders endpoints
                         .requestMatchers("/api/orders/**").authenticated()
+                        
+                        // Sales manager endpoints
+                        .requestMatchers("/api/sales-manager/**").permitAll() // TEMPORARILY PERMIT ALL FOR TESTING
                         //.requestMatchers("/api/sales-manager/**").hasRole("SALES_MANAGER") // Commented out for testing
+                        
                         .anyRequest().authenticated()
                 )
 
@@ -82,7 +99,6 @@ public class SecurityConfig {
         src.registerCorsConfiguration("/**", cfg);
         return src;
     }
-
 }
 
 

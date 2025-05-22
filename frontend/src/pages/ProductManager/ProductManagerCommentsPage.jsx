@@ -42,7 +42,10 @@ export default function ProductManagerCommentsPage() {
       .then(res => {
         setRatings(rs => rs.map(r => (r.id === id ? res.data : r)));
       })
-      .catch(() => alert('Failed to update'));
+      .catch((err) => {
+  console.error('PATCH error:', err);
+  alert('Failed to update');
+});
   };
 
   return (
@@ -53,31 +56,40 @@ export default function ProductManagerCommentsPage() {
           <tr>
             <th>ID</th>
             <th>Product</th>
-            <th>User</th>
+            <th>Username</th>
+            <th>Email</th>
             <th>Comment</th>
             <th>Visible</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {ratings.map(r => (
-            <tr key={r.id} className={!r.visible ? 'pm-hidden' : ''}>
-              <td>{r.id}</td>
-              <td>{r.productId}</td>
-              <td>{r.userId}</td>
-              <td>{r.comment}</td>
-              <td>{r.visible ? 'Yes' : 'No'}</td>
-              <td>
-                <button
-                  className={`pm-btn ${r.visible ? 'hide' : 'show'}`}
-                  onClick={() => toggleVisibility(r.id, r.visible)}
-                >
-                  {r.visible ? 'Hide' : 'Show'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+  {ratings.map(r => {
+    const userMatch = /User\(.*?email=(.*?),.*?name=(.*?),/.exec(r.userId) || [];
+    const email = userMatch[1] || '—';
+    const username = userMatch[2] || '—';
+
+    return (
+      <tr key={r.id} className={!r.visible ? 'pm-hidden' : ''}>
+        <td>{r.id}</td>
+        <td>{r.productId}</td>
+        <td>{username}</td>
+        <td>{email}</td>
+        <td>{r.comment}</td>
+        <td>{r.visible ? 'Yes' : 'No'}</td>
+        <td>
+          <button
+            className={`pm-btn ${r.visible ? 'hide' : 'show'}`}
+            onClick={() => toggleVisibility(r.id, r.visible)}
+          >
+            {r.visible ? 'Hide' : 'Show'}
+          </button>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
       </table>
     </div>
   );
