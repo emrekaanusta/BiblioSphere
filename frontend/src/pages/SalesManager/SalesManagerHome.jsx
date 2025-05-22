@@ -138,10 +138,10 @@ const SalesManagerHome = () => {
                                     {product.discountPercentage > 0 ? (
                                         <>
                                             <span style={{ textDecoration: 'line-through', color: '#888' }}>
-                                                ${product.price}
+                                                ${product.price.toFixed(2)}
                                             </span>
                                             <span style={{ color: '#d32f2f', marginLeft: 8 }}>
-                                                &nbsp;Discounted Price: ${product.discountedPrice}
+                                                &nbsp;Discounted Price: ${product.discountedPrice.toFixed(2)}
                                             </span>
                                             <br />
                                             <span style={{ color: '#388e3c' }}>
@@ -149,7 +149,7 @@ const SalesManagerHome = () => {
                                             </span>
                                         </>
                                     ) : (
-                                        <>Current Price: ${product.price}</>
+                                        <>Current Price: ${product.price.toFixed(2)}</>
                                     )}
                                 </Typography>
                                 <Typography color="textSecondary">

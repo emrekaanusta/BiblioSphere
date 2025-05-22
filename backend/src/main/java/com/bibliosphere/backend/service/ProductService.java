@@ -57,6 +57,15 @@ public class ProductService {
     public Product updateProductPrice(String productId, Double newPrice) {
         Product product = getProductById(productId);
         product.setPrice(newPrice);
+        // Update the discounted price if there's a discount percentage
+        if (product.getDiscountPercentage() > 0) {
+            double discountedPrice = newPrice * (1 - product.getDiscountPercentage() / 100);
+            // Round to 2 decimal places
+            discountedPrice = Math.round(discountedPrice * 100.0) / 100.0;
+            product.setDiscountedPrice(discountedPrice);
+        } else {
+            product.setDiscountedPrice(newPrice);
+        }
         Product updated = repo.save(product);
         // Notify users about price change
         notifyWishlistUsersAboutChange(product, "price");
@@ -67,6 +76,8 @@ public class ProductService {
         Product product = getProductById(productId);
         product.setDiscountPercentage(discountPercentage);
         double discountedPrice = product.getPrice() * (1 - discountPercentage / 100);
+        // Round to 2 decimal places
+        discountedPrice = Math.round(discountedPrice * 100.0) / 100.0;
         product.setDiscountedPrice(discountedPrice);
         Product updated = repo.save(product);
         // Notify users about discount change
@@ -81,16 +92,16 @@ public class ProductService {
         if ("price".equals(changeType)) {
             message = "The price of a book in your wishlist has changed!\n\n" +
                       "Product: " + product.getTitle() + "\n" +
-                      "New Price: $" + product.getPrice() + "\n" +
+                      "New Price: $" + String.format("%.2f", product.getPrice()) + "\n" +
                       (product.getDiscountPercentage() > 0 ?
                       "Discount: " + product.getDiscountPercentage() + "%\n" +
-                      "Discounted Price: $" + product.getDiscountedPrice() + "\n" : "") +
+                      "Discounted Price: $" + String.format("%.2f", product.getDiscountedPrice()) + "\n" : "") +
                       "\nBest regards,\nBiblioSphere Team";
         } else {
             message = "A discount has been applied to a book in your wishlist!\n\n" +
                       "Product: " + product.getTitle() + "\n" +
                       "Discount: " + product.getDiscountPercentage() + "%\n" +
-                      "Discounted Price: $" + product.getDiscountedPrice() + "\n" +
+                      "Discounted Price: $" + String.format("%.2f", product.getDiscountedPrice()) + "\n" +
                       "\nBest regards,\nBiblioSphere Team";
         }
         for (User user : usersWithWishlist) {
@@ -135,10 +146,10 @@ public class ProductService {
             String emailBody = "Dear " + user.getUsername() + ",\n\n" +
                              message + "\n\n" +
                              "Product: " + product.getTitle() + "\n" +
-                             "Current Price: $" + product.getPrice() + "\n" +
+                             "Current Price: $" + String.format("%.2f", product.getPrice()) + "\n" +
                              (product.getDiscountPercentage() > 0 ?
                              "Discount: " + product.getDiscountPercentage() + "%\n" +
-                             "Discounted Price: $" + product.getDiscountedPrice() + "\n" : "") +
+                             "Discounted Price: $" + String.format("%.2f", product.getDiscountedPrice()) + "\n" : "") +
                              "\nBest regards,\nBiblioSphere Team";
             emailService.sendEmail(user.getEmail(), emailSubject, emailBody);
         }

@@ -73,7 +73,12 @@ export const CartProvider = ({ children }) => {
                 showWarning('This item is out of stock.');
                 return currentCart;
             }
-            return [...currentCart, { ...product, quantity: 1 }];
+            const priceToUse = product.discountPercentage > 0 ? product.discountedPrice : product.price;
+            return [...currentCart, { 
+                ...product, 
+                effectivePrice: priceToUse,
+                quantity: 1 
+            }];
         });
         if (!isCartOpen) {
             setIsCartOpen(true);
@@ -111,7 +116,11 @@ export const CartProvider = ({ children }) => {
     };
 
     const getSubtotal = () => {
-        return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return cart.reduce((total, item) => {
+            const priceToUse = item.effectivePrice || 
+                               (item.discountPercentage > 0 ? item.discountedPrice : item.price);
+            return total + (priceToUse * item.quantity);
+        }, 0);
     };
 
     const getCartTotal = () => {

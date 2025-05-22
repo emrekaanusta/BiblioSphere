@@ -67,7 +67,14 @@ const ShoppingCart = () => {
                             <img src={item.image} alt={item.title} className="cart-item-image" />
                             <div className="cart-item-details">
                                 <h3>{item.title}</h3>
-                                <p>Price: ${item.price}</p>
+                                <p>Price: ${item.discountPercentage > 0 ? 
+                                    (item.discountedPrice ? item.discountedPrice.toFixed(2) : item.price.toFixed(2)) : 
+                                    item.price.toFixed(2)}
+                                    {item.discountPercentage > 0 && 
+                                    <span style={{ color: 'green', marginLeft: '8px' }}>
+                                        ({item.discountPercentage}% off)
+                                    </span>}
+                                </p>
                                 <div className="quantity-controls">
                                     <button 
                                         onClick={() => handleQuantityChange(item, item.quantity - 1)}

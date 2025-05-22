@@ -101,7 +101,7 @@ const Checkout = () => {
           productId: item.isbn,
           title: item.title,
           quantity: item.quantity,
-          price: item.price,
+          price: item.discountPercentage > 0 ? item.discountedPrice : item.price,
           image: item.image,
         })),
         shippingMethod,
@@ -155,7 +155,14 @@ const Checkout = () => {
                 <img src={it.image} alt={it.title} className="checkout-item-image" />
                 <div className="checkout-item-details">
                   <h3>{it.title}</h3>
-                  <p>Price: ${it.price}</p>
+                  <p>Price: ${it.discountPercentage > 0 ? 
+                      (it.discountedPrice ? it.discountedPrice.toFixed(2) : it.price.toFixed(2)) : 
+                      it.price.toFixed(2)}
+                      {it.discountPercentage > 0 && 
+                      <span style={{ color: 'green', marginLeft: '8px' }}>
+                          ({it.discountPercentage}% off)
+                      </span>}
+                  </p>
                   <div className="quantity-controls">
                     <button 
                       onClick={() => handleQuantityChange(it, it.quantity - 1)}
