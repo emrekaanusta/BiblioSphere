@@ -60,15 +60,25 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
     }
 
-    /*@PostMapping("/wishlist/add")
-    public ResponseEntity<String> addToWishlist(@RequestBody Map<String, Long> payload) {
-        Long productId = payload.get("productId");
-        // Get current user (e.g., via a custom method that extracts user info from token)
-        User currentUser = userService.getCurrentUser();
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in.");
+    @PostMapping("/wishlist/add")
+    public ResponseEntity<String> addToWishlist(@RequestBody Map<String, String> payload, Authentication auth) {
+        String productId = payload.get("productId");
+        if (auth == null || productId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please log in or provide a product ID.");
         }
-        userService.addProductToWishlist(currentUser, productId);
-        return ResponseEntity.ok("Product added to wishlist.");
-    }*/
+        String userId = auth.getName();
+        User user = userService.loadUserByEmail(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+        
+        System.out.println("DEBUG: Adding product " + productId + " to wishlist for user " + userId);
+        System.out.println("DEBUG: Current wishlist: " + user.getWishlist());
+        
+        User updatedUser = userService.addToWishlist(user, productId);
+        
+        System.out.println("DEBUG: Updated wishlist: " + updatedUser.getWishlist());
+        
+        return ResponseEntity.ok("Product added to wishlist successfully.");
+    }
 }
