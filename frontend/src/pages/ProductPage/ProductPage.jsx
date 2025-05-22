@@ -164,7 +164,9 @@ export default function ProductPage() {
       </div>
 
       <div className="book-list">
-        {displayList.map(book => (
+        {displayList
+        .filter(book => book.price !== -1)
+        .map(book => (
           <div className="book-card" key={book.id}>
             <div className="book-image-container">
               <Link to={`/books/${book.id}`}>

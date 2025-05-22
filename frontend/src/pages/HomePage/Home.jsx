@@ -45,6 +45,7 @@ const Homepage = () => {
         console.log('Books fetched from backend:', response.data);
         const dataWithIds = response.data
           .filter(book => book.image && book.rating && book.stock > 0)
+          .filter(book => book.price !== -1)
           .map((item) => ({
             ...item,
             id: item.isbn || item._id,
@@ -206,7 +207,9 @@ const Homepage = () => {
             </div>
             <div className="swiper books-slider">
               <div className="swiper-wrapper">
-                {featuredBooks.slice(0, 6).map((book) => (
+                {featuredBooks.slice(0, 6)
+                .filter(book => book.price !== -1)
+                .map((book) => (
                   <Link to={`/books/${book.id}`} key={book.id} className="swiper-slide">
                     <img src={book.image} alt={book.title} />
                   </Link>
@@ -233,7 +236,9 @@ const Homepage = () => {
             768: { slidesPerView: 3, spaceBetween: 30 }
           }}
         >
-          {featuredBooks.map((book) => (
+          {featuredBooks
+          .filter(book => book.price !== -1)
+          .map((book) => (
             <SwiperSlide key={book.id}>
               <BookCard book={book} />
             </SwiperSlide>

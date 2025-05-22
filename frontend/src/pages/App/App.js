@@ -23,6 +23,8 @@ import ProductManagerCategories from "../ProductManager/ProductManagerCategories
 import ProductManagerOrderControl from "../ProductManager/ProductManagerOrderControl";
 import SalesManagerHome from "../SalesManager/SalesManagerHome";
 import SalesManagerOrders from "../SalesManager/SalesManagerOrders";
+import UserPanel from "../UserPanel/UserPanel";
+
 
 function App() {
     return (
@@ -68,6 +70,8 @@ function App() {
                                 <Route path="/pm/orders" element={<ProductManagerOrderControl />} />
                                 <Route path="/sm/home" element={<SalesManagerHome/>} />
                                 <Route path="/sm/orders" element={<SalesManagerOrders/>} />
+                                <Route path="/profile" element={<UserPanel />} />
+
                             </Routes>
                         </main>
                     </Router>

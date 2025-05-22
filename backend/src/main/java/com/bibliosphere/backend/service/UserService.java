@@ -211,6 +211,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+
     public void clearUserCart(String email) {
         User user = loadUserByEmail(email);
         if (user != null) {
@@ -250,4 +251,12 @@ public class UserService {
         logger.debug("Total users with product in wishlist: {}", usersWithWishlist.size());
         return usersWithWishlist;
     }
+
+
+    public User update(User user) {
+        return userRepository.save(user);
+    }
+
+
+
 }

@@ -71,14 +71,68 @@ public class UserController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
         }
-        
+
         System.out.println("DEBUG: Adding product " + productId + " to wishlist for user " + userId);
         System.out.println("DEBUG: Current wishlist: " + user.getWishlist());
-        
+
         User updatedUser = userService.addToWishlist(user, productId);
-        
+
         System.out.println("DEBUG: Updated wishlist: " + updatedUser.getWishlist());
-        
+
         return ResponseEntity.ok("Product added to wishlist successfully.");
     }
-}
+
+    @GetMapping("/me")
+    public ResponseEntity<User> getMyProfile(Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String email = auth.getName();
+        User user = userService.loadUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        // Optionally clear out sensitive fields before returning:
+        user.setPassword(null);
+        return ResponseEntity.ok(user);
+    }
+
+
+
+        // … your existing endpoints (register, login, /me GET, etc.) …
+
+        /**
+         * Partially update the currently authenticated user's profile.
+         * Allowed fields: name, surname, taxid, address, city, ZipCode.
+         */
+        @PutMapping("/me")
+        public ResponseEntity<User> updateMyProfile(
+                Authentication auth,
+                @RequestBody Map<String, String> updates
+        ) {
+            if (auth == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            String email = auth.getName();
+            User user = userService.loadUserByEmail(email);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            // Apply only the keys we allow
+            if (updates.containsKey("name"))    user.setName    (updates.get("name"));
+            if (updates.containsKey("surname")) user.setSurname (updates.get("surname"));
+            if (updates.containsKey("taxid"))   user.setTaxid   (updates.get("taxid"));
+            if (updates.containsKey("address")) user.setAddress (updates.get("address"));
+            if (updates.containsKey("city"))    user.setCity    (updates.get("city"));
+            if (updates.containsKey("ZipCode")) user.setZipCode (updates.get("ZipCode"));
+
+            // Persist via service
+            User saved = userService.update(user);
+            saved.setPassword(null);  // never leak password
+            return ResponseEntity.ok(saved);
+        }
+    }
+
+
+

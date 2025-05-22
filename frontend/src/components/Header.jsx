@@ -160,6 +160,9 @@ const Header = () => {
               <div className="auth-dropdown">
                 {isLoggedIn ? (
                   <>
+                    <button onClick={() => handleAuthOption("/profile")}>
+                      <i className="fas fa-id-card"></i> Profile
+                    </button>
                     <button onClick={() => handleAuthOption("/orders")}>
                       <i className="fas fa-box"></i> Orders
                     </button>

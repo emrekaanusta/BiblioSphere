@@ -9,28 +9,27 @@ import StarRating from '../../components/StarRating';
 import './CategoryPage.css';
 
 export default function CategoryPage() {
-  /* ───── route & contexts ───── */
+  /* route & contexts */
   const { category } = useParams();
-  const navigate     = useNavigate();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { isBookFavorite, updateFavorites, removeFromFavorites, addToFavorites } = useFavorites();
+  const { isBookFavorite, removeFromFavorites, addToFavorites } = useFavorites();
 
-  /* ───── state ───── */
-  const [books,       setBooks]       = useState([]);
+  /* state */
+  const [books, setBooks] = useState([]);
   const [displayList, setDisplayList] = useState([]);
 
   /* UI controls */
-  const [searchTerm,  setSearchTerm]  = useState('');
-  const [sortOption,  setSortOption]  = useState('none');   // price‑asc / points‑desc …
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOption, setSortOption] = useState('none');
 
   /* meta */
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  /* ───── fetch all books once ───── */
+  /* fetch all books once */
   useEffect(() => {
-    axios
-      .get('http://localhost:8080/api/products')
+    axios.get('http://localhost:8080/api/products')
       .then((res) => {
         const products = res.data.map((p) => ({ ...p, id: p.isbn }));
         setBooks(products);
@@ -43,22 +42,22 @@ export default function CategoryPage() {
       });
   }, []);
 
-  /* ───── filter + sort whenever deps change ───── */
+  /* filter + sort whenever deps change */
   useEffect(() => {
     if (loading) return;
-
     const cat = decodeURIComponent(category).toLowerCase();
 
     /* 1 – category filter */
     let list = books.filter((b) => {
       if (!b.category) return false;
-      const pieces = b.category
-        .split(/[\/&,+]/)
-        .map((s) => s.trim().toLowerCase());
+      const pieces = b.category.split(/[\/&,\+]/).map((s) => s.trim().toLowerCase());
       return pieces.includes(cat);
     });
 
-    /* 2 – search */
+    /* 2 – exclude price -1 */
+    list = list.filter(b => b.price !== -1);
+
+    /* 3 – search */
     const term = searchTerm.trim().toLowerCase();
     if (term) {
       list = list.filter(
@@ -69,7 +68,7 @@ export default function CategoryPage() {
       );
     }
 
-    /* 3 – sort */
+    /* 4 – sort */
     switch (sortOption) {
       case 'price-asc':
         list.sort((a, b) => a.price - b.price);
@@ -90,15 +89,12 @@ export default function CategoryPage() {
     setDisplayList(list);
   }, [books, category, searchTerm, sortOption, loading]);
 
-  /* ───── handlers ───── */
+  /* handlers */
   const handleAddToCart = (book) => {
     const success = addToCart(book);
     if (!success) {
-      if (book.stock === 0) {
-        alert('This item is out of stock.');
-      } else {
-        alert(`Cannot add more items. Only ${book.stock} available in stock.`);
-      }
+      if (book.stock === 0) alert('This item is out of stock.');
+      else alert(`Cannot add more items. Only ${book.stock} available.`);
     }
   };
 
@@ -108,16 +104,13 @@ export default function CategoryPage() {
       navigate('/login');
       return;
     }
-    if (isBookFavorite(book.id)) {
-      removeFromFavorites(book.id);
-    } else {
-      addToFavorites(book);
-    }
+    if (isBookFavorite(book.id)) removeFromFavorites(book.id);
+    else addToFavorites(book);
   };
 
-  /* ───── UI ───── */
+  /* UI */
   if (loading) return <div className="category-page">Loading books…</div>;
-  if (error)   return <div className="category-page">{error}</div>;
+  if (error) return <div className="category-page">{error}</div>;
 
   return (
     <div className="category-page">
@@ -128,13 +121,13 @@ export default function CategoryPage() {
           </Link>
           <div className="icons">
             <Link to="/favorites" className="fas fa-heart"></Link>
-            <Link to="/cart"      className="fas fa-shopping-cart"></Link>
-            <Link to="/profile"   className="fas fa-user"></Link>
+            <Link to="/cart" className="fas fa-shopping-cart"></Link>
+            <Link to="/profile" className="fas fa-user"></Link>
           </div>
         </section>
       </header>
 
-      {/* controls: search + sort only */}
+      {/* controls: search + sort */}
       <div className="controls">
         <div className="search-bar">
           <input
@@ -147,7 +140,6 @@ export default function CategoryPage() {
             <i className="fas fa-search"></i>
           </button>
         </div>
-
         <select
           className="control-select"
           value={sortOption}
@@ -177,11 +169,7 @@ export default function CategoryPage() {
               <div key={book.id} className="book-card">
                 <div className="book-image-container">
                   <Link to={`/books/${book.id}`}>
-                    <img
-                      src={book.image}
-                      alt={book.title}
-                      className="book-image"
-                    />
+                    <img src={book.image} alt={book.title} className="book-image" />
                   </Link>
                   <button
                     className={`favorite-btn ${
