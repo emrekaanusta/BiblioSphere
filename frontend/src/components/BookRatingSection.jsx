@@ -161,57 +161,91 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           const product = await productRes.json();
           setBook(product);
           setAverageRating(product.rating || 0);
+        } else {
+          console.error('Failed to fetch product:', await productRes.text());
         }
 
         if (ratingsRes.ok) {
-          const text = await ratingsRes.text();
-          let processedReviews = [];
-          if (text) {
-            const ratings = JSON.parse(text);
-            if (Array.isArray(ratings)) {
-              processedReviews = ratings;
-            } else if (ratings && typeof ratings === 'object') {
-              processedReviews = [ratings];
-            }
+          const ratingsData = await ratingsRes.json();
+          if (Array.isArray(ratingsData)) {
+            setReviews(ratingsData);
+          } else if (ratingsData && typeof ratingsData === 'object') {
+            setReviews([ratingsData]);
+          } else {
+            setReviews([]);
           }
-          setReviews(processedReviews);
+        } else {
+          console.error('Failed to fetch ratings:', await ratingsRes.text());
+          setReviews([]);
         }
 
         // Check if user has already rated and get order status
         if (token) {
-          const [ratedRes, ordersRes, userRatingRes] = await Promise.all([
-            fetch(`http://localhost:8080/api/ratings/check?productId=${bookId}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            }),
-            fetch('http://localhost:8080/api/orders', {
-              headers: { Authorization: `Bearer ${token}` }
-            }),
-            fetch(`http://localhost:8080/api/ratings/user-rating?productId=${bookId}`, {
-              headers: { Authorization: `Bearer ${token}` }
-            })
-          ]);
+          try {
+            const [ratedRes, ordersRes, userRatingRes] = await Promise.all([
+              fetch(`http://localhost:8080/api/ratings/check?productId=${bookId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              }),
+              fetch('http://localhost:8080/api/orders', {
+                headers: { Authorization: `Bearer ${token}` }
+              }),
+              fetch(`http://localhost:8080/api/ratings/user-rating?productId=${bookId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              })
+            ]);
 
-          if (ratedRes.ok) {
-            const hasRated = await ratedRes.json();
-            setHasRated(hasRated);
-          }
+            if (ratedRes.ok) {
+              const hasRated = await ratedRes.json();
+              setHasRated(hasRated);
+            } else {
+              console.error('Failed to check if user has rated:', await ratedRes.text());
+            }
 
-          if (ordersRes.ok) {
-            const orders = await ordersRes.json();
-            const orderWithBook = orders.find(order => 
-              order.status === 'DELIVERED' && 
-              order.items.some(item => item.productId === bookId)
-            );
-            setOrderStatus(orderWithBook ? 'DELIVERED' : null);
-          }
+            if (ordersRes.ok) {
+              const orders = await ordersRes.json();
+              const orderWithBook = orders.find(order => 
+                order.status === 'DELIVERED' && 
+                order.items.some(item => item.productId === bookId)
+              );
+              setOrderStatus(orderWithBook ? 'DELIVERED' : null);
+            } else {
+              console.error('Failed to fetch orders:', await ordersRes.text());
+            }
 
-          if (userRatingRes.ok) {
-            const rating = await userRatingRes.json();
-            setUserRating(rating);
+            if (userRatingRes.ok) {
+              try {
+                const text = await userRatingRes.text();
+                if (!text) {
+                  setUserRating(null);
+                  return;
+                }
+                const rating = JSON.parse(text);
+                if (rating && typeof rating === 'object') {
+                  setUserRating(rating);
+                } else {
+                  setUserRating(null);
+                }
+              } catch (parseError) {
+                console.error('Failed to parse user rating:', parseError);
+                setUserRating(null);
+              }
+            } else if (userRatingRes.status === 404) {
+              // No rating exists yet, which is fine
+              setUserRating(null);
+            } else {
+              const errorText = await userRatingRes.text();
+              console.error('Failed to fetch user rating:', errorText);
+              setUserRating(null);
+            }
+          } catch (err) {
+            console.error('Failed to fetch user rating data:', err);
+            setUserRating(null);
+            setHasRated(false);
           }
         }
       } catch (err) {
         console.error('Failed to fetch reviews:', err);
+        setReviews([]);
       }
     };
 
@@ -233,12 +267,6 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
 
     setIsSubmitting(true);
     try {
-      // Calculate new average rating immediately
-      const currentTotal = averageRating * reviews.length;
-      const newTotal = currentTotal + rating;
-      const newAverage = newTotal / (reviews.length + 1);
-      setAverageRating(newAverage);
-
       const res = await fetch('http://localhost:8080/api/ratings', {
         method: 'POST',
         headers: {
@@ -270,6 +298,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
 
         if (productRes.ok) {
           const product = await productRes.json();
+          setBook(product);
           setAverageRating(product.rating || 0);
         }
 
@@ -287,22 +316,10 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
           setReviews(processedReviews);
         }
       } else {
-        // Revert the average rating if the submission failed
-        const currentTotal = averageRating * reviews.length;
-        const newTotal = currentTotal - rating;
-        const newAverage = reviews.length > 0 ? newTotal / reviews.length : 0;
-        setAverageRating(newAverage);
-        
         const errText = await res.text();
         alert('Failed to submit rating: ' + errText);
       }
     } catch (err) {
-      // Revert the average rating if there was an error
-      const currentTotal = averageRating * reviews.length;
-      const newTotal = currentTotal - rating;
-      const newAverage = reviews.length > 0 ? newTotal / reviews.length : 0;
-      setAverageRating(newAverage);
-      
       console.error('Failed to submit rating:', err);
       alert('Something went wrong');
     } finally {

@@ -27,37 +27,37 @@ const BookDetailPage = () => {
         setIsLoggedIn(!!token);
     }, []);
 
+    const fetchBookData = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            const [productRes, ratingsRes] = await Promise.all([
+                fetch(`http://localhost:8080/api/products/${bookId}`),
+                fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
+                    headers: headers
+                })
+            ]);
+
+            if (productRes.ok) {
+                const product = await productRes.json();
+                setBook(product);
+            }
+
+            if (ratingsRes.ok) {
+                const ratingsData = await ratingsRes.json();
+                setRatings(Array.isArray(ratingsData) ? ratingsData : []);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Fetch the book data from the backend when this component mounts or bookId changes
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-                const [productRes, ratingsRes] = await Promise.all([
-                    fetch(`http://localhost:8080/api/products/${bookId}`),
-                    fetch(`http://localhost:8080/api/ratings/product/${bookId}`, {
-                        headers: headers
-                    })
-                ]);
-
-                if (productRes.ok) {
-                    const product = await productRes.json();
-                    setBook(product);
-                }
-
-                if (ratingsRes.ok) {
-                    const ratingsData = await ratingsRes.json();
-                    setRatings(Array.isArray(ratingsData) ? ratingsData : []);
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchBookData();
     }, [bookId]);
 
     const handleAddToCart = () => {
@@ -96,6 +96,10 @@ const BookDetailPage = () => {
         if (reviewsSection) {
             reviewsSection.scrollIntoView({ behavior: 'smooth' });
         }
+    };
+
+    const handleRatingSubmitted = () => {
+        fetchBookData();
     };
 
     if (loading) {
@@ -221,7 +225,7 @@ const BookDetailPage = () => {
 
                 </div>
             </div>
-            <BookRatingSection bookId={bookId} />
+            <BookRatingSection bookId={bookId} onRatingSubmitted={handleRatingSubmitted} />
         </div>
     );
 };
