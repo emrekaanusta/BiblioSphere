@@ -6,6 +6,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { useNavigate } from 'react-router-dom';
+import emailjs from '@emailjs/browser';
+
+// EmailJS SDK başlatma
+emailjs.init('aZ4JM_Wkbo2modjPK');
 
 const SalesManagerHome = () => {
     const [products, setProducts] = useState([]);
@@ -28,7 +32,9 @@ const SalesManagerHome = () => {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/products');
+            const response = await axios.get('http://localhost:8080/api/products', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setProducts(response.data);
         } catch (error) {
             showSnackbar('Error fetching products', 'error');
@@ -37,12 +43,11 @@ const SalesManagerHome = () => {
 
     const handlePriceUpdate = async (productId) => {
         try {
-            const res = await axios.put(
+            await axios.put(
                 `http://localhost:8080/api/sales-manager/product/${productId}/price`,
                 { price: parseFloat(newPrice[productId]) },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            // Fetch users who were notified
             const usersRes = await axios.get(
                 `http://localhost:8080/api/sales-manager/wishlist-users/${productId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -51,7 +56,7 @@ const SalesManagerHome = () => {
             setOpenNotifiedDialog(true);
             showSnackbar('Price updated successfully', 'success');
             fetchProducts();
-            setNewPrice((prev) => ({ ...prev, [productId]: '' }));
+            setNewPrice(prev => ({ ...prev, [productId]: '' }));
         } catch (error) {
             showSnackbar('Error updating price', 'error');
         }
@@ -59,22 +64,44 @@ const SalesManagerHome = () => {
 
     const handleDiscountUpdate = async (productId) => {
         try {
-            const res = await axios.put(
+            // İndirimi backend'e gönder
+            await axios.put(
                 `http://localhost:8080/api/sales-manager/product/${productId}/discount`,
                 { discount: parseFloat(newDiscount[productId]) },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            // Fetch users who were notified
+
+            // Wishlist kullanıcılarını al
             const usersRes = await axios.get(
                 `http://localhost:8080/api/sales-manager/wishlist-users/${productId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            setNotifiedUsers(usersRes.data);
-            setOpenNotifiedDialog(true);
-            showSnackbar('Discount updated successfully', 'success');
+            const users = usersRes.data;
+
+            // Ürün bilgisi
+            const product = products.find(p => p.isbn === productId);
+
+            // Tüm kullanıcılara mail gönder
+            await Promise.all(
+                users.map(user =>
+                    emailjs.send(
+                        'service_0v83vjl',     // EmailJS Service ID
+                        'template_z3yw2ub',    // EmailJS Template ID
+                        {
+                            to_email:      user.email,
+                            to_name:       user.username,
+                            product_title: product.title,
+                            discount:      newDiscount[productId]
+                        }
+                    )
+                )
+            );
+
+            showSnackbar('Discount updated and emails sent!', 'success');
             fetchProducts();
-            setNewDiscount((prev) => ({ ...prev, [productId]: '' }));
+            setNewDiscount(prev => ({ ...prev, [productId]: '' }));
         } catch (error) {
+            console.error(error);
             showSnackbar('Error updating discount', 'error');
         }
     };
@@ -82,9 +109,10 @@ const SalesManagerHome = () => {
     const handleOpenNotificationDialog = async (productId) => {
         setCurrentProductId(productId);
         try {
-            const res = await axios.get(`http://localhost:8080/api/sales-manager/wishlist-users/${productId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await axios.get(
+                `http://localhost:8080/api/sales-manager/wishlist-users/${productId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             setUsersToNotify(res.data);
             setOpenDialog(true);
         } catch (error) {
@@ -100,7 +128,7 @@ const SalesManagerHome = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             showSnackbar('Notifications sent successfully', 'success');
-            setNotificationMessage((prev) => ({ ...prev, [currentProductId]: '' }));
+            setNotificationMessage(prev => ({ ...prev, [currentProductId]: '' }));
             setOpenDialog(false);
         } catch (error) {
             showSnackbar('Error sending notifications', 'error');
@@ -112,105 +140,66 @@ const SalesManagerHome = () => {
     };
 
     const handleCloseSnackbar = () => {
-        setSnackbar({ ...snackbar, open: false });
+        setSnackbar(prev => ({ ...prev, open: false }));
     };
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-                <Button variant="outlined" onClick={() => navigate('/sm/orders')}>
-                    Go to Orders / Invoices
-                </Button>
+                <Button variant="outlined" onClick={() => navigate('/sm/orders')}>Go to Orders / Invoices</Button>
             </div>
-            <Typography variant="h4" gutterBottom>
-                Sales Manager Dashboard
-            </Typography>
-
+            <Typography variant="h4" gutterBottom>Sales Manager Dashboard</Typography>
             <Grid container spacing={3}>
-                {products.map((product) => (
+                {products.map(product => (
                     <Grid item xs={12} md={6} key={product.isbn}>
                         <Card>
                             <CardContent>
-                                <Typography variant="h6" gutterBottom>
-                                    {product.title}
-                                </Typography>
+                                <Typography variant="h6" gutterBottom>{product.title}</Typography>
                                 <Typography color="textSecondary">
                                     {product.discountPercentage > 0 ? (
                                         <>
-                                            <span style={{ textDecoration: 'line-through', color: '#888' }}>
-                                                ${product.price.toFixed(2)}
-                                            </span>
-                                            <span style={{ color: '#d32f2f', marginLeft: 8 }}>
-                                                &nbsp;Discounted Price: ${product.discountedPrice.toFixed(2)}
-                                            </span>
+                                            <span style={{ textDecoration: 'line-through', color: '#888' }}>${product.price.toFixed(2)}</span>
+                                            <span style={{ color: '#d32f2f', marginLeft: 8 }}>&nbsp;Discounted Price: ${product.discountedPrice.toFixed(2)}</span>
                                             <br />
-                                            <span style={{ color: '#388e3c' }}>
-                                                Discount: {product.discountPercentage}%
-                                            </span>
+                                            <span style={{ color: '#388e3c' }}>Discount: {product.discountPercentage}%</span>
                                         </>
                                     ) : (
                                         <>Current Price: ${product.price.toFixed(2)}</>
                                     )}
                                 </Typography>
-                                <Typography color="textSecondary">
-                                    Current Discount: {product.discountPercentage}%
-                                </Typography>
-
+                                <Typography color="textSecondary">Current Discount: {product.discountPercentage}%</Typography>
                                 <Grid container spacing={2} sx={{ mt: 2 }}>
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             label="New Price"
                                             type="number"
                                             value={newPrice[product.isbn] || ''}
-                                            onChange={(e) => setNewPrice((prev) => ({ ...prev, [product.isbn]: e.target.value }))}
+                                            onChange={e => setNewPrice(prev => ({ ...prev, [product.isbn]: e.target.value }))}
                                             fullWidth
                                             size="small"
                                         />
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => handlePriceUpdate(product.isbn)}
-                                            sx={{ mt: 1 }}
-                                            fullWidth
-                                        >
-                                            Update Price
-                                        </Button>
+                                        <Button variant="contained" onClick={() => handlePriceUpdate(product.isbn)} sx={{ mt: 1 }} fullWidth>Update Price</Button>
                                     </Grid>
                                     <Grid item xs={12} sm={6}>
                                         <TextField
                                             label="New Discount %"
                                             type="number"
                                             value={newDiscount[product.isbn] || ''}
-                                            onChange={(e) => setNewDiscount((prev) => ({ ...prev, [product.isbn]: e.target.value }))}
+                                            onChange={e => setNewDiscount(prev => ({ ...prev, [product.isbn]: e.target.value }))}
                                             fullWidth
                                             size="small"
                                         />
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => handleDiscountUpdate(product.isbn)}
-                                            sx={{ mt: 1 }}
-                                            fullWidth
-                                        >
-                                            Update Discount
-                                        </Button>
+                                        <Button variant="contained" onClick={() => handleDiscountUpdate(product.isbn)} sx={{ mt: 1 }} fullWidth>Update Discount</Button>
                                     </Grid>
                                     <Grid item xs={12}>
                                         <TextField
                                             label="Notification Message"
-                                            multiline
-                                            rows={2}
+                                            multiline rows={2}
                                             value={notificationMessage[product.isbn] || ''}
-                                            onChange={(e) => setNotificationMessage((prev) => ({ ...prev, [product.isbn]: e.target.value }))}
+                                            onChange={e => setNotificationMessage(prev => ({ ...prev, [product.isbn]: e.target.value }))}
                                             fullWidth
                                         />
-                                        <Button
-                                            variant="contained"
-                                            color="secondary"
-                                            onClick={() => handleOpenNotificationDialog(product.isbn)}
-                                            sx={{ mt: 1 }}
-                                            fullWidth
-                                        >
-                                            Send Wishlist Notification
-                                        </Button>
+                                        <Button variant="contained" color="secondary" onClick={() => handleOpenNotificationDialog(product.isbn)} sx={{ mt: 1 }} fullWidth>Send Wishlist Notification</Button>
                                     </Grid>
                                 </Grid>
                             </CardContent>
@@ -218,7 +207,6 @@ const SalesManagerHome = () => {
                     </Grid>
                 ))}
             </Grid>
-
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
                 <DialogTitle>Users to be Notified</DialogTitle>
                 <DialogContent>
@@ -226,21 +214,16 @@ const SalesManagerHome = () => {
                         <p>No users have this product in their wishlist.</p>
                     ) : (
                         <ul>
-                            {usersToNotify.map((user) => (
-                                <li key={user.email}>{user.username} ({user.email})</li>
-                            ))}
+                            {usersToNotify.map(user => <li key={user.email}>{user.username} ({user.email})</li>)}
                         </ul>
                     )}
-                    <p style={{ marginTop: 16 }}><b>Message:</b> {notificationMessage[currentProductId]}</p>
+                    <p style={{ marginTop: 16 }}><strong>Message:</strong> {notificationMessage[currentProductId]}</p>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-                    <Button onClick={handleSendNotification} variant="contained" color="primary" disabled={usersToNotify.length === 0}>
-                        Send Notification
-                    </Button>
+                    <Button onClick={handleSendNotification} variant="contained" disabled={!usersToNotify.length}>Send Notification</Button>
                 </DialogActions>
             </Dialog>
-
             <Dialog open={openNotifiedDialog} onClose={() => setOpenNotifiedDialog(false)}>
                 <DialogTitle>Users Notified</DialogTitle>
                 <DialogContent>
@@ -248,9 +231,7 @@ const SalesManagerHome = () => {
                         <p>No users had this product in their wishlist.</p>
                     ) : (
                         <ul>
-                            {notifiedUsers.map((user) => (
-                                <li key={user.email}>{user.username} ({user.email})</li>
-                            ))}
+                            {notifiedUsers.map(user => <li key={user.email}>{user.username} ({user.email})</li>)}
                         </ul>
                     )}
                 </DialogContent>
@@ -258,16 +239,8 @@ const SalesManagerHome = () => {
                     <Button onClick={() => setOpenNotifiedDialog(false)}>OK</Button>
                 </DialogActions>
             </Dialog>
-
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-                    {snackbar.message}
-                </Alert>
+            <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar} anchorOrigin={{ vertical: 'bottom', horizontal: 'right'}}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>{snackbar.message}</Alert>
             </Snackbar>
         </Container>
     );

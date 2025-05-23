@@ -6,12 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="270568ef-198c-4167-a81b-39047602cce4" name="Changes" comment="Pdf invoice is downloadable by sales manager - Hüseyin Eren Yıldız - Ege Tan">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/controller/OrderController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/model/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/repository/OrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/repository/OrderRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/bibliosphere/backend/service/OrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/backend/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/SalesManager/SalesManagerHome.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SalesManager/SalesManagerHome.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SalesManager/SalesManagerOrders.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SalesManager/SalesManagerOrders.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
