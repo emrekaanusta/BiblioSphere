@@ -197,7 +197,32 @@ const SalesManagerOrders = () => {
         doc.text(`Email: ${extractEmail(order.userEmail)}`, 14, 42);
         doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString()}`, 14, 49);
 
-        let currentY = 60;
+        // Add shipping address information
+        let addressY = 56;
+        if (order.shippingInfo) {
+            const { firstName, lastName, address, city, zipCode } = order.shippingInfo;
+            const customerName = `${firstName || ''} ${lastName || ''}`.trim();
+
+            if (customerName) {
+                doc.text(`Customer: ${customerName}`, 14, addressY);
+                addressY += 7;
+            }
+
+            if (address) {
+                doc.text(`Address: ${address}`, 14, addressY);
+                addressY += 7;
+            }
+
+            if (city || zipCode) {
+                const location = `${city || ''} ${zipCode || ''}`.trim();
+                if (location) {
+                    doc.text(`City: ${location}`, 14, addressY);
+                    addressY += 7;
+                }
+            }
+        }
+
+        let currentY = addressY + 7;
 
         doc.setFontSize(14);
         doc.text("Products:", 14, currentY);
