@@ -200,8 +200,11 @@ const Header = () => {
                   <>
                     {isProductManager ? (
                       <>
-                        <button onClick={() => handleAuthOption("/pm/pcontrol")}>
-                          <i className="fas fa-box"></i> Products
+                        <button onClick={() => {
+                          handleAuthOption("/sm/home");
+                          window.location.reload();
+                        }}>
+                          <i className="fas fa-box"></i> Sales
                         </button>
                         <button onClick={handleSignOut}>
                           <i className="fas fa-sign-out-alt"></i> Log Out
