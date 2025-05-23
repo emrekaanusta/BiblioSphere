@@ -24,7 +24,6 @@ public class OrderService {
     /* ---------- create order & decrement stock ---------- */
     @Transactional
     public Order createOrder(Order order) {
-
         // check / decrement each line
         for (OrderItem item : order.getItems()) {
             Product p = productRepo.findById(item.getProductId())
@@ -33,6 +32,8 @@ public class OrderService {
             if (p.getStock() < item.getQuantity()) {
                 throw new OutOfStockException(p.getTitle());
             }
+            // Set the title from the product
+            item.setTitle(p.getTitle());
             p.setStock(p.getStock() - item.getQuantity());
             productRepo.save(p);
         }

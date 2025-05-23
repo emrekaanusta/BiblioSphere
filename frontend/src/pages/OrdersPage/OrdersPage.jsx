@@ -120,7 +120,11 @@ const Orders = () => {
                             <tbody>
                             {order.items.map((it) => (
                                 <tr key={it.productId}>
-                                    <td>{it.title}</td>
+                                    <td>
+                                        <Link to={`/books/${it.productId}`} className="book-link">
+                                            {it.title || "Unknown Book"}
+                                        </Link>
+                                    </td>
                                     <td>{it.quantity}</td>
                                     <td>${(it.price * it.quantity).toFixed(2)}</td>
                                 </tr>
