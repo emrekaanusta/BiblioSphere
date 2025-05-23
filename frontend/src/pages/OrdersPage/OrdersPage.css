@@ -555,3 +555,15 @@
     flex: 1;
   }
   
+  .book-link {
+    color: var(--green);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+  
+  .book-link:hover {
+    color: var(--dark-color);
+    text-decoration: underline;
+  }
+  

@@ -159,6 +159,10 @@
   margin-bottom: 1rem;
 }
 
+.form-row .email-input-group {
+  margin-bottom: 0;
+}
+
 .input-group {
   position: relative;
   margin-bottom: 1rem;
@@ -374,17 +378,24 @@ input[type="email"]:focus {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
+  flex: 1;
 }
 
 .email-input-group input.autofilled {
   background-color: #f5f5f5;
   color: #666;
-  cursor: not-allowed;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
 }
 
-.email-input-group input {
-  flex: 1;
-  padding-right: 4rem;
+.email-input-group input.autofilled:focus {
+  border-color: #4CAF50;
+  outline: none;
+  background-color: #fff;
 }
 
 .edit-email-btn,
@@ -446,7 +457,7 @@ input[type="email"]:focus {
   margin-right: 0;
 }
 
-/* Style the “disabled” look nicely */
+/* Style the "disabled" look nicely */
 .checkout-form input[readonly] {
   background-color: #f0f0f0;
   color: #555;
@@ -463,4 +474,46 @@ input[type="email"]:focus {
 }
 .email-input-group button {
   margin-left: 0.5rem;
+}
+
+.payment-input-group {
+  position: relative;
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.payment-input-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.payment-input-group input:focus {
+  border-color: #4CAF50;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.payment-input-group input.error {
+  border-color: #ff4444;
+}
+
+.payment-input-group .error-message {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  color: #ff4444;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.form-row .payment-input-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-row .payment-input-group:last-child {
+  margin-bottom: 0;
 }
