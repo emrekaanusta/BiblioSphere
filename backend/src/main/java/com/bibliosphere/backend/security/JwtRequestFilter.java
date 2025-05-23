@@ -67,7 +67,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (path.equals("/register") || path.equals("/login")
                 || path.startsWith("/api/categories")   // allow public read of categories
                 || path.startsWith("/favorites")
-                || path.startsWith("/test")) {
+                || path.startsWith("/test")
+                || (path.startsWith("/api/products") && request.getMethod().equals("GET"))) { // allow public read of products
             chain.doFilter(request, response);
             return;
         }

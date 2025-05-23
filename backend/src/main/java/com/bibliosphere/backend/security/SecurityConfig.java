@@ -37,8 +37,14 @@ public class SecurityConfig {
                                 "/api/users/register", "/api/users/login"
                         ).permitAll()
 
-                        // let everyone GET products, etc.
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        // let everyone GET products and categories
+                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
+
+                        // product manager endpoints
+                        .requestMatchers(
+                                "/api/products/**",
+                                "/api/categories/**"
+                        ).hasRole("PRODUCT_MANAGER")
 
                         // everything else requires a valid JWT
                         .anyRequest().authenticated()

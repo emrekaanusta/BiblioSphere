@@ -7,6 +7,7 @@ import com.bibliosphere.backend.repository.CategoryRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,19 @@ public class CategorySeeder implements CommandLineRunner {
     private final ProductRepository productRepo;
     private final CategoryRepository categoryRepo;
 
+    private final Set<String> defaultCategories = Set.of(
+        "Fiction",
+        "Non-Fiction",
+        "Science Fiction",
+        "Mystery",
+        "Romance",
+        "Biography",
+        "History",
+        "Science",
+        "Technology",
+        "Self-Help"
+    );
+
     public CategorySeeder(ProductRepository productRepo,
                           CategoryRepository categoryRepo) {
         this.productRepo = productRepo;
@@ -24,21 +38,33 @@ public class CategorySeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1) Pull every distinct category out of your products
-        Set<String> cats = productRepo.findAll().stream()
+        // 1) Add default categories if none exist
+        if (categoryRepo.count() == 0) {
+            defaultCategories.forEach(name -> {
+                Category c = new Category();
+                c.setName(name);
+                categoryRepo.save(c);
+            });
+            System.out.println("✅ Seeded default categories: " + defaultCategories);
+        }
+
+        // 2) Pull every distinct category out of your products
+        Set<String> productCategories = productRepo.findAll().stream()
                 .map(Product::getCategory)
                 .filter(c -> c != null && !c.isBlank())
                 .collect(Collectors.toSet());
 
-        // 2) For each category name, insert if it doesn't already exist
-        for (String name : cats) {
+        // 3) For each product category name, insert if it doesn't already exist
+        for (String name : productCategories) {
             if (!categoryRepo.existsByName(name)) {
-                Category c = new Category();    // no-arg constructor
-                c.setName(name);                // set the name
+                Category c = new Category();
+                c.setName(name);
                 categoryRepo.save(c);
             }
         }
 
-        System.out.println("✅ Seeded categories: " + cats);
+        if (!productCategories.isEmpty()) {
+            System.out.println("✅ Added product categories: " + productCategories);
+        }
     }
 }

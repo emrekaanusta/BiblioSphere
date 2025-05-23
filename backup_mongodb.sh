@@ -8,6 +8,14 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="mongodb_backups"
 BACKUP_NAME="backup_${TIMESTAMP}"
 
+# Check for required environment variables
+if [ -z "$MONGODB_USERNAME" ] || [ -z "$MONGODB_PASSWORD" ]; then
+    echo "Error: MONGODB_USERNAME and MONGODB_PASSWORD environment variables must be set"
+    echo "Example: export MONGODB_USERNAME=your_username"
+    echo "         export MONGODB_PASSWORD=your_password"
+    exit 1
+fi
+
 # Create backup directory if it doesn't exist
 mkdir -p "$BACKUP_DIR"
 

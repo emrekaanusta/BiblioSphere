@@ -64,7 +64,7 @@ public class ProductController {
                 user.getCity(),
                 user.getZipCode(),
                 wishlist,
-                shoppingCart   // matches the DTO’s field name exactly
+                shoppingCart   // matches the DTO's field name exactly
         );
 
         return ResponseEntity.ok(dto);
@@ -142,6 +142,29 @@ public class ProductController {
         return ResponseEntity.ok(productService.resetStock(isbn, qty));
     }
 
-
+    @PutMapping("/{isbn}")
+    public ResponseEntity<Product> updateProduct(@PathVariable String isbn, @RequestBody Product updatedProduct) {
+        if (!repo.existsById(isbn)) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Product existingProduct = repo.findById(isbn).get();
+        
+        // Update all fields except ISBN (which is the ID)
+        existingProduct.setTitle(updatedProduct.getTitle());
+        existingProduct.setAuthor(updatedProduct.getAuthor());
+        existingProduct.setCategory(updatedProduct.getCategory());
+        existingProduct.setPrice(updatedProduct.getPrice());
+        existingProduct.setImage(updatedProduct.getImage());
+        existingProduct.setDescription(updatedProduct.getDescription());
+        existingProduct.setPublisYear(updatedProduct.getPublisYear());
+        existingProduct.setPages(updatedProduct.getPages());
+        existingProduct.setStock(updatedProduct.getStock());
+        existingProduct.setLanguage(updatedProduct.getLanguage());
+        existingProduct.setPublisher(updatedProduct.getPublisher());
+        
+        Product saved = repo.save(existingProduct);
+        return ResponseEntity.ok(saved);
+    }
 
 }

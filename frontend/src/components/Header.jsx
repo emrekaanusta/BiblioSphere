@@ -15,7 +15,9 @@ const Header = () => {
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
-  const [categories, setCategories] = useState([]); // fetched from backend
+  const [categories, setCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
 
   const navigate = useNavigate();
 
@@ -76,16 +78,35 @@ const Header = () => {
     navigate(path);
   };
 
+  const isProductManager = localStorage.getItem('isPM') === 'true';
+
   /* ------------------------ fetch categories ---------------------- */
   useEffect(() => {
+    setIsLoadingCategories(true);
+    setCategoriesError(null);
     axios
       .get("http://localhost:8080/api/categories")
       .then(res => {
-        // res.data is [{ id, name }, …]
-        setCategories(res.data.map(c => c.name));
+        if (res.data && Array.isArray(res.data)) {
+          setCategories(res.data.map(c => c.name));
+        } else {
+          console.error("Invalid categories response format:", res.data);
+          setCategoriesError("Invalid response format from server");
+        }
+        setIsLoadingCategories(false);
       })
       .catch(err => {
         console.error("Failed to load nav categories:", err);
+        if (err.response) {
+          console.error("Error response:", err.response.data);
+          setCategoriesError(`Server error: ${err.response.status}`);
+        } else if (err.request) {
+          console.error("No response received:", err.request);
+          setCategoriesError("No response from server");
+        } else {
+          setCategoriesError("Failed to load categories. Please try again later.");
+        }
+        setIsLoadingCategories(false);
       });
   }, []);
 
@@ -129,20 +150,37 @@ const Header = () => {
               onClick={() => setShowCategoriesDropdown(!showCategoriesDropdown)}
             >
               Categories
+              <i className="fas fa-chevron-down"></i>
             </button>
             {showCategoriesDropdown && (
               <div className="categories-dropdown">
-                {categories.map(name => (
-                  <button
-                    key={name}
-                    className="category-item"
-                    onClick={() => handleCategoryClick(name)}
-                  >
-                    {/* you can swap icons per category if desired */}
-                    <i className="fas fa-book"></i>  
-                    {name}
-                  </button>
-                ))}
+                {isLoadingCategories ? (
+                  <div className="category-loading">
+                    <i className="fas fa-spinner fa-spin"></i>
+                    Loading categories...
+                  </div>
+                ) : categoriesError ? (
+                  <div className="category-error">
+                    <i className="fas fa-exclamation-circle"></i>
+                    {categoriesError}
+                  </div>
+                ) : categories.length === 0 ? (
+                  <div className="category-empty">
+                    <i className="fas fa-info-circle"></i>
+                    No categories available
+                  </div>
+                ) : (
+                  categories.map(name => (
+                    <button
+                      key={name}
+                      className="category-item"
+                      onClick={() => handleCategoryClick(name)}
+                    >
+                      <i className="fas fa-book"></i>
+                      {name}
+                    </button>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -160,15 +198,28 @@ const Header = () => {
               <div className="auth-dropdown">
                 {isLoggedIn ? (
                   <>
-                    <button onClick={() => handleAuthOption("/profile")}>
-                      <i className="fas fa-id-card"></i> Profile
-                    </button>
-                    <button onClick={() => handleAuthOption("/orders")}>
-                      <i className="fas fa-box"></i> Orders
-                    </button>
-                    <button onClick={handleSignOut}>
-                      <i className="fas fa-sign-out-alt"></i> Sign Out
-                    </button>
+                    {isProductManager ? (
+                      <>
+                        <button onClick={() => handleAuthOption("/pm/pcontrol")}>
+                          <i className="fas fa-box"></i> Products
+                        </button>
+                        <button onClick={handleSignOut}>
+                          <i className="fas fa-sign-out-alt"></i> Log Out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => handleAuthOption("/profile")}>
+                          <i className="fas fa-id-card"></i> Profile
+                        </button>
+                        <button onClick={() => handleAuthOption("/orders")}>
+                          <i className="fas fa-box"></i> Orders
+                        </button>
+                        <button onClick={handleSignOut}>
+                          <i className="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
