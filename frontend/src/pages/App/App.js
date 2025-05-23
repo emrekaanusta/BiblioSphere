@@ -25,13 +25,12 @@ import SalesManagerHome from "../SalesManager/SalesManagerHome";
 import SalesManagerOrders from "../SalesManager/SalesManagerOrders";
 import UserPanel from "../UserPanel/UserPanel";
 
-
 function App() {
     return (
         <CartProvider>
             <FavoritesProvider>
                 <div className="App">
-                    <Router>
+                    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                         {/* A global header at the top */}
                         <Header />
 
@@ -71,7 +70,6 @@ function App() {
                                 <Route path="/sm/home" element={<SalesManagerHome/>} />
                                 <Route path="/sm/orders" element={<SalesManagerOrders/>} />
                                 <Route path="/profile" element={<UserPanel />} />
-
                             </Routes>
                         </main>
                     </Router>
