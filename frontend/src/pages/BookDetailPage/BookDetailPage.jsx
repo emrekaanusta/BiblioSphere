@@ -165,7 +165,7 @@ const BookDetailPage = () => {
                     <div className="book-rating" onClick={scrollToReviews}>
                         <StarRating rating={book.rating || 0} />
                         <span className="rating-count">
-                            ({book.ratingList?.length || 0} ratings, {book.ratingList?.filter(r => r.comment).length || 0} reviews)
+                            ({book.ratingList?.length || 0} ratings, {book.ratingList?.filter(r => r.comment && r.visible).length || 0} reviews)
                         </span>
                     </div>
                     <div className="book-meta">

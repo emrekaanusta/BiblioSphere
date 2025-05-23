@@ -443,7 +443,7 @@ const BookRatingSection = ({ bookId, onRatingSubmitted }) => {
         <div className="average-rating">
           <StarRating rating={averageRating || 0} />
           <span className="rating-count">
-            ({book?.ratingList?.length || 0} ratings, {book?.ratingList?.filter(r => r.comment).length || 0} reviews)
+            ({reviews.length} ratings, {visibleComments.length} reviews)
           </span>
         </div>
       </div>

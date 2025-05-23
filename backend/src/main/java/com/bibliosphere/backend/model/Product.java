@@ -48,13 +48,25 @@ public class Product {
         return ratingList != null ? ratingList.size() : 0;
     }
 
+    // Helper method to get visible review count
+    public int getVisibleReviewCount() {
+        if (ratingList == null) {
+            return 0;
+        }
+        return (int) ratingList.stream()
+                .filter(r -> r.get("comment") != null && 
+                           !((String) r.get("comment")).trim().isEmpty() && 
+                           (Boolean) r.getOrDefault("visible", false))
+                .count();
+    }
+
     // Helper method to get average rating
     public float getAverageRating() {
         if (ratingList == null || ratingList.isEmpty()) {
             return 0;
         }
         return (float) ratingList.stream()
-                .mapToInt(r -> (int) r.get("score"))
+                .mapToDouble(r -> ((Number) r.get("rating")).doubleValue())
                 .average()
                 .orElse(0);
     }
